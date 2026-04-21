@@ -19,25 +19,23 @@ class BillCountPanel extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildItem(
-          context,
-          itemWidth,
-          AppColors.primary,
-          FIcons.calendarSearch,
-          'take_order',
-          newShows,
-          () {
+        _BillItem(
+          width: itemWidth,
+          iconBgColor: AppColors.primary,
+          iconData: FIcons.calendarSearch,
+          title: 'take_order',
+          count: newShows,
+          onTap: () {
             navController.setIndex(1);
           },
         ),
-        _buildItem(
-          context,
-          itemWidth,
-          AppColors.amber500,
-          FIcons.calendarCheck2,
-          'waiting_show',
-          waitingConfirmation,
-          () {
+        _BillItem(
+          width: itemWidth,
+          iconBgColor: AppColors.amber500,
+          iconData: FIcons.calendarCheck2,
+          title: 'waiting_show',
+          count: waitingConfirmation,
+          onTap: () {
             navController.setIndex(2, setTab: 0);
           },
         ),
@@ -46,27 +44,29 @@ class BillCountPanel extends StatelessWidget {
   }
 }
 
-class _BillItem extends StatefulWidget {
+class _BillItem extends StatelessWidget {
   final double width;
   final Color iconBgColor;
   final IconData iconData;
   final String title;
-  final String count;
+  final RxString count;
   final VoidCallback? onTap;
 
-  GestureDetector _buildItem(
-    BuildContext context,
-    double itemWidth,
-    Color iconBgColor,
-    IconData iconData,
-    String title,
-    RxString count,
-    void Function()? onTap,
-  ) {
+  const _BillItem({
+    required this.width,
+    required this.iconBgColor,
+    required this.iconData,
+    required this.title,
+    required this.count,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: itemWidth,
+        width: width,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(20),
