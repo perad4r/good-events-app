@@ -363,10 +363,15 @@ class AppTranslations extends Translations {
 
       // Asset Order Detail
       'report_bill_title': 'Báo cáo sự cố',
+      'report_user_title': 'Báo cáo người dùng',
+      'report_dialog_description':
+          'Vui lòng cung cấp chi tiết về vấn đề bạn đang gặp phải. Chúng tôi sẽ xem xét và xử lý sớm nhất có thể.',
       'report_title_label': 'Tiêu đề',
       'report_title_hint': 'Nhập tiêu đề báo cáo',
       'report_desc_label': 'Mô tả chi tiết',
       'report_desc_hint': 'Trình bày rõ vấn đề bạn gặp phải...',
+      'report': 'Báo cáo',
+      'report_this_bill': 'Báo cáo đơn hàng này',
       'submit_report': 'Gửi báo cáo',
       'report_success_message': 'Gửi báo cáo sự cố thành công!',
       'report_failed': 'Gửi báo cáo thất bại, vui lòng thử lại.',
@@ -1544,10 +1549,15 @@ class AppTranslations extends Translations {
 
       // Report bottom sheet
       'report_bill_title': 'Report Issue',
+      'report_user_title': 'Report User',
+      'report_dialog_description':
+          'Please provide details about the issue you are experiencing. We will review and handle it as soon as possible.',
       'report_title_label': 'Title',
       'report_title_hint': 'Enter report title',
       'report_desc_label': 'Description',
       'report_desc_hint': 'Describe the issue clearly...',
+      'report': 'Report',
+      'report_this_bill': 'Report this order',
       'submit_report': 'Submit Report',
       'report_success_message': 'Report submitted successfully!',
       'report_failed': 'Failed to submit report. Please try again.',
