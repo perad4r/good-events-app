@@ -35,6 +35,12 @@ class AppTranslations extends Translations {
       'apple_login': 'Đăng nhập với Apple',
       'apple_login_not_ready': 'Đăng nhập Apple chưa được cấu hình.',
       'logging_loading': 'Đang đăng nhập...',
+      'terms_of_use': 'Điều khoản sử dụng',
+      'terms_acceptance_text': 'Tôi đồng ý với ',
+      'terms_acceptance_required':
+          'Vui lòng đồng ý với Điều khoản sử dụng và Chính sách bảo mật để tiếp tục.',
+      'terms_zero_tolerance_notice':
+          'Tôi hiểu rằng ứng dụng không chấp nhận nội dung phản cảm hoặc hành vi lạm dụng dưới mọi hình thức.',
 
       //forgot password screen
       'forgot_password': 'Quên mật khẩu',
@@ -411,7 +417,7 @@ class AppTranslations extends Translations {
       'calendar': 'Lịch',
 
       'customer': 'Khách hàng',
-      'partner': 'Nhân sự sự kiện',
+      'partner': 'Nhân sự',
       'service_provider': 'Nhà cung cấp dịch vụ',
 
       'refresh': 'Làm mới',
@@ -821,6 +827,12 @@ class AppTranslations extends Translations {
       'password_invalid': 'Password must be at least 8 characters long.',
 
       'logging_loading': 'Logging in...',
+      'terms_of_use': 'Terms of Use',
+      'terms_acceptance_text': 'I agree to the ',
+      'terms_acceptance_required':
+          'Please agree to the Terms of Use and Privacy Policy to continue.',
+      'terms_zero_tolerance_notice':
+          'I understand there is zero tolerance for objectionable content and abusive behavior.',
 
       //forgot password screen
       'forgot_password': 'Forgot Password',
