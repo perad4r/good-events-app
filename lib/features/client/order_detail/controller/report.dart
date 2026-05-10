@@ -7,7 +7,7 @@ extension ClientOrderDetailReport on ClientOrderDetailController {
 
     try {
       final result = await _repository.reportBill(
-        billId: orderId,
+        reportedBillId: orderId,
         title: reportTitleController.text,
         description: reportDescriptionController.text,
       );

@@ -113,7 +113,9 @@ class ProfilePreviewModal extends StatelessWidget {
               children: [
                 _ActionCard(
                   onReportPressed: () {
-                    // TODO(dev): wire real report-user flow when backend/API is ready.
+                    showReportBottomSheet(
+                      reportedUserId: payload.user.id,
+                    );
                   },
                 ),
                 const SizedBox(height: 16),

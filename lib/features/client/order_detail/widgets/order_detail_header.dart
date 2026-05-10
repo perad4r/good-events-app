@@ -1,6 +1,6 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import '../controller/controller.dart';
-import 'report_bottom_sheet.dart';
+import 'package:sukientotapp/features/common/report/report_bottom_sheet.dart';
 
 class OrderDetailHeader extends GetView<ClientOrderDetailController> {
   const OrderDetailHeader({super.key});
@@ -33,13 +33,9 @@ class OrderDetailHeader extends GetView<ClientOrderDetailController> {
                 if (!controller.isHistory.value)
                   GestureDetector(
                     onTap: () {
-                      controller.reportTitleController.clear();
-                      controller.reportDescriptionController.clear();
-                      controller.reportErrors.clear();
-                      Get.bottomSheet(
-                        const ReportBottomSheet(),
-                        isScrollControlled: true,
-                        backgroundColor: Colors.transparent,
+                      showReportBottomSheet(
+                        reportedBillId: controller.orderId,
+                        billCode: controller.orderCode,
                       );
                     },
                     child: Container(
