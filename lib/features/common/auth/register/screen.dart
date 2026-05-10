@@ -1,6 +1,7 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/common/auth/register/controller.dart';
 import 'package:sukientotapp/features/common/auth/register/widgets/partner_location_selector.dart';
+import 'package:sukientotapp/features/common/auth/widgets/terms_action_gate.dart';
 import 'package:sukientotapp/features/common/auth/widgets/terms_acceptance_notice.dart';
 
 class RegisterScreen extends GetView<RegisterController> {
@@ -238,28 +239,33 @@ class RegisterScreen extends GetView<RegisterController> {
 
                       const SizedBox(height: 28),
                       Obx(
-                            () => FButton(
-                              onPress: controller.isLoading.value ||
-                                      !controller.acceptedTerms.value
-                                  ? null
-                                  : controller.register,
-                              child: controller.isLoading.value
-                                  ? Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white,
+                            () => TermsActionGate(
+                              blocked: !controller.acceptedTerms.value &&
+                                  !controller.isLoading.value,
+                              onBlockedTap: controller.promptTermsAcceptance,
+                              child: FButton(
+                                onPress: controller.isLoading.value ||
+                                        !controller.acceptedTerms.value
+                                    ? null
+                                    : controller.register,
+                                child: controller.isLoading.value
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text('creating_account_loading'.tr),
-                                      ],
-                                    )
-                                  : Text('create_account_btn'.tr),
+                                          const SizedBox(width: 8),
+                                          Text('creating_account_loading'.tr),
+                                        ],
+                                      )
+                                    : Text('create_account_btn'.tr),
+                              ),
                             ),
                           )
                           .animate()

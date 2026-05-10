@@ -45,12 +45,38 @@ class LoginController extends GetxController {
     acceptedTerms.value = value;
   }
 
+  Future<void> promptTermsAcceptance() async {
+    if (acceptedTerms.value) {
+      return;
+    }
+
+    final accepted = await Get.dialog<bool>(
+      AlertDialog(
+        title: Text('terms_prompt_title'.tr),
+        content: Text('terms_prompt_message'.tr),
+        actions: [
+          TextButton(
+            onPressed: () => Get.back(result: false),
+            child: Text('cancel'.tr),
+          ),
+          FilledButton(
+            onPressed: () => Get.back(result: true),
+            child: Text('terms_prompt_accept'.tr),
+          ),
+        ],
+      ),
+    );
+
+    if (accepted == true) {
+      acceptedTerms.value = true;
+    }
+  }
+
   bool _ensureTermsAccepted() {
     if (acceptedTerms.value) {
       return true;
     }
-
-    Get.snackbar('error'.tr, 'terms_acceptance_required'.tr);
+    promptTermsAcceptance();
     return false;
   }
 

@@ -41,6 +41,10 @@ class AppTranslations extends Translations {
           'Vui lòng đồng ý với Điều khoản sử dụng và Chính sách bảo mật để tiếp tục.',
       'terms_zero_tolerance_notice':
           'Tôi hiểu rằng ứng dụng không chấp nhận nội dung phản cảm hoặc hành vi lạm dụng dưới mọi hình thức.',
+      'terms_prompt_title': 'Đồng ý điều khoản?',
+      'terms_prompt_message':
+          'Bạn cần đồng ý với Điều khoản sử dụng và Chính sách bảo mật để tiếp tục. Bằng cách nhấn đồng ý, nghĩa là bạn đồng ý với Điều khoản sử dụng và Chính sách bảo mật của chúng tôi.',
+      'terms_prompt_accept': 'Đồng ý',
 
       //forgot password screen
       'forgot_password': 'Quên mật khẩu',
@@ -838,6 +842,10 @@ class AppTranslations extends Translations {
           'Please agree to the Terms of Use and Privacy Policy to continue.',
       'terms_zero_tolerance_notice':
           'I understand there is zero tolerance for objectionable content and abusive behavior.',
+      'terms_prompt_title': 'Accept the terms?',
+      'terms_prompt_message':
+          'You need to accept the Terms of Use and Privacy Policy to continue. By clicking OK you agree to our Terms of Use and Privacy Policy.',
+      'terms_prompt_accept': 'OK',
 
       //forgot password screen
       'forgot_password': 'Forgot Password',

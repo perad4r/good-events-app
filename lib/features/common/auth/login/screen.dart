@@ -1,5 +1,6 @@
 import 'package:sukientotapp/features/common/auth/login/controller.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
+import 'package:sukientotapp/features/common/auth/widgets/terms_action_gate.dart';
 import 'package:sukientotapp/features/common/auth/widgets/terms_acceptance_notice.dart';
 
 class LoginScreen extends GetView<LoginController> {
@@ -174,28 +175,33 @@ class LoginScreen extends GetView<LoginController> {
 
                       // Login button
                       Obx(
-                            () => FButton(
-                              onPress: controller.isLoading.value ||
-                                      !controller.acceptedTerms.value
-                                  ? null
-                                  : controller.login,
-                              child: controller.isLoading.value
-                                  ? Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        const SizedBox(
-                                          width: 16,
-                                          height: 16,
-                                          child: CircularProgressIndicator(
-                                            strokeWidth: 2,
-                                            color: Colors.white,
+                            () => TermsActionGate(
+                              blocked: !controller.acceptedTerms.value &&
+                                  !controller.isLoading.value,
+                              onBlockedTap: controller.promptTermsAcceptance,
+                              child: FButton(
+                                onPress: controller.isLoading.value ||
+                                        !controller.acceptedTerms.value
+                                    ? null
+                                    : controller.login,
+                                child: controller.isLoading.value
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const SizedBox(
+                                            width: 16,
+                                            height: 16,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              color: Colors.white,
+                                            ),
                                           ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text('logging_loading'.tr),
-                                      ],
-                                    )
-                                  : Text('login'.tr),
+                                          const SizedBox(width: 8),
+                                          Text('logging_loading'.tr),
+                                        ],
+                                      )
+                                    : Text('login'.tr),
+                              ),
                             ),
                           )
                           .animate()
@@ -227,28 +233,33 @@ class LoginScreen extends GetView<LoginController> {
 
                       // Google button (outlined)
                       Obx(
-                            () => FButton(
-                              style: FButtonStyle.outline(),
-                              onPress: controller.isGoogleLoading.value ||
-                                      !controller.acceptedTerms.value
-                                  ? null
-                                  : controller.loginWithGoogle,
-                              prefix: controller.isGoogleLoading.value
-                                  ? const SizedBox(
-                                      width: 16,
-                                      height: 16,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
+                            () => TermsActionGate(
+                              blocked: !controller.acceptedTerms.value &&
+                                  !controller.isGoogleLoading.value,
+                              onBlockedTap: controller.promptTermsAcceptance,
+                              child: FButton(
+                                style: FButtonStyle.outline(),
+                                onPress: controller.isGoogleLoading.value ||
+                                        !controller.acceptedTerms.value
+                                    ? null
+                                    : controller.loginWithGoogle,
+                                prefix: controller.isGoogleLoading.value
+                                    ? const SizedBox(
+                                        width: 16,
+                                        height: 16,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const FaIcon(
+                                        FontAwesomeIcons.google,
+                                        size: 16,
                                       ),
-                                    )
-                                  : const FaIcon(
-                                      FontAwesomeIcons.google,
-                                      size: 16,
-                                    ),
-                              child: Text(
-                                controller.isGoogleLoading.value
-                                    ? 'logging_loading'.tr
-                                    : 'google_login'.tr,
+                                child: Text(
+                                  controller.isGoogleLoading.value
+                                      ? 'logging_loading'.tr
+                                      : 'google_login'.tr,
+                                ),
                               ),
                             ),
                           )
@@ -258,120 +269,139 @@ class LoginScreen extends GetView<LoginController> {
                       if (controller.canUseAppleLogin) ...[
                         const SizedBox(height: 12),
                         Obx(
-                              () => FButton(
-                                style: FButtonStyle.outline(
-                                  (style) => style.copyWith(
-                                    decoration: FWidgetStateMap({
-                                      WidgetState.disabled: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.45,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
+                              () => TermsActionGate(
+                                blocked: !controller.acceptedTerms.value &&
+                                    !controller.isAppleLoading.value,
+                                onBlockedTap: controller.promptTermsAcceptance,
+                                child: FButton(
+                                  style: FButtonStyle.outline(
+                                    (style) => style.copyWith(
+                                      decoration: FWidgetStateMap({
+                                        WidgetState.disabled: BoxDecoration(
                                           color: Colors.black.withValues(
                                             alpha: 0.45,
                                           ),
-                                        ),
-                                      ),
-                                      WidgetState.hovered |
-                                          WidgetState.pressed: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.88,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: Colors.black),
-                                      ),
-                                      WidgetState.any: BoxDecoration(
-                                        color: Colors.black,
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(color: Colors.black),
-                                      ),
-                                    }),
-                                    contentStyle: (contentStyle) =>
-                                        contentStyle.copyWith(
-                                          textStyle: FWidgetStateMap({
-                                            WidgetState.disabled: contentStyle
-                                                .textStyle
-                                                .resolve({
-                                                  WidgetState.disabled,
-                                                })
-                                                .copyWith(color: Colors.white),
-                                            WidgetState.any: contentStyle
-                                                .textStyle
-                                                .resolve({})
-                                                .copyWith(
-                                                  color: Colors.white,
-                                                ),
-                                          }),
-                                          iconStyle: FWidgetStateMap({
-                                            WidgetState.disabled: contentStyle
-                                                .iconStyle
-                                                .resolve({
-                                                  WidgetState.disabled,
-                                                })
-                                                .copyWith(color: Colors.white),
-                                            WidgetState.any: contentStyle
-                                                .iconStyle
-                                                .resolve({})
-                                                .copyWith(
-                                                  color: Colors.white,
-                                                ),
-                                          }),
-                                          circularProgressStyle:
-                                              FWidgetStateMap({
-                                                WidgetState
-                                                    .disabled: contentStyle
-                                                    .circularProgressStyle
-                                                    .resolve({
-                                                      WidgetState.disabled,
-                                                    })
-                                                    .copyWith(
-                                                      iconStyle:
-                                                          const IconThemeData(
-                                                            color: Colors.white,
-                                                            size: 20,
-                                                          ),
-                                                    ),
-                                                WidgetState.any: contentStyle
-                                                    .circularProgressStyle
-                                                    .resolve({})
-                                                    .copyWith(
-                                                      iconStyle:
-                                                          const IconThemeData(
-                                                            color: Colors.white,
-                                                            size: 20,
-                                                          ),
-                                                    ),
-                                              }),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 14,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border: Border.all(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.45,
+                                            ),
                                           ),
                                         ),
+                                        WidgetState.hovered |
+                                            WidgetState.pressed: BoxDecoration(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.88,
+                                          ),
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border:
+                                              Border.all(color: Colors.black),
+                                        ),
+                                        WidgetState.any: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius:
+                                              BorderRadius.circular(12),
+                                          border:
+                                              Border.all(color: Colors.black),
+                                        ),
+                                      }),
+                                      contentStyle: (contentStyle) =>
+                                          contentStyle.copyWith(
+                                            textStyle: FWidgetStateMap({
+                                              WidgetState.disabled:
+                                                  contentStyle.textStyle
+                                                      .resolve({
+                                                        WidgetState.disabled,
+                                                      })
+                                                      .copyWith(
+                                                        color: Colors.white,
+                                                      ),
+                                              WidgetState.any: contentStyle
+                                                  .textStyle
+                                                  .resolve({})
+                                                  .copyWith(
+                                                    color: Colors.white,
+                                                  ),
+                                            }),
+                                            iconStyle: FWidgetStateMap({
+                                              WidgetState.disabled:
+                                                  contentStyle.iconStyle
+                                                      .resolve({
+                                                        WidgetState.disabled,
+                                                      })
+                                                      .copyWith(
+                                                        color: Colors.white,
+                                                      ),
+                                              WidgetState.any: contentStyle
+                                                  .iconStyle
+                                                  .resolve({})
+                                                  .copyWith(
+                                                    color: Colors.white,
+                                                  ),
+                                            }),
+                                            circularProgressStyle:
+                                                FWidgetStateMap({
+                                                  WidgetState.disabled:
+                                                      contentStyle
+                                                          .circularProgressStyle
+                                                          .resolve({
+                                                            WidgetState
+                                                                .disabled,
+                                                          })
+                                                          .copyWith(
+                                                            iconStyle:
+                                                                const IconThemeData(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 20,
+                                                                ),
+                                                          ),
+                                                  WidgetState.any:
+                                                      contentStyle
+                                                          .circularProgressStyle
+                                                          .resolve({})
+                                                          .copyWith(
+                                                            iconStyle:
+                                                                const IconThemeData(
+                                                                  color: Colors
+                                                                      .white,
+                                                                  size: 20,
+                                                                ),
+                                                          ),
+                                                }),
+                                            padding:
+                                                const EdgeInsets.symmetric(
+                                                  horizontal: 16,
+                                                  vertical: 14,
+                                                ),
+                                          ),
+                                    ),
                                   ),
-                                ),
-                                onPress: controller.isAppleLoading.value ||
-                                        !controller.acceptedTerms.value
-                                    ? null
-                                    : controller.loginWithApple,
-                                prefix: controller.isAppleLoading.value
-                                    ? const SizedBox(
-                                        width: 16,
-                                        height: 16,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
+                                  onPress: controller.isAppleLoading.value ||
+                                          !controller.acceptedTerms.value
+                                      ? null
+                                      : controller.loginWithApple,
+                                  prefix: controller.isAppleLoading.value
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : const FaIcon(
+                                          FontAwesomeIcons.apple,
+                                          size: 18,
                                           color: Colors.white,
                                         ),
-                                      )
-                                    : const FaIcon(
-                                        FontAwesomeIcons.apple,
-                                        size: 18,
-                                        color: Colors.white,
-                                      ),
-                                child: Text(
-                                  controller.isAppleLoading.value
-                                      ? 'logging_loading'.tr
-                                      : 'apple_login'.tr,
+                                  child: Text(
+                                    controller.isAppleLoading.value
+                                        ? 'logging_loading'.tr
+                                        : 'apple_login'.tr,
+                                  ),
                                 ),
                               ),
                             )
