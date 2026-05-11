@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:sukientotapp/features/components/widget/confirm_dialog.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/components/button/plus.dart';
 
@@ -35,11 +37,39 @@ class _UploadPhotoState extends State<UploadPhoto> {
   }
 
   Future<void> _pickFromCamera() async {
+    final status = await Permission.camera.status;
+
+    if (status.isGranted) {
+      _launchCamera();
+    } else if (status.isDenied) {
+      final result = await Permission.camera.request();
+      if (result.isGranted) {
+        _launchCamera();
+      } else if (result.isPermanentlyDenied) {
+        _showPermissionDeniedDialog();
+      }
+    } else if (status.isPermanentlyDenied) {
+      _showPermissionDeniedDialog();
+    }
+  }
+
+  Future<void> _launchCamera() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.camera);
     if (image != null) {
       setState(() => _pickedImage = image);
       widget.onImagePicked(image);
     }
+  }
+
+  void _showPermissionDeniedDialog() {
+    ConfirmDialog.show(
+      title: 'camera_access_required'.tr,
+      message: 'camera_permission_denied_desc'.tr,
+      confirmText: 'open_settings'.tr,
+      cancelText: 'cancel'.tr,
+      onConfirm: openAppSettings,
+      confirmColor: context.fTheme.colors.primary,
+    );
   }
 
   @override

@@ -807,6 +807,10 @@ class AppTranslations extends Translations {
 
       //dev
       'in_dev': 'Tính năng đang phát triển',
+
+      'camera_access_required': 'Yêu cầu quyền truy cập Camera',
+      'camera_permission_denied_desc': 'Bạn đã từ chối quyền truy cập máy ảnh trước đó. Để chụp ảnh, vui lòng vào Cài đặt và cấp quyền cho ứng dụng.',
+      'open_settings': 'Mở Cài đặt',
     },
     'en_US': {
       'cancel_book_show_not_allowed':
@@ -1589,6 +1593,10 @@ class AppTranslations extends Translations {
 
       //dev
       'in_dev': 'Feature in development',
+
+      'camera_access_required': 'Camera Access Required',
+      'camera_permission_denied_desc': 'You previously denied camera access. To take a photo, please go to Settings and enable camera permission for this app.',
+      'open_settings': 'Open Settings',
     },
   };
 }
