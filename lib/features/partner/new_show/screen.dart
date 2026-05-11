@@ -202,6 +202,7 @@ class NewShowScreen extends GetView<NewShowController> {
                   : 'Chưa có',
               clientName: bill.clientName,
               category: bill.categoryName,
+              categoryImage: bill.categoryImage,
               event: bill.eventName,
               date: bill.date,
               startTime: bill.startTime,

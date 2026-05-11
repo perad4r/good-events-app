@@ -12,6 +12,7 @@ class Show extends StatelessWidget {
     required this.price,
     required this.clientName,
     required this.category,
+    required this.categoryImage,
     required this.event,
     required this.date,
     required this.startTime,
@@ -26,6 +27,7 @@ class Show extends StatelessWidget {
   final String price;
   final String clientName;
   final String category;
+  final String categoryImage;
   final String event;
   final String date;
   final String startTime;
@@ -90,7 +92,7 @@ class Show extends StatelessWidget {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                category,
+                                clientName,
                                 style: context.typography.xs.copyWith(
                                   color: _accentColor,
                                   fontWeight: FontWeight.w500,
@@ -135,43 +137,35 @@ class Show extends StatelessWidget {
 
                   const SizedBox(height: 14),
 
-                  // Client
-                  GestureDetector(
-                    onTap: () => logger.i('Client user tapped'),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 30,
-                          height: 30,
-                          decoration: BoxDecoration(
-                            color: _accentColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          child: Icon(
-                            FIcons.userRound,
-                            size: 14,
-                            color: _accentColor,
+                  //
+                  Row(
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        decoration: BoxDecoration(
+                          color: _accentColor.withValues(alpha: 0.1),
+                          borderRadius: BorderRadius.circular(9),
+                        ),
+                        child: CachedNetworkImage(
+                          imageUrl: categoryImage,
+                          placeholder: (context, url) =>
+                              const CircularProgressIndicator(),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          category,
+                          style: context.typography.sm.copyWith(
+                            fontWeight: FontWeight.w600,
+                            color: context.fTheme.colors.primary,
                           ),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            clientName,
-                            style: context.typography.sm.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: context.fTheme.colors.primary,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          FIcons.chevronRight,
-                          size: 14,
-                          color: context.fTheme.colors.primary.withValues(
-                            alpha: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
 
                   const SizedBox(height: 10),
