@@ -296,7 +296,7 @@ class _OtpStep extends StatelessWidget {
                 'resend_otp'.tr,
                 style: TextStyle(
                   color: context.fTheme.colors.primary,
-                  fontSize: 13,
+                  fontSize: 12,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -306,7 +306,7 @@ class _OtpStep extends StatelessWidget {
               child: Text(
                 'back_to_method'.tr,
                 style: TextStyle(
-                  fontSize: 13,
+                  fontSize: 12,
                   color: context.fTheme.colors.mutedForeground,
                 ),
               ),
