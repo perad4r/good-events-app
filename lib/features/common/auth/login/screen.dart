@@ -164,15 +164,6 @@ class LoginScreen extends GetView<LoginController> {
 
                       const SizedBox(height: 4),
 
-                      Obx(
-                        () => TermsAcceptanceNotice(
-                          value: controller.acceptedTerms.value,
-                          onChanged: controller.toggleTermsAcceptance,
-                        ),
-                      ).animate().fadeIn(delay: 450.ms, duration: 400.ms),
-
-                      const SizedBox(height: 16),
-
                       // Login button
                       Obx(
                             () => TermsActionGate(
