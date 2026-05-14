@@ -116,8 +116,11 @@ jobs:
           
           # Decode the .p8 file into the expected directory
           echo -n "$API_KEY_P8_BASE64" | base64 --decode -o ~/.appstoreconnect/private_keys/AuthKey_${API_KEY}.p8
+
+          rm -rf ~/.itmstransporter/UploadTokens/ || true
+          rm -rf ~/.itmstransporter/file_cache/ || true
           
-          xcrun iTMSTransporter -m upload -apiKey "$API_KEY" -apiIssuer "$API_ISSUER" -assetFile "build/ios/ipa/Sự kiện tốt.ipa"
+          xcrun altool --upload-app --type ios -f "build/ios/ipa/Sự kiện tốt.ipa" --apiKey "$API_KEY" --apiIssuer "$API_ISSUER"
 
       - name: Clean up keychain and profile
         if: ${{ always() }}
