@@ -162,7 +162,7 @@ class UserVerifyController extends GetxController {
       logger.e('[AccountController] [logout] error: $e');
       if (e.toString().contains('unauthorized')) {
         StorageService.clearAllData();
-        Get.offAllNamed(Routes.loginScreen);
+        Get.offAllNamed(Routes.guestHomeScreen);
         return;
       }
       AppSnackbar.showError(title: 'error'.tr, message: 'cannot_logout'.tr);
