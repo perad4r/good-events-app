@@ -263,8 +263,18 @@ class MyServicesController extends GetxController {
     final remaining = 10 - serviceImages.length;
     final candidates = picked.take(remaining).toList();
 
+    const allowedExtensions = {'jpg', 'jpeg', 'png', 'webp'};
+
     final validImages = <XFile>[];
     for (final img in candidates) {
+      final ext = img.name.split('.').last.toLowerCase();
+      if (!allowedExtensions.contains(ext)) {
+        AppSnackbar.showError(
+          title: 'error'.tr,
+          message: 'image_format_not_supported'.tr,
+        );
+        continue;
+      }
       final bytes = await img.length();
       if (bytes > maxSizeBytes) {
         AppSnackbar.showError(title: 'error'.tr, message: 'image_too_large'.tr);
