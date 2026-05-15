@@ -211,7 +211,11 @@ class RegisterController extends GetxController {
 
       Get.offNamed(
         Routes.userVerifyScreen,
-        arguments: {'masked_email': maskedEmail, 'masked_phone': maskedPhone},
+        arguments: {
+          'masked_email': maskedEmail,
+          'masked_phone': maskedPhone,
+          'isClientUser': isClientUser,
+        },
       );
     } catch (e) {
       logger.e('[RegisterController] Registration failed: $e');

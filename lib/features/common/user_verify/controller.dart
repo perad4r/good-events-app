@@ -28,14 +28,14 @@ class UserVerifyController extends GetxController {
   Timer? _cooldownTimer;
 
   // check client or partner
-  bool get isClientUser => Get.find<GuestHomeController>().userType.value;
-
+  late final bool isClientUser;
   @override
   void onInit() {
     super.onInit();
     final args = Get.arguments as Map<String, dynamic>?;
     maskedEmail = args?['masked_email'] ?? '**@***.com';
     maskedPhone = args?['masked_phone'] ?? '0**...***';
+    isClientUser = args?['isClientUser'] ?? true;
   }
 
   @override
@@ -50,11 +50,10 @@ class UserVerifyController extends GetxController {
   }
 
   Future<void> goToOtpStep() async {
-    await _sendOtp();
-
     if (selectedMethod.value == VerifyMethod.email) {
-      AppSnackbar.showSuccess(title: 'success'.tr, message: 'email_sent'.tr);
+      await _sendOtp();
     } else {
+      await _sendOtp();
       step.value = 2;
     }
   }
@@ -62,6 +61,35 @@ class UserVerifyController extends GetxController {
   void goBackToMethodStep() {
     step.value = 1;
     otpController.clear();
+  }
+
+  Future<void> checkEmailVerificationStatus() async {
+    isLoading.value = true;
+    try {
+      final result = await _authRepository.checkToken();
+      final isTokenValid = result != null && result['valid'] == true;
+
+      if (isTokenValid) {
+        AppSnackbar.showSuccess(
+          title: 'success'.tr,
+          message: 'verify_success'.tr,
+        );
+        Future.delayed(const Duration(seconds: 2), () {
+          Get.offAllNamed(
+            isClientUser ? Routes.clientHome : Routes.partnerHome,
+          );
+        });
+      }
+    } on UnverifiedUserException {
+      logger.w(
+        '[UserVerifyController] [_checkToken] Token valid but user unverified, prompting user to check email',
+      );
+      AppSnackbar.showInfo(title: 'info'.tr, message: 'email_not_verified'.tr);
+    } catch (e) {
+      AppSnackbar.showError(title: 'error'.tr, message: 'error_occurred'.tr);
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   Future<void> verify() async {
@@ -128,7 +156,12 @@ class UserVerifyController extends GetxController {
           : 'phone';
       await _authRepository.sendOtp(method);
       _startCooldown();
-      AppSnackbar.showSuccess(title: 'success'.tr, message: 'otp_sent'.tr);
+      if (selectedMethod.value == VerifyMethod.email) {
+        AppSnackbar.showSuccess(title: 'success'.tr, message: 'email_sent'.tr);
+      } else {
+        AppSnackbar.showSuccess(title: 'success'.tr, message: 'otp_sent'.tr);
+      }
+
       logger.d('[UserVerifyController] OTP sent via $method');
     } on OtpCooldownException catch (e) {
       _startCooldown(e.retryAfter ?? 60);

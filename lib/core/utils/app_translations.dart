@@ -129,6 +129,9 @@ class AppTranslations extends Translations {
       'resend_otp_cooldown': 'Bạn có thể yêu cầu mã OTP mới sau @seconds giây.',
       'email_sent':
           'Đã gửi email xác thực. Hãy kiểm tra hộp thư rác nếu bạn không thấy email trong hộp thư đến.',
+      'check_verification_button': 'Kiểm tra trạng thái xác thực',
+      'email_not_verified':
+          'Email chưa được xác thực. Vui lòng kiểm tra email của bạn và làm theo hướng dẫn để xác thực.',
 
       //search hints
       'search_hint_1': 'Bạn đang tìm dịch vụ gì?',
@@ -495,6 +498,8 @@ class AppTranslations extends Translations {
 
       'please_wait_before_refreshing': 'Vui lòng đợi trước khi làm mới.',
       'cooldown_active': 'Đang trong thời gian chờ (@seconds giây)',
+
+      'error_occurred': 'Đã xảy ra lỗi, vui lòng thử lại.',
 
       ///Show
       'take_order': 'Show Chờ Nhận',
@@ -944,6 +949,9 @@ class AppTranslations extends Translations {
       'resend_otp_cooldown': 'You can request a new OTP in @seconds seconds.',
       'email_sent':
           'Verification email has been sent. Please check your spam folder if you do not see the email in your inbox.',
+      'check_verification_button': 'Check Verification Status',
+      'email_not_verified':
+          'Your email is not verified yet. Please check your inbox and click the verification link.',
 
       //search hints
       'search_hint_1': 'What service are you looking for?',
@@ -1281,6 +1289,8 @@ class AppTranslations extends Translations {
       'please_wait_before_refreshing':
           'Please wait a moment before refreshing again.',
       'cooldown_active': 'Cooldown active. Please wait @seconds seconds.',
+
+      'error_occurred': 'An error occurred. Please try again.',
 
       ///Show
       'take_order': 'Show available',
