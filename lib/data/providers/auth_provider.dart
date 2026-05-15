@@ -458,6 +458,7 @@ class AuthProvider {
         '[AuthProvider] [forgotResetPassword] DioException: ${e.message}',
       );
       if (e.response != null) {
+        _throwIfPasswordValidationError(e.response!.data);
         final code = e.response?.data['code'];
         if (e.response?.statusCode == 422) {
           if (code == 'INVALID_TOKEN') throw const InvalidTokenException();

@@ -1,6 +1,8 @@
+import 'package:sukientotapp/core/utils/app_validators.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'controller.dart';
 import 'widgets/forgot_method_card.dart';
+import 'package:sukientotapp/features/common/auth/register/widgets/password_strength_checklist.dart';
 
 class ForgotPasswordScreen extends GetView<ForgotPasswordController> {
   const ForgotPasswordScreen({super.key});
@@ -527,109 +529,80 @@ class _NewPasswordStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Obx(
-              () => Material(
-                color: Colors.transparent,
-                child: TextField(
+    return Form(
+      key: controller.newPasswordFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FTextFormField.password(
+                onTapOutside: (_) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
+                control: FTextFieldControl.managed(
                   controller: controller.newPasswordController,
-                  obscureText: controller.obscurePassword.value,
-                  decoration: InputDecoration(
-                    labelText: 'new_password'.tr,
-                    hintText: 'new_password_hint'.tr,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: context.fTheme.colors.primary,
-                        width: 2,
-                      ),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.obscurePassword.value
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        size: 20,
-                      ),
-                      onPressed: controller.toggleObscurePassword,
-                    ),
-                  ),
                 ),
-              ),
-            )
-            .animate()
-            .fadeIn(delay: 200.ms, duration: 400.ms)
-            .slideY(begin: 0.15, curve: Curves.easeOut),
-        const SizedBox(height: 16),
-        Obx(
-              () => Material(
-                color: Colors.transparent,
-                child: TextField(
+                label: Text('new_password'.tr),
+                hint: 'new_password_hint'.tr,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: AppValidators.validatePassword,
+              )
+              .animate()
+              .fadeIn(delay: 200.ms, duration: 400.ms)
+              .slideY(begin: 0.15, curve: Curves.easeOut),
+          const SizedBox(height: 8),
+          PasswordStrengthChecklist(
+            controller: controller.newPasswordController,
+          ).animate().fadeIn(delay: 220.ms, duration: 400.ms),
+          const SizedBox(height: 16),
+          FTextFormField.password(
+                onTapOutside: (_) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
+                autofocus: false,
+                control: FTextFieldControl.managed(
                   controller: controller.confirmPasswordController,
-                  obscureText: controller.obscureConfirm.value,
-                  decoration: InputDecoration(
-                    labelText: 'confirm_new_password'.tr,
-                    hintText: 'confirm_new_password_hint'.tr,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(
-                        color: context.fTheme.colors.primary,
-                        width: 2,
-                      ),
-                    ),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        controller.obscureConfirm.value
-                            ? Icons.visibility_outlined
-                            : Icons.visibility_off_outlined,
-                        size: 20,
-                      ),
-                      onPressed: controller.toggleObscureConfirm,
-                    ),
-                  ),
                 ),
-              ),
-            )
-            .animate()
-            .fadeIn(delay: 280.ms, duration: 400.ms)
-            .slideY(begin: 0.15, curve: Curves.easeOut),
-        const SizedBox(height: 24),
-        Obx(
-              () => FButton(
-                onPress: controller.isLoading.value
-                    ? null
-                    : controller.resetPassword,
-                child: controller.isLoading.value
-                    ? Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
+                label: Text('confirm_new_password'.tr),
+                hint: 'confirm_new_password_hint'.tr,
+                autovalidateMode: AutovalidateMode.onUserInteraction,
+                validator: (value) {
+                  if (value != controller.newPasswordController.text) {
+                    return 'password_mismatch_error'.tr;
+                  }
+                  return null;
+                },
+              )
+              .animate()
+              .fadeIn(delay: 280.ms, duration: 400.ms)
+              .slideY(begin: 0.15, curve: Curves.easeOut),
+          const SizedBox(height: 24),
+          Obx(
+                () => FButton(
+                  onPress: controller.isLoading.value
+                      ? null
+                      : controller.resetPassword,
+                  child: controller.isLoading.value
+                      ? Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text('resetting_password'.tr),
-                        ],
-                      )
-                    : Text('fp_confirm_new_password'.tr),
-              ),
-            )
-            .animate()
-            .fadeIn(delay: 360.ms, duration: 400.ms)
-            .slideY(begin: 0.2, curve: Curves.easeOut),
-      ],
+                            const SizedBox(width: 8),
+                            Text('resetting_password'.tr),
+                          ],
+                        )
+                      : Text('fp_confirm_new_password'.tr),
+                ),
+              )
+              .animate()
+              .fadeIn(delay: 360.ms, duration: 400.ms)
+              .slideY(begin: 0.2, curve: Curves.easeOut),
+        ],
+      ),
     );
   }
 }

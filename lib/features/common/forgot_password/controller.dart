@@ -24,6 +24,8 @@ class ForgotPasswordController extends GetxController {
   final newPasswordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+  final newPasswordFormKey = GlobalKey<FormState>();
+
   final isLoading = false.obs;
   final obscurePassword = true.obs;
   final obscureConfirm = true.obs;
@@ -168,8 +170,8 @@ class ForgotPasswordController extends GetxController {
 
   // ── Step 4 – reset password ──────────────────────────────────────
   Future<void> resetPassword() async {
+    if (!newPasswordFormKey.currentState!.validate()) return;
     final password = newPasswordController.text;
-    if (password.trim().isEmpty) return;
     if (password != confirmPasswordController.text) {
       AppSnackbar.showError(message: 'passwords_do_not_match'.tr);
       return;
@@ -189,6 +191,9 @@ class ForgotPasswordController extends GetxController {
       AppSnackbar.showError(message: 'fp_invalid_token'.tr);
     } on UserNotFoundException {
       AppSnackbar.showError(message: 'fp_user_not_found'.tr);
+    } on PasswordValidationException catch (e) {
+      final message = e.codes.map((code) => code.tr).join('\n');
+      AppSnackbar.showError(message: message);
     } catch (e) {
       AppSnackbar.showError(message: e.toString());
     } finally {
