@@ -50,9 +50,13 @@ class UserVerifyController extends GetxController {
   }
 
   Future<void> goToOtpStep() async {
-    // trigger the initial OTP send BEFORE switching to step 2
     await _sendOtp();
-    step.value = 2;
+
+    if (selectedMethod.value == VerifyMethod.email) {
+      AppSnackbar.showSuccess(title: 'success'.tr, message: 'email_sent'.tr);
+    } else {
+      step.value = 2;
+    }
   }
 
   void goBackToMethodStep() {
@@ -155,7 +159,7 @@ class UserVerifyController extends GetxController {
         return;
       }
 
-    await _authRepository.logout();
+      await _authRepository.logout();
       StorageService.clearAllData();
       Get.offAllNamed(Routes.guestHomeScreen);
     } catch (e) {

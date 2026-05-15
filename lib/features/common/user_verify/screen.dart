@@ -306,7 +306,9 @@ class _OtpStep extends StatelessWidget {
                     ? 'otp_max_attempts'.tr
                     : canResend
                     ? 'resend_otp'.tr
-                    : '${'resend_otp_cooldown'.tr} ${cooldown}s',
+                    : 'resend_otp_cooldown'.trParams({
+                        'seconds': cooldown.toString(),
+                      }),
                 style: TextStyle(
                   color: canResend
                       ? context.fTheme.colors.primary
