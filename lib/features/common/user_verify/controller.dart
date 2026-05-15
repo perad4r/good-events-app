@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:sukientotapp/core/utils/app_exceptions.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/domain/repositories/auth_repository.dart';
-import 'package:sukientotapp/features/common/home/controller.dart';
 
 enum VerifyMethod { email, zalo }
 
