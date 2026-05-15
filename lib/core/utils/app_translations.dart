@@ -111,7 +111,8 @@ class AppTranslations extends Translations {
       'password_rule_mixed_case': 'Mật khẩu phải có cả chữ hoa và chữ thường.',
       'password_rule_numbers': 'Mật khẩu phải chứa ít nhất một chữ số.',
       'password_rule_symbols': 'Mật khẩu phải chứa ít nhất một ký tự đặc biệt.',
-      'PASSWORD_COMPROMISED': 'Mật khẩu này đã xuất hiện trong các vụ rò rỉ dữ liệu. Vui lòng chọn mật khẩu khác.',
+      'PASSWORD_COMPROMISED':
+          'Mật khẩu này đã xuất hiện trong các vụ rò rỉ dữ liệu. Vui lòng chọn mật khẩu khác.',
       'MIN_LENGTH_NOT_MET': 'Mật khẩu phải có ít nhất 12 ký tự.',
       'MISSING_LETTERS': 'Mật khẩu phải chứa ít nhất một chữ cái.',
       'MISSING_MIXED_CASE': 'Mật khẩu phải có cả chữ hoa và chữ thường.',
@@ -775,6 +776,8 @@ class AppTranslations extends Translations {
       'add_images': 'Thêm ảnh',
       'uploading_images': 'Đang tải ảnh lên...',
       'images_limit_reached': 'Đã đạt giới hạn 10 ảnh',
+      'image_format_not_supported':
+          'Định dạng ảnh không được hỗ trợ, vui lòng chọn PNG, JPG, JPEG hoặc WEBP',
       'image_too_large': 'Ảnh vượt quá 5MB, vui lòng chọn ảnh khác',
       'delete_image_confirm_title': 'Xóa ảnh?',
       'delete_image_confirm_desc':
@@ -970,15 +973,20 @@ class AppTranslations extends Translations {
       'password_mismatch_error': 'Passwords do not match.',
       'password_rule_min_length': 'Password must be at least 12 characters.',
       'password_rule_letters': 'Password must contain at least one letter.',
-      'password_rule_mixed_case': 'Password must contain both upper and lowercase letters.',
+      'password_rule_mixed_case':
+          'Password must contain both upper and lowercase letters.',
       'password_rule_numbers': 'Password must contain at least one number.',
-      'password_rule_symbols': 'Password must contain at least one special character.',
-      'PASSWORD_COMPROMISED': 'This password has appeared in a data breach. Please choose a different one.',
+      'password_rule_symbols':
+          'Password must contain at least one special character.',
+      'PASSWORD_COMPROMISED':
+          'This password has appeared in a data breach. Please choose a different one.',
       'MIN_LENGTH_NOT_MET': 'Password must be at least 12 characters.',
       'MISSING_LETTERS': 'Password must contain at least one letter.',
-      'MISSING_MIXED_CASE': 'Password must contain both upper and lowercase letters.',
+      'MISSING_MIXED_CASE':
+          'Password must contain both upper and lowercase letters.',
       'MISSING_NUMBERS': 'Password must contain at least one number.',
-      'MISSING_SYMBOLS': 'Password must contain at least one special character.',
+      'MISSING_SYMBOLS':
+          'Password must contain at least one special character.',
       'PASSWORD_CONFIRMATION_MISMATCH': 'Password confirmation does not match.',
       'search': 'Search...',
       'province_city': 'Province / City',
@@ -1611,6 +1619,8 @@ class AppTranslations extends Translations {
       'add_images': 'Add Images',
       'uploading_images': 'Uploading images...',
       'images_limit_reached': 'Limit of 10 images reached',
+      'image_format_not_supported':
+          'Unsupported image format, please choose PNG, JPG, JPEG, or WEBP',
       'image_too_large': 'Image exceeds 5MB, please choose another',
       'delete_image_confirm_title': 'Delete image?',
       'delete_image_confirm_desc':
