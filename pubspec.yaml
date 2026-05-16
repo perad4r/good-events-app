@@ -2,7 +2,7 @@ name: sukientotapp
 description: "Mobile application for SukienTot"
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
 
-version: 2.5.0+03
+version: 2.5.0+04
 
 environment:
   sdk: ^3.10.7
