@@ -1,4 +1,4 @@
-package com.example.sukientotapp
+package com.sukientot.app
 
 import io.flutter.embedding.android.FlutterActivity
 
