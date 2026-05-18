@@ -37,27 +37,29 @@ class _UploadPhotoState extends State<UploadPhoto> {
   }
 
   Future<void> _pickFromCamera() async {
-    final status = await Permission.camera.status;
+    var status = await Permission.camera.status;
 
-    if (status.isGranted) {
-      _launchCamera();
-    } else if (status.isDenied) {
-      final result = await Permission.camera.request();
-      if (result.isGranted) {
-        _launchCamera();
-      } else if (result.isPermanentlyDenied) {
+    if (status.isPermanentlyDenied) {
+      _showPermissionDeniedDialog();
+      return;
+    }
+
+    try {
+      final XFile? image = await _picker.pickImage(source: ImageSource.camera);
+      if (image != null) {
+        setState(() => _pickedImage = image);
+        widget.onImagePicked(image);
+      } else {
+        status = await Permission.camera.status;
+        if (status.isPermanentlyDenied) {
+          _showPermissionDeniedDialog();
+        }
+      }
+    } catch (e) {
+      status = await Permission.camera.status;
+      if (status.isPermanentlyDenied) {
         _showPermissionDeniedDialog();
       }
-    } else if (status.isPermanentlyDenied) {
-      _showPermissionDeniedDialog();
-    }
-  }
-
-  Future<void> _launchCamera() async {
-    final XFile? image = await _picker.pickImage(source: ImageSource.camera);
-    if (image != null) {
-      setState(() => _pickedImage = image);
-      widget.onImagePicked(image);
     }
   }
 
