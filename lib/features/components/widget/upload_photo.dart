@@ -50,14 +50,16 @@ class _UploadPhotoState extends State<UploadPhoto> {
         setState(() => _pickedImage = image);
         widget.onImagePicked(image);
       } else {
+        // pickImage returns null when the user cancels OR denies permission.
+        // Re-check status and show dialog if permission is not granted.
         status = await Permission.camera.status;
-        if (status.isPermanentlyDenied) {
+        if (!status.isGranted) {
           _showPermissionDeniedDialog();
         }
       }
     } catch (e) {
       status = await Permission.camera.status;
-      if (status.isPermanentlyDenied) {
+      if (!status.isGranted) {
         _showPermissionDeniedDialog();
       }
     }
