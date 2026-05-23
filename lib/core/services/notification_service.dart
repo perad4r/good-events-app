@@ -205,7 +205,8 @@ class NotificationService {
 
   /// Syncs the existing FCM token to backend — call this after user logs in.
   static Future<void> syncTokenAfterLogin() async {
-    final token = StorageService.readData(key: LocalStorageKeys.fcmToken) as String?;
+    final token =
+        StorageService.readData(key: LocalStorageKeys.fcmToken) as String?;
     if (token != null) {
       await _syncTokenToBackend(token);
     } else {

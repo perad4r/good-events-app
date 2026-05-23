@@ -19,8 +19,9 @@ class NewShowBinding extends Bindings {
       () => NewShowRepositoryImpl(Get.find<NewShowProvider>()),
     );
 
-    Get.lazyPut<NewShowController>(
-      () => NewShowController(Get.find<NewShowRepository>()),
+    Get.put<NewShowController>(
+      NewShowController(Get.find<NewShowRepository>()),
+      permanent: true,
     );
   }
 }

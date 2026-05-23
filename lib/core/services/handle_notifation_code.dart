@@ -14,6 +14,9 @@ class NotificationHandler {
         case 'BILL_CONFIRMED':
           NotificationHandler().handleBillConfirmedCode(data);
           break;
+        case 'BILL_RECEIVED':
+          NotificationHandler().handleBillReceivedCode(data);
+          break;
         case 'TEST_NOTIFICATION':
           logger.i(
             '[NotificationHandler] Received test notification with data: $data',
@@ -49,5 +52,11 @@ class NotificationHandler {
         '[NotificationHandler] ShowController not registered, cannot update upcoming bills',
       );
     }
+  }
+
+  void handleBillReceivedCode(Map<String, dynamic> data) {
+    logger.i('[NotificationHandler] Handling bill received');
+
+    //Do nothing =D
   }
 }
