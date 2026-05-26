@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
 import 'package:sukientotapp/features/client/order/controller.dart';
 import 'package:sukientotapp/features/partner/show/controller.dart';
+import 'package:sukientotapp/features/common/message/controller.dart';
+import 'package:sukientotapp/features/partner/home/controller.dart';
 
 class NotificationHandler {
   static void handleMessage(Map<String, dynamic> data) {
@@ -47,9 +49,26 @@ class NotificationHandler {
 
     if (Get.isRegistered<ShowController>()) {
       Get.find<ShowController>().refreshUpcomingBills();
+      Get.find<ShowController>().refreshNewBills();
     } else {
       logger.w(
         '[NotificationHandler] ShowController not registered, cannot update upcoming bills',
+      );
+    }
+
+    if (Get.isRegistered<PartnerHomeController>()) {
+      Get.find<PartnerHomeController>().updateShowDataOnConfirmedByClient();
+    } else {
+      logger.w(
+        '[NotificationHandler] PartnerHomeController not registered, cannot update bills',
+      );
+    }
+
+    if (Get.isRegistered<MessageController>()) {
+      Get.find<MessageController>().refreshThreads();
+    } else {
+      logger.w(
+        '[NotificationHandler] MessageController not registered, cannot update message threads',
       );
     }
   }

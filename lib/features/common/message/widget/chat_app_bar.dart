@@ -6,7 +6,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   const ChatAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(76);
+  Size get preferredSize => const Size.fromHeight(90);
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: colors.background,
       automaticallyImplyLeading: false,
-      toolbarHeight: 76,
+      toolbarHeight: 90,
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       shape: Border(
@@ -95,7 +95,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                         child: Text(
                           thread.bill.address,
                           style: TextStyle(fontSize: 11, color: colors.mutedForeground),
-                          maxLines: 1,
+                          maxLines: 3,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),

@@ -26,6 +26,7 @@ class PublicProfilePayloadModel {
   final List<PublicProfileServiceModel> services;
   final List<PublicProfileReviewModel> reviews;
   final String intro;
+  final String videoUrl;
 
   const PublicProfilePayloadModel({
     required this.user,
@@ -34,6 +35,7 @@ class PublicProfilePayloadModel {
     required this.services,
     required this.reviews,
     required this.intro,
+    required this.videoUrl,
   });
 
   factory PublicProfilePayloadModel.fromJson(Map<String, dynamic> json) {
@@ -58,6 +60,7 @@ class PublicProfilePayloadModel {
           .map(PublicProfileReviewModel.fromJson)
           .toList(),
       intro: json['intro'] as String? ?? '',
+      videoUrl: json['video_url'] as String? ?? '',
     );
   }
 
@@ -68,6 +71,26 @@ class PublicProfilePayloadModel {
   }
 
   bool get hasGallery => services.any((service) => service.images.isNotEmpty);
+
+  bool get hasVideo => videoUrl.trim().isNotEmpty;
+
+  String get externalVideoUrl {
+    final List<String> urls = _extractUrls(videoUrl);
+    if (urls.isEmpty) return videoUrl;
+
+    final String firstUrl = urls.first;
+    final String? videoId = _extractVideoId(firstUrl);
+    if (videoId != null) {
+      return 'https://www.youtube.com/watch?v=$videoId';
+    }
+    return firstUrl;
+  }
+
+  String get videoThumbnailUrl {
+    final String? videoId = _extractVideoId(videoUrl);
+    if (videoId == null) return '';
+    return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
+  }
 }
 
 class PublicProfileUserModel {
@@ -132,10 +155,7 @@ class PublicProfileContactModel {
   final String phone;
   final String email;
 
-  const PublicProfileContactModel({
-    required this.phone,
-    required this.email,
-  });
+  const PublicProfileContactModel({required this.phone, required this.email});
 
   factory PublicProfileContactModel.fromJson(Map<String, dynamic> json) {
     return PublicProfileContactModel(
@@ -249,4 +269,28 @@ bool _hasMeaningfulHtml(String value) {
       .replaceAll('&nbsp;', '')
       .trim();
   return plain.isNotEmpty;
+}
+
+List<String> _extractUrls(String value) {
+  final RegExp urlRegExp = RegExp(
+    r'((?:\bhttps?:)?\/\/[^,\s()<>]+(?:\(\w+\)|(?:[a-zA-Z0-9]|\/)))',
+    dotAll: true,
+  );
+
+  return urlRegExp
+      .allMatches(value)
+      .map((Match match) => match.group(0) ?? '')
+      .where((String url) => url.isNotEmpty)
+      .toList();
+}
+
+String? _extractVideoId(String value) {
+  if (value.isEmpty) return null;
+
+  final RegExp regExp = RegExp(
+    r'(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/|embed\/)([^"&?\/\s]{11})',
+    caseSensitive: false,
+  );
+  final RegExpMatch? match = regExp.firstMatch(value);
+  return match?.group(1);
 }
