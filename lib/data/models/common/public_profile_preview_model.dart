@@ -87,7 +87,9 @@ class PublicProfilePayloadModel {
   }
 
   String get videoThumbnailUrl {
-    final String? videoId = _extractVideoId(videoUrl);
+    final List<String> urls = _extractUrls(videoUrl);
+    final String source = urls.isNotEmpty ? urls.first : videoUrl;
+    final String? videoId = _extractVideoId(source);
     if (videoId == null) return '';
     return 'https://img.youtube.com/vi/$videoId/hqdefault.jpg';
   }
