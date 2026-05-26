@@ -113,9 +113,7 @@ class ProfilePreviewModal extends StatelessWidget {
               children: [
                 _ActionCard(
                   onReportPressed: () {
-                    showReportBottomSheet(
-                      reportedUserId: payload.user.id,
-                    );
+                    showReportBottomSheet(reportedUserId: payload.user.id);
                   },
                 ),
                 const SizedBox(height: 16),
@@ -123,6 +121,8 @@ class ProfilePreviewModal extends StatelessWidget {
                   _QuickStatsCard(quick: payload.quick),
                   const SizedBox(height: 16),
                   _IntroductionCard(payload: payload),
+                  const SizedBox(height: 16),
+                  _VideoCard(payload: payload),
                   const SizedBox(height: 16),
                   _ReviewsCard(reviews: payload.reviews),
                   const SizedBox(height: 16),
@@ -147,6 +147,8 @@ class ProfilePreviewModal extends StatelessWidget {
                         child: Column(
                           children: [
                             _IntroductionCard(payload: payload),
+                            const SizedBox(height: 16),
+                            _VideoCard(payload: payload),
                             const SizedBox(height: 16),
                             _ReviewsCard(reviews: payload.reviews),
                             const SizedBox(height: 16),
