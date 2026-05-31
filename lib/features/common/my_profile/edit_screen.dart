@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
+import 'package:sukientotapp/data/models/location_model.dart';
 import 'package:sukientotapp/features/components/button/plus.dart';
 import 'package:sukientotapp/features/components/widget/upload_photo.dart';
 import 'edit_controller.dart';
@@ -37,44 +38,44 @@ class EditProfileScreen extends GetView<EditProfileController> {
                 .slideY(begin: -0.02, end: 0, curve: Curves.easeOut),
             const SizedBox(height: 10),
             _FormCard(
-              children: [
-                FTextFormField(
-                  control: FTextFieldControl.managed(
-                    controller: controller.nameController,
-                  ),
-                  label: Text('full_name'.tr),
-                  hint: 'name_hint'.tr,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) => value != null && value.isNotEmpty
-                      ? null
-                      : 'name_required'.tr,
-                ),
-                const SizedBox(height: 12),
-                FTextFormField(
-                  control: FTextFieldControl.managed(
-                    controller: controller.emailController,
-                  ),
-                  label: Text('email_address'.tr),
-                  hint: 'email_hint'.tr,
-                  keyboardType: TextInputType.emailAddress,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  validator: (value) => value != null && value.isNotEmpty
-                      ? null
-                      : 'email_required'.tr,
-                ),
-                const SizedBox(height: 12),
-                FTextFormField(
-                  control: FTextFieldControl.managed(
-                    controller: controller.phoneController,
-                  ),
-                  label: Text('phone_number'.tr),
-                  hint: 'phone_hint'.tr,
-                  keyboardType: TextInputType.phone,
-                ),
-                const SizedBox(height: 12),
-                _BioField(controller: controller),
-              ],
-            )
+                  children: [
+                    FTextFormField(
+                      control: FTextFieldControl.managed(
+                        controller: controller.nameController,
+                      ),
+                      label: Text('full_name'.tr),
+                      hint: 'name_hint'.tr,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (value) => value != null && value.isNotEmpty
+                          ? null
+                          : 'name_required'.tr,
+                    ),
+                    const SizedBox(height: 12),
+                    FTextFormField(
+                      control: FTextFieldControl.managed(
+                        controller: controller.emailController,
+                      ),
+                      label: Text('email_address'.tr),
+                      hint: 'email_hint'.tr,
+                      keyboardType: TextInputType.emailAddress,
+                      autovalidateMode: AutovalidateMode.onUserInteraction,
+                      validator: (value) => value != null && value.isNotEmpty
+                          ? null
+                          : 'email_required'.tr,
+                    ),
+                    const SizedBox(height: 12),
+                    FTextFormField(
+                      control: FTextFieldControl.managed(
+                        controller: controller.phoneController,
+                      ),
+                      label: Text('phone_number'.tr),
+                      hint: 'phone_hint'.tr,
+                      keyboardType: TextInputType.phone,
+                    ),
+                    const SizedBox(height: 12),
+                    _BioField(controller: controller),
+                  ],
+                )
                 .animate(delay: 200.ms)
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: -0.02, end: 0, curve: Curves.easeOut),
@@ -87,17 +88,17 @@ class EditProfileScreen extends GetView<EditProfileController> {
                 .slideY(begin: -0.02, end: 0, curve: Curves.easeOut),
             const SizedBox(height: 10),
             _FormCard(
-              children: [
-                FTextFormField(
-                  control: FTextFieldControl.managed(
-                    controller: controller.videoUrlController,
-                  ),
-                  label: Text('video_url'.tr),
-                  hint: 'video_url_hint'.tr,
-                  keyboardType: TextInputType.url,
-                ),
-              ],
-            )
+                  children: [
+                    FTextFormField(
+                      control: FTextFieldControl.managed(
+                        controller: controller.videoUrlController,
+                      ),
+                      label: Text('video_url'.tr),
+                      hint: 'video_url_hint'.tr,
+                      keyboardType: TextInputType.url,
+                    ),
+                  ],
+                )
                 .animate(delay: 250.ms)
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: -0.02, end: 0, curve: Curves.easeOut),
@@ -134,21 +135,21 @@ class EditProfileScreen extends GetView<EditProfileController> {
 
             // ── Save Button ────────────────────────────────────────
             Obx(
-              () => CustomButtonPlus(
-                onTap: controller.isUpdating.value
-                    ? () {}
-                    : controller.isUpdateId,
-                isDisabled: controller.isUpdating.value,
-                isLoading: controller.isUpdating.value,
-                width: double.infinity,
-                btnText: 'save'.tr,
-                textSize: 14,
-                fontWeight: FontWeight.w600,
-                height: 44,
-                borderRadius: 12,
-                borderColor: Colors.transparent,
-              ),
-            )
+                  () => CustomButtonPlus(
+                    onTap: controller.isUpdating.value
+                        ? () {}
+                        : controller.isUpdateId,
+                    isDisabled: controller.isUpdating.value,
+                    isLoading: controller.isUpdating.value,
+                    width: double.infinity,
+                    btnText: 'save'.tr,
+                    textSize: 14,
+                    fontWeight: FontWeight.w600,
+                    height: 44,
+                    borderRadius: 12,
+                    borderColor: Colors.transparent,
+                  ),
+                )
                 .animate(delay: 350.ms)
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: 0.05, end: 0, curve: Curves.easeOut),
@@ -519,38 +520,44 @@ class _LocationSection extends StatelessWidget {
             isDisabled: false,
             child: isLoadingProvinces
                 ? _LoadingDropdown()
-                : DropdownButtonHideUnderline(
-                    child: ButtonTheme(
-                      alignedDropdown: true,
-                      child: DropdownButton<int>(
-                        isExpanded: true,
-                        value: controller.selectedProvince.value?.id,
-                        hint: _DropdownHint(
-                          text: 'select_province'.tr,
-                          context: context,
-                        ),
-                        icon: Icon(
-                          Icons.keyboard_arrow_down_rounded,
-                          color: context.fTheme.colors.mutedForeground,
-                        ),
-                        borderRadius: BorderRadius.circular(10),
-                        items: controller.provinces
-                            .map(
-                              (p) => DropdownMenuItem<int>(
-                                value: p.id,
-                                child: Text(p.name, style: context.typography.sm),
+                : InkWell(
+                    borderRadius: BorderRadius.circular(10),
+                    onTap: () => _showLocationBottomSheet(
+                      context,
+                      title: 'province'.tr,
+                      items: controller.provinces,
+                      selectedValue: controller.selectedProvince.value,
+                      onSelect: (item) {
+                        controller.onProvinceChanged(item);
+                        Get.back();
+                      },
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              controller.selectedProvince.value?.name ??
+                                  'select_province'.tr,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: controller.selectedProvince.value != null
+                                    ? context.fTheme.colors.foreground
+                                    : context.fTheme.colors.mutedForeground,
                               ),
-                            )
-                            .toList(),
-                        onChanged: (int? value) {
-                          if (value != null) {
-                            controller.onProvinceChanged(
-                              controller.provinces.firstWhere(
-                                (p) => p.id == value,
-                              ),
-                            );
-                          }
-                        },
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          Icon(
+                            Icons.keyboard_arrow_down_rounded,
+                            color: context.fTheme.colors.mutedForeground,
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -573,46 +580,50 @@ class _LocationSection extends StatelessWidget {
               isDisabled: noProvince,
               child: isLoadingWards
                   ? _LoadingDropdown()
-                  : DropdownButtonHideUnderline(
-                      child: ButtonTheme(
-                        alignedDropdown: true,
-                        child: DropdownButton<int>(
-                          isExpanded: true,
-                          value: controller.selectedWard.value?.id,
-                          disabledHint: _DropdownHint(
-                            text: 'select_province_first'.tr,
-                            context: context,
-                          ),
-                          hint: _DropdownHint(
-                            text: 'select_district'.tr,
-                            context: context,
-                          ),
-                          icon: Icon(
-                            Icons.keyboard_arrow_down_rounded,
-                            color: context.fTheme.colors.mutedForeground,
-                          ),
-                          borderRadius: BorderRadius.circular(10),
-                          items: controller.wards
-                              .map(
-                                (w) => DropdownMenuItem<int>(
-                                  value: w.id,
-                                  child: Text(
-                                    w.name,
-                                    style: context.typography.sm,
-                                  ),
+                  : InkWell(
+                      borderRadius: BorderRadius.circular(10),
+                      onTap: noProvince
+                          ? null
+                          : () => _showLocationBottomSheet(
+                              context,
+                              title: 'district'.tr,
+                              items: controller.wards,
+                              selectedValue: controller.selectedWard.value,
+                              onSelect: (item) {
+                                controller.selectedWard.value = item;
+                                Get.back();
+                              },
+                            ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 12,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              child: Text(
+                                noProvince
+                                    ? 'select_province_first'.tr
+                                    : controller.selectedWard.value?.name ??
+                                          'select_district'.tr,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color:
+                                      (!noProvince &&
+                                          controller.selectedWard.value != null)
+                                      ? context.fTheme.colors.foreground
+                                      : context.fTheme.colors.mutedForeground,
                                 ),
-                              )
-                              .toList(),
-                          onChanged: noProvince
-                              ? null
-                              : (int? value) {
-                                  if (value != null) {
-                                    controller.selectedWard.value =
-                                        controller.wards.firstWhere(
-                                      (w) => w.id == value,
-                                    );
-                                  }
-                                },
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: context.fTheme.colors.mutedForeground,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -621,6 +632,116 @@ class _LocationSection extends StatelessWidget {
         ],
       );
     });
+  }
+
+  String _removeDiacritics(String str) {
+    const withDiacritics =
+        'áàảãạâấầẩẫậăắằẳẵặđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ';
+    const withoutDiacritics =
+        'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy';
+    var lowerStr = str.toLowerCase();
+    for (int i = 0; i < withDiacritics.length; i++) {
+      lowerStr = lowerStr.replaceAll(withDiacritics[i], withoutDiacritics[i]);
+    }
+    return lowerStr;
+  }
+
+  void _showLocationBottomSheet(
+    BuildContext context, {
+    required String title,
+    required List<LocationModel> items,
+    required LocationModel? selectedValue,
+    required void Function(LocationModel) onSelect,
+  }) {
+    final query = ''.obs;
+
+    Get.bottomSheet(
+      Material(
+        color: context.fTheme.colors.background,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 16),
+          child: Column(
+            children: [
+              Text(
+                title,
+                style: context.typography.lg.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'search_with_dot'.tr,
+                    prefixIcon: const Icon(Icons.search, size: 20),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                  ),
+                  onChanged: (val) => query.value = val,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: Obx(() {
+                  final q = _removeDiacritics(query.value);
+                  final filtered = items.where((item) {
+                    return _removeDiacritics(item.name).contains(q);
+                  }).toList();
+
+                  return ListView.builder(
+                    padding: EdgeInsets.zero,
+                    itemCount: filtered.length,
+                    itemBuilder: (context, index) {
+                      final item = filtered[index];
+                      final isSelected = selectedValue?.id == item.id;
+
+                      return InkWell(
+                        onTap: () => onSelect(item),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 14,
+                            horizontal: 16,
+                          ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  item.name,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: isSelected
+                                        ? FontWeight.bold
+                                        : FontWeight.normal,
+                                  ),
+                                ),
+                              ),
+                              if (isSelected)
+                                Icon(
+                                  FIcons.check,
+                                  color: context.fTheme.colors.primary,
+                                  size: 18,
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+            ],
+          ),
+        ),
+      ),
+      isScrollControlled: false,
+    );
   }
 }
 

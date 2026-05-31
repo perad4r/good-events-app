@@ -653,6 +653,7 @@ class AppTranslations extends Translations {
       'message_setting': 'Cài đặt tin nhắn',
       'report_problem': 'Báo cáo vấn đề',
       'privacy_policy': 'Chính sách bảo mật',
+      'terms_and_policies': 'Chính sách và Quy định',
       'logout': 'Đăng xuất',
 
       'add_bank_not_supported':
@@ -849,6 +850,7 @@ class AppTranslations extends Translations {
       'add': 'Thêm',
       'add_media': 'Thêm media',
       'update': 'Cập nhật',
+      'tap_to_change_avatar': 'Nhấn để thay đổi ảnh đại diện',
 
       // partner show filter
       'filter_orders': 'Lọc đơn hàng',
@@ -1693,6 +1695,7 @@ class AppTranslations extends Translations {
       'add': 'Add',
       'add_media': 'Add Media',
       'update': 'Update',
+      'tap_to_change_avatar': 'Tap to change avatar',
 
       /// Asset Order Detail
       'asset_order_detail_title': 'Design Order Detail',

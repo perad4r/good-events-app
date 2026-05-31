@@ -315,6 +315,21 @@ class _AccountScreenState extends State<AccountScreen> {
                                   );
                                 },
                               ),
+                              _MenuItem(
+                                'terms_and_policies'.tr,
+                                FIcons.fileText,
+                                () {
+                                  // open webview route
+                                  Get.toNamed(
+                                    Routes.webView,
+                                    arguments: {
+                                      'url':
+                                          'https://sukientot.com/chinh-sach-va-quy-dinh',
+                                      'title': 'terms_and_policies'.tr,
+                                    },
+                                  );
+                                },
+                              ),
                             ]),
                             const SizedBox(height: 16),
                             _buildMenuCard(context, [
