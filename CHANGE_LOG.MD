@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## [v2.5.0+61]
 
+- Add new term of polices page
+
+## [v2.5.0+61]
+
 - Fix send verify email route user to input otp screen
 - Remake forgot password flow to support multi method
 - Fix fcm not update after login
