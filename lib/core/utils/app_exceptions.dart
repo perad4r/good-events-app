@@ -17,7 +17,7 @@ class OtpCooldownException implements Exception {
   final String message;
   final int? retryAfter;
 
-  OtpCooldownException({this.message = 'otp_cooldown', this.retryAfter});
+  const OtpCooldownException({this.message = 'OTP_COOLDOWN', this.retryAfter});
 
   @override
   String toString() => 'OtpCooldownException: $message';
@@ -28,7 +28,10 @@ class OtpMaxAttemptsException implements Exception {
   final String message;
   final int? retryAfter;
 
-  const OtpMaxAttemptsException({this.message = 'otp_max_attempts', this.retryAfter});
+  const OtpMaxAttemptsException({
+    this.message = 'MAX_ATTEMPTS',
+    this.retryAfter,
+  });
 
   @override
   String toString() => 'OtpMaxAttemptsException: $message';
@@ -38,7 +41,7 @@ class OtpMaxAttemptsException implements Exception {
 class OtpInvalidException implements Exception {
   final String message;
 
-  const OtpInvalidException({this.message = 'otp_invalid'});
+  const OtpInvalidException({this.message = 'INVALID_OTP'});
 
   @override
   String toString() => 'OtpInvalidException: $message';
@@ -48,7 +51,7 @@ class OtpInvalidException implements Exception {
 class UserNotFoundException implements Exception {
   final String message;
 
-  const UserNotFoundException({this.message = 'user_not_found'});
+  const UserNotFoundException({this.message = 'USER_NOT_FOUND'});
 
   @override
   String toString() => 'UserNotFoundException: $message';
@@ -58,7 +61,7 @@ class UserNotFoundException implements Exception {
 class InvalidTokenException implements Exception {
   final String message;
 
-  const InvalidTokenException({this.message = 'invalid_token'});
+  const InvalidTokenException({this.message = 'INVALID_TOKEN'});
 
   @override
   String toString() => 'InvalidTokenException: $message';
