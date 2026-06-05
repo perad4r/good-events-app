@@ -87,6 +87,25 @@ class AuthRepositoryImpl implements AuthRepository {
         '[AuthRepositoryImpl] [loginWithGoogle] Login successful for: \${user.email}',
       );
       return user;
+    } on UnverifiedUserException catch (e) {
+      final token = e.data['token'] as String?;
+      if (token != null) {
+        StorageService.writeStringData(
+          key: LocalStorageKeys.token,
+          value: token,
+        );
+      }
+
+      final user = UserModel.fromJson(e.data);
+      StorageService.writeMapData(
+        key: LocalStorageKeys.user,
+        value: user.toJson(),
+      );
+
+      logger.w(
+        '[AuthRepositoryImpl] [loginWithGoogle] User unverified: ${user.email}',
+      );
+      rethrow;
     } catch (e) {
       logger.e('[AuthRepositoryImpl] [loginWithGoogle] Failed: $e');
       rethrow;
@@ -131,6 +150,25 @@ class AuthRepositoryImpl implements AuthRepository {
         '[AuthRepositoryImpl] [loginWithApple] Login successful for: ${user.email}',
       );
       return user;
+    } on UnverifiedUserException catch (e) {
+      final token = e.data['token'] as String?;
+      if (token != null) {
+        StorageService.writeStringData(
+          key: LocalStorageKeys.token,
+          value: token,
+        );
+      }
+
+      final user = UserModel.fromJson(e.data);
+      StorageService.writeMapData(
+        key: LocalStorageKeys.user,
+        value: user.toJson(),
+      );
+
+      logger.w(
+        '[AuthRepositoryImpl] [loginWithApple] User unverified: ${user.email}',
+      );
+      rethrow;
     } catch (e) {
       logger.e('[AuthRepositoryImpl] [loginWithApple] Failed: $e');
       rethrow;

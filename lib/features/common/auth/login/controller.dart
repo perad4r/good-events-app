@@ -71,8 +71,22 @@ class LoginController extends GetxController {
           Get.offAllNamed(Routes.partnerHome);
           break;
       }
+    } on UnverifiedUserException {
+      AppSnackbar.showWarning(message: 'account_unverified'.tr);
+      await Future.delayed(const Duration(seconds: 2));
+      Get.toNamed(
+        Routes.userVerifyScreen,
+        arguments: {
+          'isClientUser':
+              StorageService.readMapData(
+                key: LocalStorageKeys.user,
+                mapKey: 'role',
+              ) ==
+              'client',
+        },
+      );
     } catch (e) {
-      Get.snackbar('error'.tr, e.toString());
+      AppSnackbar.showError(message: e.toString());
     } finally {
       isGoogleLoading.value = false;
     }
@@ -142,8 +156,22 @@ class LoginController extends GetxController {
           Get.offAllNamed(Routes.partnerHome);
           break;
       }
+    } on UnverifiedUserException {
+      AppSnackbar.showWarning(message: 'account_unverified'.tr);
+      await Future.delayed(const Duration(seconds: 2));
+      Get.toNamed(
+        Routes.userVerifyScreen,
+        arguments: {
+          'isClientUser':
+              StorageService.readMapData(
+                key: LocalStorageKeys.user,
+                mapKey: 'role',
+              ) ==
+              'client',
+        },
+      );
     } catch (e) {
-      Get.snackbar('error'.tr, e.toString());
+      AppSnackbar.showError(message: e.toString());
     } finally {
       isAppleLoading.value = false;
     }
@@ -198,7 +226,11 @@ class LoginController extends GetxController {
         },
       );
     } catch (e) {
-      Get.snackbar('error'.tr, e.toString());
+      if (e.toString().toLowerCase().startsWith('exception:')) {
+        AppSnackbar.showError(message: e.toString().substring(10).trim());
+      } else {
+        AppSnackbar.showError(message: e.toString());
+      }
     } finally {
       isLoading.value = false;
     }

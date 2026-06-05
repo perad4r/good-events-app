@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.5.2+64]
+
+- Fix google & apple login not handle unverified case
+- Fix snackbar in login screen
+
+## [v2.5.2+63]
+
+- Fix verify exception take wrong code
+- Add fixed noti at start off the chat
+
+## [v2.5.1+62]
+
+- Add new term of polices page
+
 ## [v2.5.0+61]
 
 - Fix send verify email route user to input otp screen

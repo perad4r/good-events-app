@@ -66,6 +66,12 @@ class AuthProvider {
       logger.e('[AuthProvider] [loginWithGoogle] DioException: \${e.message}');
 
       if (e.response != null) {
+        final code = e.response?.data['code'];
+        if (e.response?.statusCode == 403 && code == 'UNVERIFIED') {
+          throw UnverifiedUserException(
+            data: e.response!.data as Map<String, dynamic>,
+          );
+        }
         final errorMessage =
             e.response?.data['message'] ?? 'Google login failed';
         throw Exception(errorMessage);
@@ -114,6 +120,12 @@ class AuthProvider {
       logger.e('[AuthProvider] [loginWithApple] DioException: ${e.message}');
 
       if (e.response != null) {
+        final code = e.response?.data['code'];
+        if (e.response?.statusCode == 403 && code == 'UNVERIFIED') {
+          throw UnverifiedUserException(
+            data: e.response!.data as Map<String, dynamic>,
+          );
+        }
         final errorMessage =
             e.response?.data['message'] ?? 'Apple login failed';
         throw Exception(errorMessage);
