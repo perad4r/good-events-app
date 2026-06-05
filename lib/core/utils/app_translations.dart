@@ -467,7 +467,7 @@ class AppTranslations extends Translations {
 
       'detail_info': 'Thông tin chi tiết',
 
-      ///'common
+      //common
       'login_required': 'Bạn phải đăng nhập trước!',
       'home': 'Trang chủ',
       'bills': 'Đơn',
@@ -594,6 +594,8 @@ class AppTranslations extends Translations {
 
       'notification': 'Thông báo',
       'login_successful': 'Đăng nhập thành công! Welcome, @name.',
+
+      'warning': 'Cảnh báo',
 
       ///New Show
       'accept_new_show': ' Nhận show mới',
@@ -1309,7 +1311,7 @@ class AppTranslations extends Translations {
 
       'detail_info': 'Detail info',
 
-      ///common
+      //common
       'login_required': 'You must login first!',
       'home': 'Home',
       'bills': 'Bills',
@@ -1387,6 +1389,8 @@ class AppTranslations extends Translations {
       'error_occurred': 'An error occurred. Please try again.',
 
       'sending': 'Sending...',
+
+      'warning': 'Warning',
 
       ///Show
       'take_order': 'Show available',
