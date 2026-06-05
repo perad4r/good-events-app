@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.5.2+64]
+
+- Fix google & apple login not handle unverified case
+- Fix snackbar in login screen
+
 ## [v2.5.2+63]
 
 - Fix verify exception take wrong code
