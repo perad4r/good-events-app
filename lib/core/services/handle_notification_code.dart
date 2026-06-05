@@ -19,6 +19,9 @@ class NotificationHandler {
         case 'BILL_RECEIVED':
           NotificationHandler().handleBillReceivedCode(data);
           break;
+        case 'NEW_MESSAGE':
+          NotificationHandler().handleNewMessageCode(data);
+          break;
         case 'TEST_NOTIFICATION':
           logger.i(
             '[NotificationHandler] Received test notification with data: $data',
@@ -77,5 +80,18 @@ class NotificationHandler {
     logger.i('[NotificationHandler] Handling bill received');
 
     //Do nothing =D
+  }
+
+  void handleNewMessageCode(Map<String, dynamic> data) {
+    logger.i('[NotificationHandler] Handling new message');
+    final threadId = data['thread_id'];
+    if (threadId == null) {
+      logger.w(
+        '[NotificationHandler] New message code received without threadId',
+      );
+      return;
+    } else {
+      logger.i('[NotificationHandler] New message for threadId: $threadId');
+    }
   }
 }
