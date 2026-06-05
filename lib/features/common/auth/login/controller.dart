@@ -86,7 +86,7 @@ class LoginController extends GetxController {
         },
       );
     } catch (e) {
-      Get.snackbar('error'.tr, e.toString());
+      AppSnackbar.showError(message: e.toString());
     } finally {
       isGoogleLoading.value = false;
     }
@@ -171,7 +171,7 @@ class LoginController extends GetxController {
         },
       );
     } catch (e) {
-      Get.snackbar('error'.tr, e.toString());
+      AppSnackbar.showError(message: e.toString());
     } finally {
       isAppleLoading.value = false;
     }
@@ -226,7 +226,11 @@ class LoginController extends GetxController {
         },
       );
     } catch (e) {
-      Get.snackbar('error'.tr, e.toString());
+      if (e.toString().toLowerCase().startsWith('exception:')) {
+        AppSnackbar.showError(message: e.toString().substring(10).trim());
+      } else {
+        AppSnackbar.showError(message: e.toString());
+      }
     } finally {
       isLoading.value = false;
     }
