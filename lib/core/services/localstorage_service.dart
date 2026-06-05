@@ -68,6 +68,9 @@ class LocalStorageKeys {
   // Firebase Cloud Messaging
   static const String fcmToken = "fcm_token";
 
+  // Pending deep link (from terminated-state notification tap)
+  static const String pendingThreadId = "pending_thread_id";
+
   // App settings
   static const String locale = "locale";
   static const String settings = "settings";

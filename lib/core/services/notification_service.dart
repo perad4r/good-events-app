@@ -1,4 +1,6 @@
-import './handle_notifation_code.dart';
+import './handle_notification_code.dart';
+import './handle_notification_tap.dart';
+import './handle_notification_terminated_tap.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -147,20 +149,25 @@ class NotificationService {
 
     // 6. App opened from a background notification tap
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      final title = message.notification?.title;
+      final body = message.notification?.body;
       final data = message.data;
       logger.i(
-        '[FCM] Opened from background: ${message.notification?.title} | data: $data',
+        '[FCM] Opened from background: $title | body: $body | data: $data',
       );
-      // TODO: navigate to relevant screen based on message.data
+      HandleNotificationTap.handleTap(data);
     });
 
     // 7. App launched from a terminated-state notification tap
     final initialMessage = await _messaging.getInitialMessage();
+    final title = initialMessage?.notification?.title;
+    final body = initialMessage?.notification?.body;
+    final data = initialMessage?.data;
     if (initialMessage != null) {
       logger.i(
-        '[FCM] App launched from terminated state: ${initialMessage.notification?.title}',
+        '[FCM] App launched from terminated state: $title | body: $body | data: $data',
       );
-      // TODO: navigate to relevant screen based on initialMessage.data
+      HandleNotificationTerminatedTap.handleTap(data);
     }
   }
 

@@ -45,6 +45,7 @@ class MessageController extends GetxController {
     super.onInit();
     fetchThreads();
     listScrollController.addListener(_onListScroll);
+    _handlePendingThreadDeepLink();
     scrollController.addListener(_onDetailScroll);
     debounce(
       searchQuery,
@@ -60,6 +61,28 @@ class MessageController extends GetxController {
     scrollController.dispose();
     listScrollController.dispose();
     super.onClose();
+  }
+
+  // ─── Pending Deep Link ──────────────────────────────────────────────────────
+
+  /// Handles a thread deep link saved from a terminated-state notification tap.
+  void _handlePendingThreadDeepLink() {
+    final threadId = StorageService.readData(
+      key: LocalStorageKeys.pendingThreadId,
+    ) as String?;
+    if (threadId == null || threadId.isEmpty) return;
+
+    StorageService.removeData(key: LocalStorageKeys.pendingThreadId);
+    logger.i(
+      '[MessageController] [PendingDeepLink] Opening thread=$threadId',
+    );
+
+    // Wait until threads are loaded before opening
+    ever(isLoading, (bool loading) {
+      if (!loading && filteredMessages.isNotEmpty) {
+        openThreadById(threadId);
+      }
+    });
   }
 
   // ─── Thread List ─────────────────────────────────────────────────────────────
@@ -207,6 +230,29 @@ class MessageController extends GetxController {
     logger.i(
       '[MessageController] [closeThread] Updated preview for thread=$threadId',
     );
+  }
+
+  /// Opens a thread by its ID — used when tapping a NEW_MESSAGE notification.
+  Future<void> openThreadById(String threadId) async {
+    MessageListModel? thread = filteredMessages.firstWhereOrNull(
+      (t) => t.id == threadId,
+    );
+
+    if (thread == null) {
+      await refreshThreads();
+      thread = filteredMessages.firstWhereOrNull(
+        (t) => t.id == threadId,
+      );
+    }
+
+    if (thread == null) {
+      AppSnackbar.showError(message: 'thread_not_found'.tr);
+      return;
+    }
+
+    await openThread(thread);
+    await Get.to<void>(() => const MessageDetailScreen());
+    closeThread();
   }
 
   Future<void> openThreadFromMyShow(int showid) async {
