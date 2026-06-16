@@ -90,9 +90,17 @@ class PartnerBottomNavigationController extends GetxController {
       final pendingIndex = StorageService.readData(
         key: LocalStorageKeys.pendingPartnerTabIndex,
       )?.toString();
+      final pendingShowTabIndex = StorageService.readData(
+        key: LocalStorageKeys.pendingPartnerShowTabIndex,
+      )?.toString();
+
       if (pendingIndex != null) {
         StorageService.removeData(key: LocalStorageKeys.pendingPartnerTabIndex);
+        StorageService.removeData(
+          key: LocalStorageKeys.pendingPartnerShowTabIndex,
+        );
         initialIndex = int.tryParse(pendingIndex);
+        initialShowTabIndex = int.tryParse(pendingShowTabIndex ?? '');
       }
     }
 
