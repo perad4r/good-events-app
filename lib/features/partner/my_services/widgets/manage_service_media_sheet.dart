@@ -369,14 +369,16 @@ class _ImageTile extends GetView<MyServicesController> {
 
   @override
   Widget build(BuildContext context) {
+    final previewUrl = image.previewUrl;
+
     return Stack(
       fit: StackFit.expand,
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: image.thumb.isNotEmpty
+          child: previewUrl.isNotEmpty
               ? CachedNetworkImage(
-                  imageUrl: image.thumb,
+                  imageUrl: previewUrl,
                   fit: BoxFit.cover,
                   placeholder: (_, _) => Container(
                     color: context.fTheme.colors.secondary,

@@ -104,11 +104,13 @@ class ServiceImageModel {
     required this.size,
   });
 
+  String get previewUrl => url.isNotEmpty ? url : thumb;
+
   factory ServiceImageModel.fromJson(Map<String, dynamic> json) {
     return ServiceImageModel(
       id: json['id'].toString(),
       url: json['url'] as String? ?? '',
-      thumb: json['thumb'] as String? ?? '',
+      thumb: json['thumb'] as String? ?? json['thumbnail'] as String? ?? '',
       fileName: json['file_name'] as String? ?? '',
       size: json['size'] as int? ?? 0,
     );
