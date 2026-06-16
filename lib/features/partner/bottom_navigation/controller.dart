@@ -77,9 +77,15 @@ class PartnerBottomNavigationController extends GetxController {
   void _setInitialIndexFromArguments() {
     final args = Get.arguments;
     int? initialIndex;
+    int? initialShowTabIndex;
 
-    if (args is Map && args['initialIndex'] is int) {
-      initialIndex = args['initialIndex'] as int;
+    if (args is Map) {
+      if (args['initialIndex'] is int) {
+        initialIndex = args['initialIndex'] as int;
+      }
+      if (args['initialShowTabIndex'] is int) {
+        initialShowTabIndex = args['initialShowTabIndex'] as int;
+      }
     } else {
       final pendingIndex = StorageService.readData(
         key: LocalStorageKeys.pendingPartnerTabIndex,
@@ -94,5 +100,16 @@ class PartnerBottomNavigationController extends GetxController {
     if (initialIndex < 0 || initialIndex > 4) return;
 
     currentIndex.value = initialIndex;
+
+    if (initialIndex == 1 &&
+        initialShowTabIndex != null &&
+        initialShowTabIndex >= 0 &&
+        initialShowTabIndex <= 2) {
+      Future.microtask(() {
+        if (Get.isRegistered<ShowController>()) {
+          Get.find<ShowController>().switchTab(initialShowTabIndex!);
+        }
+      });
+    }
   }
 }

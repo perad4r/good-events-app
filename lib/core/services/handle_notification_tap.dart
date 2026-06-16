@@ -4,6 +4,7 @@ import 'package:sukientotapp/core/utils/logger.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/partner/bottom_navigation/controller.dart';
 import 'package:sukientotapp/features/partner/new_show/controller.dart';
+import 'package:sukientotapp/features/partner/show/controller.dart';
 
 class HandleNotificationTap {
   static void handleTap(Map<String, dynamic> data) {
@@ -36,6 +37,7 @@ class HandleNotificationTap {
 
   void handleBillConfirmedCode(Map<String, dynamic> data) {
     logger.i('[HandleNotificationTap] Handling tap for bill confirmed');
+    _openPartnerShowScreen(showTabIndex: 1);
   }
 
   void handleBillReceivedCode(Map<String, dynamic> data) {
@@ -83,6 +85,35 @@ class HandleNotificationTap {
     } else {
       logger.w(
         '[HandleNotificationTap] NewShowController not registered, cannot refresh new shows',
+      );
+    }
+  }
+
+  void _openPartnerShowScreen({required int showTabIndex}) {
+    const partnerShowBottomTabIndex = 1;
+    final arguments = {
+      'initialIndex': partnerShowBottomTabIndex,
+      'initialShowTabIndex': showTabIndex,
+    };
+
+    if (Get.isRegistered<PartnerBottomNavigationController>()) {
+      Get.find<PartnerBottomNavigationController>().setIndex(
+        partnerShowBottomTabIndex,
+        setTab: showTabIndex,
+      );
+
+      if (Get.currentRoute != Routes.partnerHome) {
+        Get.offAllNamed(Routes.partnerHome, arguments: arguments);
+      }
+    } else {
+      Get.offAllNamed(Routes.partnerHome, arguments: arguments);
+    }
+
+    if (Get.isRegistered<ShowController>()) {
+      Get.find<ShowController>().refreshUpcomingBills();
+    } else {
+      logger.w(
+        '[HandleNotificationTap] ShowController not registered, cannot refresh upcoming bills',
       );
     }
   }
