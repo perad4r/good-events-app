@@ -36,6 +36,11 @@ class HandleNotificationTerminatedTap {
     logger.i(
       '[HandleNotificationTerminatedTap] Handling tap for new bill detail',
     );
+    StorageService.writeStringData(
+      key: LocalStorageKeys.pendingClientTabIndex,
+      value: '1',
+    );
+    logger.i('[HandleNotificationTerminatedTap] Saved pendingClientTabIndex=1');
   }
 
   void handleBillConfirmedCode(Map<String, dynamic> data) {
@@ -56,7 +61,9 @@ class HandleNotificationTerminatedTap {
   }
 
   void handleBillReceivedCode(Map<String, dynamic> data) {
-    logger.i('[HandleNotificationTerminatedTap] Handling tap for bill received');
+    logger.i(
+      '[HandleNotificationTerminatedTap] Handling tap for bill received',
+    );
     StorageService.writeStringData(
       key: LocalStorageKeys.pendingPartnerTabIndex,
       value: '2',

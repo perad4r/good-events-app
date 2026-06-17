@@ -14,6 +14,7 @@ class ClientBottomNavigationController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    _setInitialIndexFromArguments();
     _subscribeToUserChannel();
   }
 
@@ -66,5 +67,27 @@ class ClientBottomNavigationController extends GetxController {
         Future.microtask(() => Get.find<ClientHomeController>().fetchSummary());
       }
     }
+  }
+
+  void _setInitialIndexFromArguments() {
+    final args = Get.arguments;
+    int? initialIndex;
+
+    if (args is Map && args['initialIndex'] is int) {
+      initialIndex = args['initialIndex'] as int;
+    } else {
+      final pendingIndex = StorageService.readData(
+        key: LocalStorageKeys.pendingClientTabIndex,
+      )?.toString();
+      if (pendingIndex != null) {
+        StorageService.removeData(key: LocalStorageKeys.pendingClientTabIndex);
+        initialIndex = int.tryParse(pendingIndex);
+      }
+    }
+
+    if (initialIndex == null) return;
+    if (initialIndex < 0 || initialIndex > 3) return;
+
+    currentIndex.value = initialIndex;
   }
 }

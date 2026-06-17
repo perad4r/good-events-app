@@ -1,6 +1,8 @@
 import 'package:get/get.dart';
 import 'package:sukientotapp/core/routes/pages.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
+import 'package:sukientotapp/features/client/bottom_navigation/controller.dart';
+import 'package:sukientotapp/features/client/order/controller.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/partner/bottom_navigation/controller.dart';
 import 'package:sukientotapp/features/partner/new_show/controller.dart';
@@ -33,6 +35,7 @@ class HandleNotificationTap {
 
   void handleNewBillDetailCode(Map<String, dynamic> data) {
     logger.i('[HandleNotificationTap] Handling tap for new bill detail');
+    _openClientOrdersScreen();
   }
 
   void handleBillConfirmedCode(Map<String, dynamic> data) {
@@ -114,6 +117,36 @@ class HandleNotificationTap {
     } else {
       logger.w(
         '[HandleNotificationTap] ShowController not registered, cannot refresh upcoming bills',
+      );
+    }
+  }
+
+  void _openClientOrdersScreen() {
+    const clientOrdersTabIndex = 1;
+
+    if (Get.isRegistered<ClientBottomNavigationController>()) {
+      Get.find<ClientBottomNavigationController>().setIndex(
+        clientOrdersTabIndex,
+      );
+
+      if (Get.currentRoute != Routes.clientHome) {
+        Get.offAllNamed(
+          Routes.clientHome,
+          arguments: {'initialIndex': clientOrdersTabIndex},
+        );
+      }
+    } else {
+      Get.offAllNamed(
+        Routes.clientHome,
+        arguments: {'initialIndex': clientOrdersTabIndex},
+      );
+    }
+
+    if (Get.isRegistered<ClientOrderController>()) {
+      Get.find<ClientOrderController>().fetchEventOrders();
+    } else {
+      logger.w(
+        '[HandleNotificationTap] ClientOrderController not registered, cannot refresh event orders',
       );
     }
   }
