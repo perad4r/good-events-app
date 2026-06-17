@@ -1,5 +1,6 @@
 import 'package:image_picker/image_picker.dart';
 import 'package:sukientotapp/data/models/partner/show_bill_model.dart';
+import 'package:sukientotapp/data/models/partner/show_review_model.dart';
 import 'package:sukientotapp/data/providers/partner/show_provider.dart';
 import 'package:sukientotapp/domain/repositories/partner/show_repository.dart';
 
@@ -41,5 +42,13 @@ class ShowRepositoryImpl implements ShowRepository {
   @override
   Future<bool> cancelAcceptBill(int billId) async {
     return _provider.cancelAcceptBill(billId);
+  }
+
+  @override
+  Future<ShowReview?> getBillReview(int billId) async {
+    final data = await _provider.getBillReview(billId);
+    final review = data['review'];
+    if (review == null) return null;
+    return ShowReview.fromMap(review as Map<String, dynamic>);
   }
 }

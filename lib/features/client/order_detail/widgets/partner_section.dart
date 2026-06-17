@@ -170,28 +170,40 @@ class PartnerSection extends GetView<ClientOrderDetailController> {
               ),
             ],
           ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              OutlinedButton(
-                onPressed: () {
-                  final partnerId = controller.partnerId;
-                  if (partnerId != null) {
-                    controller.openPartnerProfilePreview(partnerId);
-                  }
-                },
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: FTheme.of(context).colors.primary,
-                  side: BorderSide(color: FTheme.of(context).colors.primary),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+          Obx(() {
+            if (!controller.canViewPartnerProfile) {
+              return const SizedBox.shrink();
+            }
+
+            return Column(
+              children: [
+                const SizedBox(height: 16),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    OutlinedButton(
+                      onPressed: () {
+                        final partnerId = controller.partnerId;
+                        if (partnerId != null) {
+                          controller.openPartnerProfilePreview(partnerId);
+                        }
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: FTheme.of(context).colors.primary,
+                        side: BorderSide(
+                          color: FTheme.of(context).colors.primary,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                      ),
+                      child: Text('profile'.tr),
+                    ),
+                  ],
                 ),
-                child: Text('profile'.tr),
-              ),
-            ],
-          ),
+              ],
+            );
+          }),
         ],
       ),
     );

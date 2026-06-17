@@ -122,6 +122,7 @@ class HistoryWidget extends GetView<ShowController> {
                       address: bill.address,
                       note: bill.note ?? '',
                       currentStatus: bill.status,
+                      reviewExists: bill.isReviewed == true,
                     )
                     .animate(delay: (100 * index).ms)
                     .fadeIn(duration: 500.ms)

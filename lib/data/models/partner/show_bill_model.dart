@@ -17,6 +17,8 @@ class ShowBill {
   final String? note;
   final int? threadId;
 
+  final bool? isReviewed;
+
   const ShowBill({
     required this.id,
     required this.code,
@@ -33,9 +35,11 @@ class ShowBill {
     required this.status,
     this.note,
     this.threadId,
+
+    this.isReviewed,
   });
 
-  ShowBill copyWith({String? status}) {
+  ShowBill copyWith({String? status, bool? isReviewed}) {
     return ShowBill(
       id: id,
       code: code,
@@ -51,6 +55,7 @@ class ShowBill {
       status: status ?? this.status,
       note: note,
       threadId: threadId,
+      isReviewed: isReviewed ?? this.isReviewed,
     );
   }
 
@@ -71,6 +76,7 @@ class ShowBill {
       note: map['note'] as String?,
       threadId: map['thread_id'] as int?,
       event: map['event'] as String,
+      isReviewed: map['review_exists'] == true,
     );
   }
 }

@@ -68,4 +68,14 @@ class ShowProvider {
     final response = await _apiService.dio.post(AppUrl.billCancel(billId));
     return response.statusCode == 200;
   }
+
+  Future<Map<String, dynamic>> getBillReview(int billId) async {
+    final response = await _apiService.dio.get(AppUrl.partnerBillReview(billId));
+
+    if (response.statusCode == 200) {
+      return response.data as Map<String, dynamic>;
+    } else {
+      throw Exception('Failed to load review for bill: $billId');
+    }
+  }
 }

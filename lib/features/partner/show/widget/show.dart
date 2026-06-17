@@ -8,6 +8,7 @@ import 'package:sukientotapp/features/common/message/controller.dart';
 
 import '../controller.dart';
 import 'upload_arrived_photo.dart';
+import 'review.dart';
 
 class Show extends StatelessWidget {
   const Show({
@@ -25,6 +26,7 @@ class Show extends StatelessWidget {
     required this.address,
     required this.note,
     required this.currentStatus,
+    this.reviewExists = false,
   });
 
   final int billId;
@@ -40,6 +42,7 @@ class Show extends StatelessWidget {
   final String address;
   final String note;
   final String currentStatus;
+  final bool reviewExists;
 
   static const Map<String, Map<String, Color>> _statusColors = {
     'pending': {
@@ -470,7 +473,7 @@ class Show extends StatelessWidget {
                 ),
               )
             else
-              // Inactive footer – just timestamp + price
+              // Inactive footer – timestamp + history action
               Padding(
                 padding: const EdgeInsets.fromLTRB(16, 0, 16, 14),
                 child: Row(
@@ -489,18 +492,86 @@ class Show extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      FormatUtils.formatCurrencyToDoule(price),
-                      style: context.typography.sm.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: context.fTheme.colors.mutedForeground,
+                    if (reviewExists)
+                      GestureDetector(
+                        onTap: () => _openReviewBottomSheet(
+                          context,
+                          statusAccent: statusAccent,
+                          statusBg: statusBg,
+                          statusTextColor: statusTextColor,
+                        ),
+                        child: Container(
+                          height: 30,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          decoration: BoxDecoration(
+                            color: statusAccent.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(9),
+                            border: Border.all(
+                              color: statusAccent.withValues(alpha: 0.22),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                FIcons.star,
+                                size: 13,
+                                color: statusTextColor,
+                              ),
+                              const SizedBox(width: 5),
+                              Text(
+                                'view_review'.tr,
+                                style: context.typography.xs.copyWith(
+                                  fontWeight: FontWeight.w700,
+                                  color: statusTextColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    else
+                      Text(
+                        FormatUtils.formatCurrencyToDoule(price),
+                        style: context.typography.sm.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: context.fTheme.colors.mutedForeground,
+                        ),
                       ),
-                    ),
                   ],
                 ),
               ),
           ],
         ),
+      ),
+    );
+  }
+
+  void _openReviewBottomSheet(
+    BuildContext context, {
+    required Color statusAccent,
+    required Color statusBg,
+    required Color statusTextColor,
+  }) {
+    Get.bottomSheet(
+      ReviewBottomSheet(
+        billId: billId,
+        code: code,
+        clientName: clientName,
+        category: category,
+        event: event,
+        date: date,
+        price: price,
+        accentColor: statusAccent,
+        softColor: statusBg,
+        textColor: statusTextColor,
+      ),
+      isScrollControlled: true,
+      backgroundColor: context.fTheme.colors.background,
+      enterBottomSheetDuration: const Duration(milliseconds: 350),
+      exitBottomSheetDuration: const Duration(milliseconds: 250),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
     );
   }

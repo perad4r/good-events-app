@@ -1,6 +1,12 @@
 import 'package:get/get.dart';
+import 'package:sukientotapp/core/routes/pages.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
+import 'package:sukientotapp/features/client/bottom_navigation/controller.dart';
+import 'package:sukientotapp/features/client/order/controller.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
+import 'package:sukientotapp/features/partner/bottom_navigation/controller.dart';
+import 'package:sukientotapp/features/partner/new_show/controller.dart';
+import 'package:sukientotapp/features/partner/show/controller.dart';
 
 class HandleNotificationTap {
   static void handleTap(Map<String, dynamic> data) {
@@ -29,14 +35,17 @@ class HandleNotificationTap {
 
   void handleNewBillDetailCode(Map<String, dynamic> data) {
     logger.i('[HandleNotificationTap] Handling tap for new bill detail');
+    _openClientOrdersScreen();
   }
 
   void handleBillConfirmedCode(Map<String, dynamic> data) {
     logger.i('[HandleNotificationTap] Handling tap for bill confirmed');
+    _openPartnerShowScreen(showTabIndex: 1);
   }
 
   void handleBillReceivedCode(Map<String, dynamic> data) {
     logger.i('[HandleNotificationTap] Handling tap for bill received');
+    _openNewShowScreen();
   }
 
   void handleNewMessageCode(Map<String, dynamic> data) {
@@ -51,6 +60,93 @@ class HandleNotificationTap {
     } else {
       logger.w(
         '[HandleNotificationTap] MessageController not registered, cannot open thread',
+      );
+    }
+  }
+
+  void _openNewShowScreen() {
+    const newShowTabIndex = 2;
+
+    if (Get.isRegistered<PartnerBottomNavigationController>()) {
+      Get.find<PartnerBottomNavigationController>().setIndex(newShowTabIndex);
+
+      if (Get.currentRoute != Routes.partnerHome) {
+        Get.offAllNamed(
+          Routes.partnerHome,
+          arguments: {'initialIndex': newShowTabIndex},
+        );
+      }
+    } else {
+      Get.offAllNamed(
+        Routes.partnerHome,
+        arguments: {'initialIndex': newShowTabIndex},
+      );
+    }
+
+    if (Get.isRegistered<NewShowController>()) {
+      Get.find<NewShowController>().refreshBills();
+    } else {
+      logger.w(
+        '[HandleNotificationTap] NewShowController not registered, cannot refresh new shows',
+      );
+    }
+  }
+
+  void _openPartnerShowScreen({required int showTabIndex}) {
+    const partnerShowBottomTabIndex = 1;
+    final arguments = {
+      'initialIndex': partnerShowBottomTabIndex,
+      'initialShowTabIndex': showTabIndex,
+    };
+
+    if (Get.isRegistered<PartnerBottomNavigationController>()) {
+      Get.find<PartnerBottomNavigationController>().setIndex(
+        partnerShowBottomTabIndex,
+        setTab: showTabIndex,
+      );
+
+      if (Get.currentRoute != Routes.partnerHome) {
+        Get.offAllNamed(Routes.partnerHome, arguments: arguments);
+      }
+    } else {
+      Get.offAllNamed(Routes.partnerHome, arguments: arguments);
+    }
+
+    if (Get.isRegistered<ShowController>()) {
+      Get.find<ShowController>().refreshUpcomingBills();
+    } else {
+      logger.w(
+        '[HandleNotificationTap] ShowController not registered, cannot refresh upcoming bills',
+      );
+    }
+  }
+
+  void _openClientOrdersScreen() {
+    const clientOrdersTabIndex = 1;
+
+    if (Get.isRegistered<ClientBottomNavigationController>()) {
+      Get.find<ClientBottomNavigationController>().setIndex(
+        clientOrdersTabIndex,
+      );
+
+      if (Get.currentRoute != Routes.clientHome) {
+        Get.offAllNamed(
+          Routes.clientHome,
+          arguments: {'initialIndex': clientOrdersTabIndex},
+        );
+      }
+    } else {
+      Get.offAllNamed(
+        Routes.clientHome,
+        arguments: {'initialIndex': clientOrdersTabIndex},
+      );
+    }
+
+    if (Get.isRegistered<ClientOrderController>()) {
+      Get.find<ClientOrderController>().fetchEventOrders();
+    } else {
+      logger.w(
+        '[HandleNotificationTap] ClientOrderController not registered, cannot refresh event orders',
       );
     }
   }

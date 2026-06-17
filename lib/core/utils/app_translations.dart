@@ -256,7 +256,7 @@ class AppTranslations extends Translations {
       'booking_submit': 'Đặt show ngay',
       'booking_success': 'Đặt lịch thành công!',
       'please_wait': 'Vui lòng chờ...',
-      'event_type_custom': 'Nhập giá trị tùy chỉnh',
+      'event_type_custom': 'Khác',
       'event_type_wedding': 'Tiệc cưới',
       'event_type_conference': 'Hội nghị',
       'event_type_birthday': 'Sinh nhật',
@@ -466,6 +466,14 @@ class AppTranslations extends Translations {
       'histories': 'Lịch sử',
 
       'detail_info': 'Thông tin chi tiết',
+      'view_review': 'Xem đánh giá',
+      'review_pending_title': 'Chưa có dữ liệu đánh giá',
+      'review_pending_desc':
+          'Giao diện đã sẵn sàng, phần nội dung đánh giá sẽ được hiển thị sau khi kết nối dữ liệu.',
+      'recommend': 'Đề xuất',
+      'client_recommends': 'Khách hàng đề xuất dịch vụ này',
+      'client_not_recommends': 'Khách hàng chưa đề xuất dịch vụ này',
+      'review_created_at': 'Thời gian đánh giá',
 
       //common
       'login_required': 'Bạn phải đăng nhập trước!',
@@ -1129,7 +1137,7 @@ class AppTranslations extends Translations {
       'booking_submit': 'Book now',
       'booking_success': 'Booking successful!',
       'please_wait': 'Please wait...',
-      'event_type_custom': 'Custom input',
+      'event_type_custom': 'Others',
       'event_type_wedding': 'Wedding',
       'event_type_conference': 'Conference',
       'event_type_birthday': 'Birthday',
@@ -1310,6 +1318,14 @@ class AppTranslations extends Translations {
       'histories': 'Histories',
 
       'detail_info': 'Detail info',
+      'view_review': 'View review',
+      'review_pending_title': 'No review data yet',
+      'review_pending_desc':
+          'The interface is ready. Review content will appear here after data is connected.',
+      'recommend': 'Recommend',
+      'client_recommends': 'The client recommends this service',
+      'client_not_recommends': 'The client does not recommend this service yet',
+      'review_created_at': 'Review time',
 
       //common
       'login_required': 'You must login first!',

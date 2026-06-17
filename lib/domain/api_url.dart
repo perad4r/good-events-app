@@ -50,6 +50,8 @@ class AppUrl {
   static String partnerBillComplete(int billId) =>
       '/partner/bills/$billId/complete';
   static String billCancel(int billId) => '/partner/bills/$billId/cancel';
+  static String partnerBillReview(int billId) =>
+      '/partner/bills/$billId/review';
 
   // Client Booking Screen APIs
   static const String quickBookingEventList = '/quick-booking/event-list';

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/data/models/partner/show_bill_model.dart';
+import 'package:sukientotapp/data/models/partner/show_review_model.dart';
 import 'package:sukientotapp/domain/repositories/partner/show_repository.dart';
 import 'package:sukientotapp/features/partner/home/controller.dart';
 import 'package:sukientotapp/features/partner/new_show/controller.dart';
@@ -415,6 +416,10 @@ class ShowController extends GetxController
     } finally {
       isHistoryLoadMore.value = false;
     }
+  }
+
+  Future<ShowReview?> getBillReview(int billId) {
+    return _repository.getBillReview(billId);
   }
 
   // ─── Complete Bill ────────────────────────────────────────────────────────────

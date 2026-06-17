@@ -1,5 +1,6 @@
 import 'package:image_picker/image_picker.dart';
 import 'package:sukientotapp/data/models/partner/show_bill_model.dart';
+import 'package:sukientotapp/data/models/partner/show_review_model.dart';
 
 abstract class ShowRepository {
   Future<ShowBillsResponse> getBills({
@@ -16,4 +17,6 @@ abstract class ShowRepository {
   Future<bool> completeBill(int billId);
 
   Future<bool> cancelAcceptBill(int billId);
+
+  Future<ShowReview?> getBillReview(int billId);
 }
