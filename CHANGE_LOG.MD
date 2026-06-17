@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.6.0+65]
+
+- Add interaction when user click to notification
+- Fix some minor bug
+
 ## [v2.5.2+64]
 
 - Fix google & apple login not handle unverified case
