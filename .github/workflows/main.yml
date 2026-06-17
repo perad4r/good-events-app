@@ -43,7 +43,6 @@ jobs:
           
           # NATIVE REQUIREMENT: Place file where the iOS build system expects it
           echo -n "$GOOGLE_SERVICE_INFO" | base64 --decode -o ios/Runner/GoogleService-Info.plist
-
       - name: Ensure Flutter SDK is Installed
         run: |
           if [ ! -f "${FLUTTER_BIN}" ]; then
@@ -54,7 +53,6 @@ jobs:
           else
             echo "Flutter SDK found at ${FLUTTER_BIN}"
           fi
-
       - name: Flutter Clean
         run: ${FLUTTER_BIN} clean
 
@@ -62,7 +60,6 @@ jobs:
         run: |
           rm -rf ios/Pods
           rm -f ios/Podfile.lock
-
       - name: Flutter Pub Get
         run: ${FLUTTER_BIN} pub get
 
@@ -70,7 +67,6 @@ jobs:
         run: |
           cd ios
           pod install --repo-update
-
       - name: Rebuild iOS Launcher Icons
         run: ${FLUTTER_BIN} pub run flutter_launcher_icons
 
@@ -84,27 +80,28 @@ jobs:
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           PP_PATH=$RUNNER_TEMP/build_pp.mobileprovision
           KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
-
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
           echo -n "$BUILD_PROVISION_PROFILE_BASE64" | base64 --decode -o $PP_PATH
-
           security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-
           # Add temporary keychain to the search list and set it as default
           security list-keychains -d user -s $KEYCHAIN_PATH $(security list-keychains -d user | sed s/\"//g)
           security default-keychain -s $KEYCHAIN_PATH
-
           security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
-
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-
       - name: Build Flutter IPA
         run: ${FLUTTER_BIN} build ipa --release --export-method=app-store
-
+        
+      - name: Verify Push Notification Entitlement
+        run: |
+          unzip -o "build/ios/ipa/Sự kiện tốt.ipa" -d /tmp/ipa_extracted > /dev/null
+          APP_PATH=$(find /tmp/ipa_extracted/Payload -name "*.app" -maxdepth 1)
+          echo "=== Entitlements ==="
+          codesign -d --entitlements :- "$APP_PATH" 2>/dev/null | grep -A2 "aps-environment" || echo "❌ aps-environment NOT FOUND"
+          
       - name: Upload via iTMSTransporter
         env:
           API_KEY: ${{ secrets.AUTH_KEY }}
@@ -116,9 +113,10 @@ jobs:
           
           # Decode the .p8 file into the expected directory
           echo -n "$API_KEY_P8_BASE64" | base64 --decode -o ~/.appstoreconnect/private_keys/AuthKey_${API_KEY}.p8
+          rm -rf ~/.itmstransporter/UploadTokens/ || true
+          rm -rf ~/.itmstransporter/file_cache/ || true
           
-          xcrun iTMSTransporter -m upload -apiKey "$API_KEY" -apiIssuer "$API_ISSUER" -assetFile "build/ios/ipa/Sự kiện tốt.ipa"
-
+          xcrun altool --upload-app --type ios -f "build/ios/ipa/Sự kiện tốt.ipa" --apiKey "$API_KEY" --apiIssuer "$API_ISSUER"
       - name: Clean up keychain and profile
         if: ${{ always() }}
         env:
