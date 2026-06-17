@@ -2,12 +2,14 @@
 import 'dart:convert';
 
 class DashboardModel {
+  final int balance;
   final int revenue;
   final int recentReviewsCount;
   final Map<String, String> recentReviewsAvatars;
   final List<int> quarterlyRevenue;
 
   DashboardModel({
+    required this.balance,
     required this.revenue,
     required this.recentReviewsCount,
     required this.recentReviewsAvatars,
@@ -16,6 +18,7 @@ class DashboardModel {
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
+      'balance': balance,
       'revenue': revenue,
       'recent_reviews_count': recentReviewsCount,
       'recent_reviews_avatars': recentReviewsAvatars,
@@ -25,6 +28,7 @@ class DashboardModel {
 
   factory DashboardModel.fromMap(Map<String, dynamic> map) {
     return DashboardModel(
+      balance: map['wallet_balance'],
       revenue: map['revenue'],
       recentReviewsCount: map['recent_reviews_count'],
       recentReviewsAvatars: _parseAvatars(map['recent_reviews_avatars']),

@@ -61,6 +61,13 @@ class PartnerHomeController extends GetxController {
       (StorageService.readData(key: LocalStorageKeys.hasNotification) ?? false)
           as bool,
     );
+
+    //check if balance is change from backend
+    final currentBalance = balance.value;
+    final newBalance = dashboardData.value?.balance;
+    if (newBalance != null && newBalance != currentBalance) {
+      balance.value = newBalance;
+    }
   }
 
   void syncFromStorage() {
@@ -125,6 +132,7 @@ class PartnerHomeController extends GetxController {
     if (current == null) return;
 
     dashboardData.value = DashboardModel(
+      balance: current.balance,
       revenue: current.revenue,
       recentReviewsCount: current.recentReviewsCount,
       recentReviewsAvatars: current.recentReviewsAvatars,
