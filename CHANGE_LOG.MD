@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.6.1+66]
+
+- Fix some partner data in bill detail at client side show wrong data
+- Fix balance in partner home screen don't update without relogin
+
 ## [v2.6.0+65]
 
 - Add interaction when user click to notification
