@@ -263,8 +263,18 @@ class AccountController extends GetxController {
 
       if (newRole == 'client') {
         Get.offAllNamed(Routes.clientHome);
+
+        StorageService.readMapData(
+          key: LocalStorageKeys.currentUIView,
+          mapKey: 'client',
+        );
       } else {
         Get.offAllNamed(Routes.partnerHome);
+
+        StorageService.readMapData(
+          key: LocalStorageKeys.currentUIView,
+          mapKey: 'partner',
+        );
       }
     } catch (e) {
       logger.e('[AccountController] [switchRole] error: $e');
@@ -283,10 +293,7 @@ class AccountController extends GetxController {
   Future<void> deleteAccount() async {
     final password = deletePasswordController.text.trim();
     if (password.isEmpty) {
-      AppSnackbar.showError(
-        title: 'error'.tr,
-        message: 'password_required'.tr,
-      );
+      AppSnackbar.showError(title: 'error'.tr, message: 'password_required'.tr);
       return;
     }
     isLoading.value = true;

@@ -66,9 +66,21 @@ class LoginController extends GetxController {
       switch (role) {
         case 'client':
           Get.offAllNamed(Routes.clientHome);
+
+          StorageService.readMapData(
+            key: LocalStorageKeys.currentUIView,
+            mapKey: 'client',
+          );
+
           break;
         case 'partner':
           Get.offAllNamed(Routes.partnerHome);
+
+          StorageService.readMapData(
+            key: LocalStorageKeys.currentUIView,
+            mapKey: 'partner',
+          );
+
           break;
       }
     } on UnverifiedUserException {

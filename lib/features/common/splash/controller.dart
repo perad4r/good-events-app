@@ -116,7 +116,9 @@ class SplashController extends GetxController {
     if (videoDuration > Duration.zero) {
       Future.delayed(videoDuration + const Duration(seconds: 2), () {
         if (!_videoCompleter.isCompleted) {
-          logger.w('[SplashController] [_initVideo] Fallback timeout triggered');
+          logger.w(
+            '[SplashController] [_initVideo] Fallback timeout triggered',
+          );
           _videoCompleter.complete();
         }
       });
@@ -138,7 +140,9 @@ class SplashController extends GetxController {
     await _videoCompleter.future.timeout(
       const Duration(seconds: 8),
       onTimeout: () {
-        logger.w('[SplashController] [_checkToken] Video timeout, continuing...');
+        logger.w(
+          '[SplashController] [_checkToken] Video timeout, continuing...',
+        );
       },
     );
 
@@ -171,7 +175,9 @@ class SplashController extends GetxController {
         await PusherService.init().timeout(
           const Duration(seconds: 10),
           onTimeout: () {
-            logger.w('[SplashController] [_checkToken] Pusher init timed out, continuing...');
+            logger.w(
+              '[SplashController] [_checkToken] Pusher init timed out, continuing...',
+            );
           },
         );
 
@@ -182,9 +188,21 @@ class SplashController extends GetxController {
         switch (role) {
           case 'client':
             Get.offAllNamed(Routes.clientHome);
+
+            StorageService.readMapData(
+              key: LocalStorageKeys.currentUIView,
+              mapKey: 'client',
+            );
+
             return;
           case 'partner':
             Get.offAllNamed(Routes.partnerHome);
+
+            StorageService.readMapData(
+              key: LocalStorageKeys.currentUIView,
+              mapKey: 'partner',
+            );
+
             return;
         }
       } else {
@@ -200,7 +218,7 @@ class SplashController extends GetxController {
       logger.w(
         '[SplashController] [_checkToken] Token valid but user unverified, redirecting to verify screen',
       );
-      
+
       AppSnackbar.showWarning(message: 'account_unverified'.tr);
       await Future.delayed(const Duration(seconds: 2));
       Get.offAllNamed(Routes.userVerifyScreen);
