@@ -10,10 +10,11 @@ class MessageProvider {
   Future<Map<String, dynamic>> getThreads({
     required String endpoint,
     required int page,
+    String? side,
     String? search,
   }) async {
     try {
-      final queryParams = <String, dynamic>{'page': page};
+      final queryParams = <String, dynamic>{'page': page, 'side': side};
       if (search != null && search.isNotEmpty) {
         queryParams['search'] = search;
       }
@@ -27,7 +28,9 @@ class MessageProvider {
     } on DioException catch (e) {
       logger.e('[MessageProvider] [getThreads] DioException: ${e.message}');
       if (e.response != null) {
-        throw Exception(e.response?.data['message'] ?? 'Failed to fetch threads');
+        throw Exception(
+          e.response?.data['message'] ?? 'Failed to fetch threads',
+        );
       }
       throw Exception('Network error. Please check your connection.');
     } catch (e) {
@@ -65,10 +68,7 @@ class MessageProvider {
     required String body,
   }) async {
     try {
-      await _apiService.dio.post(
-        endpoint,
-        data: {'body': body},
-      );
+      await _apiService.dio.post(endpoint, data: {'body': body});
     } on DioException catch (e) {
       logger.e('[MessageProvider] [sendMessage] DioException: ${e.message}');
       if (e.response != null) {

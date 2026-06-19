@@ -7,16 +7,18 @@ class MessageRepositoryImpl implements MessageRepository {
   final String _endpoint;
 
   MessageRepositoryImpl(this._provider, {required String endpoint})
-      : _endpoint = endpoint;
+    : _endpoint = endpoint;
 
   @override
   Future<Map<String, dynamic>> getThreads({
     required int page,
+    String? side,
     String? search,
   }) async {
     return _provider.getThreads(
       endpoint: _endpoint,
       page: page,
+      side: side,
       search: search,
     );
   }
