@@ -792,6 +792,8 @@ class AppTranslations extends Translations {
       'image_format_not_supported':
           'Định dạng ảnh không được hỗ trợ, vui lòng chọn PNG, JPG, JPEG hoặc WEBP',
       'image_too_large': 'Ảnh vượt quá 5MB, vui lòng chọn ảnh khác',
+      'avatar_image_too_large':
+          'Ảnh đại diện vượt quá 10MB, vui lòng chọn ảnh khác',
       'delete_image_confirm_title': 'Xóa ảnh?',
       'delete_image_confirm_desc':
           'Ảnh sẽ bị xóa vĩnh viễn và không thể khôi phục.',
@@ -1648,6 +1650,8 @@ class AppTranslations extends Translations {
       'image_format_not_supported':
           'Unsupported image format, please choose PNG, JPG, JPEG, or WEBP',
       'image_too_large': 'Image exceeds 5MB, please choose another',
+      'avatar_image_too_large':
+          'Avatar image exceeds 10MB, please choose another',
       'delete_image_confirm_title': 'Delete image?',
       'delete_image_confirm_desc':
           'This image will be permanently deleted and cannot be recovered.',

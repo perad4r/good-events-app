@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:dio/dio.dart';
 import 'package:flutter_quill/flutter_quill.dart';
 import 'package:flutter_quill_delta_from_html/flutter_quill_delta_from_html.dart';
@@ -24,6 +22,14 @@ class EditProfileController extends GetxController {
   final LocationProvider _locationProvider;
 
   EditProfileController(this._repository, this._locationProvider);
+
+  static const int _maxAvatarSizeBytes = 10 * 1024 * 1024;
+  static const Set<String> _allowedAvatarExtensions = {
+    'jpg',
+    'jpeg',
+    'png',
+    'webp',
+  };
 
   late final ProfileModel initialProfile;
 
@@ -170,6 +176,7 @@ class EditProfileController extends GetxController {
 
     switch (type) {
       case 'avatar':
+        if (!await _validateAvatarImage(image)) return;
         avatarFile.value = image;
         break;
       case 'selfie':
@@ -182,6 +189,28 @@ class EditProfileController extends GetxController {
         backCardFile.value = image;
         break;
     }
+  }
+
+  Future<bool> _validateAvatarImage(XFile image) async {
+    final extension = image.name.split('.').last.toLowerCase();
+    if (!_allowedAvatarExtensions.contains(extension)) {
+      AppSnackbar.showError(
+        title: 'error'.tr,
+        message: 'image_format_not_supported'.tr,
+      );
+      return false;
+    }
+
+    final size = await image.length();
+    if (size > _maxAvatarSizeBytes) {
+      AppSnackbar.showError(
+        title: 'error'.tr,
+        message: 'avatar_image_too_large'.tr,
+      );
+      return false;
+    }
+
+    return true;
   }
 
   Future<void> isUpdateId() async {
