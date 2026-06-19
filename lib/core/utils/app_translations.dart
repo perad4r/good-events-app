@@ -567,6 +567,7 @@ class AppTranslations extends Translations {
       'in_job': 'Đang thực hiện',
       'cancelled': 'Đã hủy',
       'new_show': 'Show mới',
+      'show_quote': 'Báo giá',
       'pending_order': 'Đơn đang chờ',
       'confirmed_order': 'Đơn đã xác nhận',
       'new_applicant': '@count nhân sự mới',
@@ -1421,6 +1422,7 @@ class AppTranslations extends Translations {
       'in_job': 'In Job',
       'cancelled': 'Cancelled',
       'new_show': 'New Show',
+      'show_quote': 'Quote',
 
       'code': 'Code',
       'status': 'Status',
