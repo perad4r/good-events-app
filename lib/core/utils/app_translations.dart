@@ -810,7 +810,8 @@ class AppTranslations extends Translations {
       'revenue': 'Doanh thu',
       'orders_processed': 'Đơn hàng đã nhận',
       'top_services': 'Dịch vụ phổ biến',
-
+      'orders_placed': 'Đơn hàng đã đặt',
+      
       ///Statuses
       'success': 'Thành công',
       'failed': 'Thất bại',
