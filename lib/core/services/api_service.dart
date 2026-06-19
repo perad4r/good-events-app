@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 // ignore: implementation_imports
 import 'package:pretty_dio_logger/src/pretty_dio_logger.dart';
@@ -11,6 +13,18 @@ class ApiService {
   late Dio _dio;
 
   static final String baseUrl = EnvConfig.apiBaseUrl;
+
+  FutureOr<bool> _shouldRetry(DioException error, int attempt) {
+    final data = error.response?.data;
+    final code = data is Map ? data['code'] : null;
+    final isOtpLimitError =
+        error.response?.statusCode == 429 &&
+        (code == 'OTP_COOLDOWN' || code == 'MAX_ATTEMPTS');
+
+    if (isOtpLimitError) return false;
+
+    return RetryInterceptor.defaultRetryEvaluator(error, attempt);
+  }
 
   ApiService() {
     if (baseUrl.isEmpty || baseUrl == '') {
@@ -50,6 +64,7 @@ class ApiService {
       RetryInterceptor(
         dio: _dio,
         retries: 3,
+        retryEvaluator: _shouldRetry,
         retryDelays: const [
           Duration(seconds: 3), // wait 3 sec before the first retry
           Duration(seconds: 3), // wait 3 sec before the second retry

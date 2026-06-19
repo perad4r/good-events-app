@@ -9,6 +9,18 @@ class AuthProvider {
 
   AuthProvider(this._apiService);
 
+  int? _parseRetryAfter(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
+  }
+
+  int? _parseMaxAttemptsHours(dynamic data) {
+    if (data is! Map) return null;
+    return _parseRetryAfter(data['hours']);
+  }
+
   /// Login API call
   /// POST /auth/login
   Future<Map<String, dynamic>> login(String email, String password) async {
@@ -294,11 +306,14 @@ class AuthProvider {
         final code = e.response?.data['code'];
         if (e.response?.statusCode == 429) {
           if (code == 'OTP_COOLDOWN') {
-            final retryAfter = e.response?.data['retry_after'] as int?;
+            final retryAfter = _parseRetryAfter(
+              e.response?.data['retry_after'],
+            );
             throw OtpCooldownException(retryAfter: retryAfter);
           }
           if (code == 'MAX_ATTEMPTS') {
-            throw const OtpMaxAttemptsException();
+            final retryAfter = _parseMaxAttemptsHours(e.response?.data);
+            throw OtpMaxAttemptsException(retryAfter: retryAfter);
           }
         }
         final errorMessage = e.response?.data['message'] ?? 'Send OTP failed';
@@ -333,11 +348,14 @@ class AuthProvider {
         final code = e.response?.data['code'];
         if (e.response?.statusCode == 429) {
           if (code == 'OTP_COOLDOWN') {
-            final retryAfter = e.response?.data['retry_after'] as int?;
+            final retryAfter = _parseRetryAfter(
+              e.response?.data['retry_after'],
+            );
             throw OtpCooldownException(retryAfter: retryAfter);
           }
           if (code == 'MAX_ATTEMPTS') {
-            throw const OtpMaxAttemptsException();
+            final retryAfter = _parseMaxAttemptsHours(e.response?.data);
+            throw OtpMaxAttemptsException(retryAfter: retryAfter);
           }
         }
         if (e.response?.statusCode == 422 && code == 'INVALID_OTP') {
@@ -382,11 +400,11 @@ class AuthProvider {
         }
         if (e.response?.statusCode == 429) {
           if (code == 'OTP_COOLDOWN') {
-            final retryAfter = e.response?.data['seconds'] as int?;
+            final retryAfter = _parseRetryAfter(e.response?.data['seconds']);
             throw OtpCooldownException(retryAfter: retryAfter);
           }
           if (code == 'MAX_ATTEMPTS') {
-            final retryAfter = e.response?.data['hours'] as int?;
+            final retryAfter = _parseMaxAttemptsHours(e.response?.data);
             throw OtpMaxAttemptsException(retryAfter: retryAfter);
           }
         }
@@ -490,4 +508,3 @@ class AuthProvider {
     }
   }
 }
-

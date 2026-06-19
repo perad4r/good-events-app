@@ -1,7 +1,5 @@
 import 'package:sukientotapp/features/common/auth/login/controller.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
-import 'package:sukientotapp/features/common/auth/widgets/terms_action_gate.dart';
-import 'package:sukientotapp/features/common/auth/widgets/terms_acceptance_notice.dart';
 
 class LoginScreen extends GetView<LoginController> {
   const LoginScreen({super.key});

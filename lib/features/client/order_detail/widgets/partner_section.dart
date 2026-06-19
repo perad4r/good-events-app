@@ -116,7 +116,7 @@ class PartnerSection extends GetView<ClientOrderDetailController> {
                 ),
                 child: ClipOval(
                   child: Image.network(
-                    'https://ui-avatars.com/api/?name=${Uri.encodeComponent(controller.partnerName)}&background=random&size=512&format=png',
+                    controller.partnerAvatarUrl,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) =>
                         const Icon(Icons.person, color: Colors.grey),
@@ -146,7 +146,7 @@ class PartnerSection extends GetView<ClientOrderDetailController> {
                           ),
                         ),
                         Text(
-                          '(1 ${'rate'.tr})',
+                          '(${controller.partnerTotalRatings?.toInt() ?? 0} ${'rate'.tr})',
                           style: context.typography.sm.copyWith(
                             color: Colors.grey,
                           ),

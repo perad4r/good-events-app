@@ -28,12 +28,14 @@ class PartnerStatisticsModel {
 
 class HistoryPartnerModel {
   final int? id;
+  final String? avatarUrl;
   final String? name;
   final PartnerStatisticsModel? statistics;
   final PartnerProfileModel? partnerProfile;
 
   HistoryPartnerModel({
     this.id,
+    this.avatarUrl,
     this.name,
     this.statistics,
     this.partnerProfile,
@@ -42,6 +44,7 @@ class HistoryPartnerModel {
   factory HistoryPartnerModel.fromJson(Map<String, dynamic> json) {
     return HistoryPartnerModel(
       id: json['id'] as int?,
+      avatarUrl: json['avatar_url'] as String?,
       name: json['name'] as String?,
       statistics: json['statistics'] != null
           ? PartnerStatisticsModel.fromJson(json['statistics'] as Map<String, dynamic>)

@@ -88,7 +88,7 @@ class ClientBookingController extends GetxController {
       final typeNames = fetchedTypes
           .map((e) => (e['name'] as String).trim())
           .toList();
-      eventTypes.assignAll([customEventTypeKey, ...typeNames]);
+      eventTypes.assignAll([...typeNames, customEventTypeKey]);
     } catch (e) {
       logger.e('Failed to load event types: $e');
       eventTypes.assignAll([customEventTypeKey]);
