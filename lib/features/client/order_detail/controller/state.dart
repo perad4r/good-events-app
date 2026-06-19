@@ -210,6 +210,23 @@ mixin ClientOrderDetailState {
     return null;
   }
 
+  String get partnerAvatarUrl {
+    logger.d('Getting partner avatar URL: ${_historyOrder.value?.partner?.avatarUrl}');
+    if (isHistory.value && _historyOrder.value != null) {
+      return _historyOrder.value!.partner?.avatarUrl ??
+          'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_historyOrder.value!.partner?.name ?? '')}&background=random&size=512&format=png';
+    }
+    if (!isHistory.value) {
+      final items = orderDetail.value?.items ?? [];
+      final chosen = items.where((i) => i.status == 'closed').firstOrNull;
+      if (chosen != null) {
+        return chosen.partner?.avatar ??
+            'https://ui-avatars.com/api/?name=${Uri.encodeComponent(chosen.partner?.name ?? '')}&background=random&size=512&format=png';
+      }
+    }
+    return 'https://ui-avatars.com/api/?name=${Uri.encodeComponent(partnerName)}&background=random&size=512&format=png';
+  }
+
   String get partnerName {
     if (isHistory.value && _historyOrder.value != null) {
       return _historyOrder.value!.partner?.partnerProfile?.partnerName ??
@@ -231,6 +248,13 @@ mixin ClientOrderDetailState {
   double? get partnerRating {
     if (isHistory.value && _historyOrder.value != null) {
       return _historyOrder.value!.partner?.statistics?.averageStars?.toDouble();
+    }
+    return null;
+  }
+
+  double? get partnerTotalRatings {
+    if (isHistory.value && _historyOrder.value != null) {
+      return _historyOrder.value!.partner?.statistics?.totalRatings?.toDouble();
     }
     return null;
   }

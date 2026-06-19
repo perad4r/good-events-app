@@ -50,7 +50,7 @@ class OrderPartnerModel {
     return OrderPartnerModel(
       id: json['id'] as int? ?? 0,
       name: json['name'] as String? ?? '',
-      avatar: json['avatar'] as String? ?? '',
+      avatar: json['avatar_url'] as String? ?? '',
       partnerProfile: json['partner_profile'] != null
           ? OrderPartnerProfileModel.fromJson(json['partner_profile'] as Map<String, dynamic>)
           : null,

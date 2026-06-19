@@ -52,8 +52,8 @@ class UserVerifyController extends GetxController {
     if (selectedMethod.value == VerifyMethod.email) {
       await _sendOtp();
     } else {
-      await _sendOtp();
-      step.value = 2;
+      final isSent = await _sendOtp();
+      if (isSent) step.value = 2;
     }
   }
 
@@ -116,9 +116,10 @@ class UserVerifyController extends GetxController {
     } on OtpInvalidException {
       otpController.clear();
       AppSnackbar.showError(title: 'error'.tr, message: 'otp_invalid'.tr);
+    } on OtpCooldownException catch (e) {
+      _showOtpCooldownError(e);
     } on OtpMaxAttemptsException catch (e) {
-      isMaxAttempts.value = true;
-      AppSnackbar.showError(title: 'error'.tr, message: e.message.tr);
+      _showOtpMaxAttemptsError(e);
     } catch (e) {
       AppSnackbar.showError(title: 'error'.tr, message: e.toString());
     } finally {
@@ -128,8 +129,10 @@ class UserVerifyController extends GetxController {
 
   Future<void> resendOtp() async {
     if (resendCooldown.value > 0) return;
-    await _sendOtp();
-    AppSnackbar.showSuccess(title: 'success'.tr, message: 'otp_resent'.tr);
+    final isSent = await _sendOtp();
+    if (isSent) {
+      AppSnackbar.showSuccess(title: 'success'.tr, message: 'otp_resent'.tr);
+    }
   }
 
   void _startCooldown([int seconds = 60]) {
@@ -145,9 +148,29 @@ class UserVerifyController extends GetxController {
     });
   }
 
+  void _showOtpCooldownError(OtpCooldownException e) {
+    final seconds = e.retryAfter ?? 60;
+    _startCooldown(seconds);
+    AppSnackbar.showError(
+      title: 'error'.tr,
+      message: 'resend_otp_cooldown'.trParams({
+        'seconds': seconds.toString(),
+      }),
+    );
+  }
+
+  void _showOtpMaxAttemptsError(OtpMaxAttemptsException e) {
+    final hours = e.retryAfter ?? 24;
+    isMaxAttempts.value = true;
+    AppSnackbar.showError(
+      title: 'error'.tr,
+      message: 'otp_max_attempts'.trParams({'hours': hours.toString()}),
+    );
+  }
+
   /// decides which API to call based on [selectedMethod].
   /// call this when entering step 2 (goToOtpStep) or resending (resendOtp).
-  Future<void> _sendOtp() async {
+  Future<bool> _sendOtp() async {
     isLoading.value = true;
     try {
       final method = selectedMethod.value == VerifyMethod.email
@@ -162,22 +185,16 @@ class UserVerifyController extends GetxController {
       }
 
       logger.d('[UserVerifyController] OTP sent via $method');
+      return true;
     } on OtpCooldownException catch (e) {
-      _startCooldown(e.retryAfter ?? 60);
-      AppSnackbar.showError(
-        title: 'error'.tr,
-        message: e.message.trParams({
-          'seconds': e.retryAfter?.toString() ?? '60',
-        }),
-      );
-      rethrow;
+      _showOtpCooldownError(e);
+      return false;
     } on OtpMaxAttemptsException catch (e) {
-      isMaxAttempts.value = true;
-      AppSnackbar.showError(title: 'error'.tr, message: e.message.tr);
-      rethrow;
+      _showOtpMaxAttemptsError(e);
+      return false;
     } catch (e) {
       AppSnackbar.showError(title: 'error'.tr, message: e.toString());
-      rethrow; // prevent moving to step 2 if the send failed
+      return false;
     } finally {
       isLoading.value = false;
     }

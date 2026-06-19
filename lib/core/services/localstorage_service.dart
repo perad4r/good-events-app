@@ -34,6 +34,17 @@ class StorageService {
     return map;
   }
 
+  //wirte single value to map data
+  static void writeSingleMapData({
+    required String key,
+    required String mapKey,
+    required dynamic value,
+  }) {
+    final map = box.read<Map<String, dynamic>>(key) ?? {};
+    map[mapKey] = value;
+    box.write(key, map);
+  }
+
   static void removeData({required String key}) {
     box.remove(key);
   }
