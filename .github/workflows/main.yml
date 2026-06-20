@@ -75,6 +75,8 @@ jobs:
         run: flutter pub get
 
       - name: Install iOS Pods
+        env:
+          LANG: en_US.UTF-8
         run: |
           cd ios
           pod install --repo-update
