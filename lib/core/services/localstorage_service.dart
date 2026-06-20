@@ -71,6 +71,8 @@ class LocalStorageKeys {
 
   static const String user = "user";
 
+  static const String currentUIView = "current_ui_view";
+
   //Partner dashboard data
   static const String newBill = "new_bill";
   static const String waitingBill = "waiting_bill";

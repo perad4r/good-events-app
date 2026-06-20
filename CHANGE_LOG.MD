@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.6.3+68]
+
+- Add validation for avatar, cccd, selfie image in profile
+- Fix my service validate wrong file size
+
 ## [v2.6.2+67]
 
 - Fix snackbar in verify screen

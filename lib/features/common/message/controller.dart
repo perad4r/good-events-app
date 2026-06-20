@@ -67,15 +67,13 @@ class MessageController extends GetxController {
 
   /// Handles a thread deep link saved from a terminated-state notification tap.
   void _handlePendingThreadDeepLink() {
-    final threadId = StorageService.readData(
-      key: LocalStorageKeys.pendingThreadId,
-    ) as String?;
+    final threadId =
+        StorageService.readData(key: LocalStorageKeys.pendingThreadId)
+            as String?;
     if (threadId == null || threadId.isEmpty) return;
 
     StorageService.removeData(key: LocalStorageKeys.pendingThreadId);
-    logger.i(
-      '[MessageController] [PendingDeepLink] Opening thread=$threadId',
-    );
+    logger.i('[MessageController] [PendingDeepLink] Opening thread=$threadId');
 
     // Wait until threads are loaded before opening
     ever(isLoading, (bool loading) {
@@ -96,8 +94,17 @@ class MessageController extends GetxController {
     }
 
     try {
+      final currrentUIView =
+          StorageService.readData(key: LocalStorageKeys.currentUIView)
+              as String?;
+
+      logger.i(
+        '[MessageController] [fetchThreads] Fetching threads for view=$currrentUIView, page=$_currentPage, search="${searchQuery.value}"',
+      );
+
       final response = await _repository.getThreads(
         page: _currentPage,
+        side: currrentUIView,
         search: searchQuery.value.isEmpty ? null : searchQuery.value,
       );
 
@@ -240,9 +247,7 @@ class MessageController extends GetxController {
 
     if (thread == null) {
       await refreshThreads();
-      thread = filteredMessages.firstWhereOrNull(
-        (t) => t.id == threadId,
-      );
+      thread = filteredMessages.firstWhereOrNull((t) => t.id == threadId);
     }
 
     if (thread == null) {
@@ -262,9 +267,7 @@ class MessageController extends GetxController {
 
     if (thread == null) {
       await refreshThreads();
-      thread = filteredMessages.firstWhereOrNull(
-        (t) => t.bill.id == showid,
-      );
+      thread = filteredMessages.firstWhereOrNull((t) => t.bill.id == showid);
     }
 
     if (thread == null) {
