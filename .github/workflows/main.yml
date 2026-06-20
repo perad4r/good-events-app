@@ -9,9 +9,6 @@ on:
 jobs:
   build-and-upload:
     runs-on: [self-hosted, macOS]
-    env:
-      MAC_USERNAME: ${{ vars.MAC_USERNAME }}
-      FLUTTER_BIN: /Users/${{ vars.MAC_USERNAME }}/flutter/bin/flutter
 
     steps:
       - name: Checkout repository
@@ -45,30 +42,32 @@ jobs:
           echo -n "$GOOGLE_SERVICE_INFO" | base64 --decode -o ios/Runner/GoogleService-Info.plist
       - name: Ensure Flutter SDK is Installed
         run: |
-          if [ ! -f "${FLUTTER_BIN}" ]; then
+          if [ ! -f "$HOME/flutter/bin/flutter" ]; then
             echo "Flutter binary not found. Downloading Flutter stable..."
-            rm -rf /Users/${MAC_USERNAME}/flutter || true
-            git clone https://github.com/flutter/flutter.git -b stable /Users/${MAC_USERNAME}/flutter
-            ${FLUTTER_BIN} precache
+            rm -rf "$HOME/flutter" || true
+            git clone https://github.com/flutter/flutter.git -b stable "$HOME/flutter"
+            "$HOME/flutter/bin/flutter" precache
           else
-            echo "Flutter SDK found at ${FLUTTER_BIN}"
+            echo "Flutter SDK found."
           fi
+          
+          echo "$HOME/flutter/bin" >> $GITHUB_PATH
       - name: Flutter Clean
-        run: ${FLUTTER_BIN} clean
+        run: flutter clean
 
       - name: Clean iOS Pods
         run: |
           rm -rf ios/Pods
           rm -f ios/Podfile.lock
       - name: Flutter Pub Get
-        run: ${FLUTTER_BIN} pub get
+        run: flutter pub get
 
       - name: Install iOS Pods
         run: |
           cd ios
           pod install --repo-update
       - name: Rebuild iOS Launcher Icons
-        run: ${FLUTTER_BIN} pub run flutter_launcher_icons
+        run: flutter pub run flutter_launcher_icons
 
       - name: Install Apple Certificate and Provisioning Profile
         env:
@@ -93,7 +92,7 @@ jobs:
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
       - name: Build Flutter IPA
-        run: ${FLUTTER_BIN} build ipa --release --export-method=app-store
+        run: flutter build ipa --release --export-method=app-store
         
       - name: Verify Push Notification Entitlement
         run: |
