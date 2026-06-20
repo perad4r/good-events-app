@@ -259,7 +259,7 @@ class MyServicesController extends GetxController {
     final picked = await picker.pickMultiImage(imageQuality: 85);
     if (picked.isEmpty) return;
 
-    const maxSizeBytes = 5 * 1024 * 1024; // 5 MB
+    const maxSizeBytes = 20 * 1024 * 1024; // 20 MB
     final remaining = 10 - serviceImages.length;
     final candidates = picked.take(remaining).toList();
 

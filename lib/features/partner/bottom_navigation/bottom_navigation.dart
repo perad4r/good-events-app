@@ -46,7 +46,7 @@ class PartnerBottomNavigationView
               ),
               _buildNavItem(
                 FIcons.calendarPlus,
-                'new_show'.tr,
+                'show_quote'.tr,
                 2,
                 controller.currentIndex.value,
               ),

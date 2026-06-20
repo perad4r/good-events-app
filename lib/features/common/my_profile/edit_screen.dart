@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/data/models/location_model.dart';
 import 'package:sukientotapp/features/components/button/plus.dart';
@@ -431,6 +432,7 @@ class _PartnerCard extends StatelessWidget {
           _UploadRow(
             icon: FIcons.camera,
             label: 'selfie_image'.tr,
+            validator: controller.validateProfileImage,
             onPicked: (f) => controller.selfieFile.value = f,
             onRemoved: () => controller.selfieFile.value = null,
           ),
@@ -438,6 +440,7 @@ class _PartnerCard extends StatelessWidget {
           _UploadRow(
             icon: FIcons.idCard,
             label: 'identity_card_image_front'.tr,
+            validator: controller.validateProfileImage,
             onPicked: (f) => controller.frontCardFile.value = f,
             onRemoved: () => controller.frontCardFile.value = null,
           ),
@@ -445,6 +448,7 @@ class _PartnerCard extends StatelessWidget {
           _UploadRow(
             icon: FIcons.idCard,
             label: 'identity_card_image_back'.tr,
+            validator: controller.validateProfileImage,
             onPicked: (f) => controller.backCardFile.value = f,
             onRemoved: () => controller.backCardFile.value = null,
           ),
@@ -457,12 +461,14 @@ class _PartnerCard extends StatelessWidget {
 class _UploadRow extends StatelessWidget {
   final IconData icon;
   final String label;
-  final void Function(dynamic) onPicked;
+  final Future<bool> Function(XFile)? validator;
+  final void Function(XFile) onPicked;
   final VoidCallback onRemoved;
 
   const _UploadRow({
     required this.icon,
     required this.label,
+    this.validator,
     required this.onPicked,
     required this.onRemoved,
   });
@@ -486,7 +492,12 @@ class _UploadRow extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 8),
-        UploadPhoto(onImagePicked: onPicked, onImageRemoved: onRemoved),
+        UploadPhoto(
+          onImagePicked: onPicked,
+          onImageRemoved: onRemoved,
+          validator: validator,
+          description: 'profile_upload_description'.tr,
+        ),
       ],
     );
   }

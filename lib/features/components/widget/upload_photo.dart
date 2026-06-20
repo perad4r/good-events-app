@@ -8,11 +8,15 @@ import 'package:sukientotapp/features/components/button/plus.dart';
 class UploadPhoto extends StatefulWidget {
   final Function(XFile) onImagePicked;
   final VoidCallback? onImageRemoved;
+  final Future<bool> Function(XFile)? validator;
+  final String? description;
 
   const UploadPhoto({
     super.key,
     required this.onImagePicked,
     this.onImageRemoved,
+    this.validator,
+    this.description,
   });
 
   @override
@@ -26,9 +30,17 @@ class _UploadPhotoState extends State<UploadPhoto> {
   Future<void> _pickFromGallery() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      setState(() => _pickedImage = image);
-      widget.onImagePicked(image);
+      await _setPickedImage(image);
     }
+  }
+
+  Future<void> _setPickedImage(XFile image) async {
+    final validator = widget.validator;
+    if (validator != null && !await validator(image)) return;
+    if (!mounted) return;
+
+    setState(() => _pickedImage = image);
+    widget.onImagePicked(image);
   }
 
   void _removeImage() {
@@ -47,8 +59,7 @@ class _UploadPhotoState extends State<UploadPhoto> {
     try {
       final XFile? image = await _picker.pickImage(source: ImageSource.camera);
       if (image != null) {
-        setState(() => _pickedImage = image);
-        widget.onImagePicked(image);
+        await _setPickedImage(image);
       } else {
         // pickImage returns null when the user cancels OR denies permission.
         // Re-check status and show dialog if permission is not granted.
@@ -135,7 +146,7 @@ class _UploadPhotoState extends State<UploadPhoto> {
                         ),
                       ),
                       Text(
-                        'upload_description'.tr,
+                        widget.description ?? 'upload_description'.tr,
                         style: context.typography.sm.copyWith(
                           fontWeight: FontWeight.bold,
                           color: context.fTheme.colors.mutedForeground,
