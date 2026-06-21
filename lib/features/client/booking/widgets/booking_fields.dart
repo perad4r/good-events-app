@@ -135,6 +135,10 @@ class BookingTextField extends StatelessWidget {
         const SizedBox(height: 6),
         FTextFormField(
           control: FTextFieldControl.managed(controller: controller),
+          style: (FTextFieldStyle style) => style.copyWith(
+            fillColor: Colors.white,
+            filled: true,
+          ),
           hint: hint,
           maxLines: maxLines,
           autovalidateMode: hasError ? AutovalidateMode.always : AutovalidateMode.disabled,
