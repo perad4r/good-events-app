@@ -83,6 +83,10 @@ class LoginController extends GetxController {
 
           break;
       }
+    } on GoogleSignInException catch (e) {
+      if (e.code != GoogleSignInExceptionCode.canceled) {
+        AppSnackbar.showError(message: e.toString());
+      }
     } on UnverifiedUserException {
       AppSnackbar.showWarning(message: 'account_unverified'.tr);
       await Future.delayed(const Duration(seconds: 2));

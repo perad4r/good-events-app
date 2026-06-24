@@ -1,6 +1,7 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/client/bottom_navigation/controller.dart';
 import 'package:sukientotapp/features/client/home/controller.dart';
+import 'package:sukientotapp/features/client/order/controller.dart';
 
 class ClientBillCountPanel extends StatelessWidget {
   const ClientBillCountPanel({super.key, required this.controller});
@@ -23,6 +24,7 @@ class ClientBillCountPanel extends StatelessWidget {
             iconData: FIcons.calendarSearch,
             title: 'pending_order',
             count: summary?.pendingOrders.toString() ?? "0",
+            type: 'pending',
           ),
           _BillItem(
             width: itemWidth,
@@ -30,6 +32,7 @@ class ClientBillCountPanel extends StatelessWidget {
             iconData: FIcons.calendarCheck2,
             title: 'confirmed_order',
             count: summary?.confirmedOrders.toString() ?? "0",
+            type: 'confirmed',
           ),
         ],
       ).animate(delay: 300.ms).fadeIn(duration: 200.ms);
@@ -43,6 +46,7 @@ class _BillItem extends StatefulWidget {
   final IconData iconData;
   final String title;
   final String count;
+  final String type;
 
   const _BillItem({
     required this.width,
@@ -50,6 +54,7 @@ class _BillItem extends StatefulWidget {
     required this.iconData,
     required this.title,
     required this.count,
+    required this.type,
   });
 
   @override
@@ -65,6 +70,7 @@ class _BillItemState extends State<_BillItem> with SingleTickerProviderStateMixi
       onTap: () {
         _controller?.forward().then((_) => _controller?.reverse());
 
+        Get.find<ClientOrderController>().selectedStatusFilters.value = [widget.type];
         Get.find<ClientBottomNavigationController>().setIndex(1);
       },
       child:

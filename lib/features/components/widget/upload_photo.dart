@@ -10,6 +10,7 @@ class UploadPhoto extends StatefulWidget {
   final VoidCallback? onImageRemoved;
   final Future<bool> Function(XFile)? validator;
   final String? description;
+  final String? initialImageUrl;
 
   const UploadPhoto({
     super.key,
@@ -17,6 +18,7 @@ class UploadPhoto extends StatefulWidget {
     this.onImageRemoved,
     this.validator,
     this.description,
+    this.initialImageUrl,
   });
 
   @override
@@ -26,6 +28,8 @@ class UploadPhoto extends StatefulWidget {
 class _UploadPhotoState extends State<UploadPhoto> {
   XFile? _pickedImage;
   final ImagePicker _picker = ImagePicker();
+
+  bool get _hasInitialImage => widget.initialImageUrl?.trim().isNotEmpty == true;
 
   Future<void> _pickFromGallery() async {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
@@ -94,43 +98,83 @@ class _UploadPhotoState extends State<UploadPhoto> {
         GestureDetector(
           onTap: _pickFromGallery,
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
             width: double.infinity,
             decoration: BoxDecoration(
               color: context.fTheme.colors.background,
               borderRadius: BorderRadius.circular(16),
               border: Border.all(color: context.fTheme.colors.border, width: 2),
             ),
-            child: _pickedImage != null
-                ? Stack(
+            child: _pickedImage != null || _hasInitialImage
+                ? Column(
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.file(
-                          File(_pickedImage!.path),
-                          height: 150,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      Positioned(
-                        top: 6,
-                        right: 6,
-                        child: GestureDetector(
-                          onTap: _removeImage,
-                          child: Container(
-                            padding: const EdgeInsets.all(4),
-                            decoration: const BoxDecoration(
-                              color: Colors.black54,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.close,
-                              color: Colors.white,
-                              size: 16,
-                            ),
+                      Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: _pickedImage != null
+                                ? Image.file(
+                                    File(_pickedImage!.path),
+                                    height: 150,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                  )
+                                : CachedNetworkImage(
+                                    imageUrl: widget.initialImageUrl!,
+                                    height: 150,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) => Container(
+                                      height: 150,
+                                      color: context.fTheme.colors.muted,
+                                      child: const Center(
+                                        child: CircularProgressIndicator(),
+                                      ),
+                                    ),
+                                    errorWidget: (context, url, error) =>
+                                        Container(
+                                          height: 150,
+                                          color: context.fTheme.colors.muted,
+                                          child: Center(
+                                            child: Icon(
+                                              FIcons.imageOff,
+                                              color: context.fTheme.colors
+                                                  .mutedForeground,
+                                            ),
+                                          ),
+                                        ),
+                                  ),
                           ),
+                          if (_pickedImage != null)
+                            Positioned(
+                              top: 6,
+                              right: 6,
+                              child: GestureDetector(
+                                onTap: _removeImage,
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Colors.white,
+                                    size: 16,
+                                  ),
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'click_to_change_image'.tr,
+                        style: context.typography.sm.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: context.fTheme.colors.primary,
                         ),
+                        textAlign: TextAlign.center,
                       ),
                     ],
                   )

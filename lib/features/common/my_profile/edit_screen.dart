@@ -432,6 +432,7 @@ class _PartnerCard extends StatelessWidget {
           _UploadRow(
             icon: FIcons.camera,
             label: 'selfie_image'.tr,
+            initialImageUrl: controller.initialProfile.selfieImage,
             validator: controller.validateProfileImage,
             onPicked: (f) => controller.selfieFile.value = f,
             onRemoved: () => controller.selfieFile.value = null,
@@ -440,6 +441,7 @@ class _PartnerCard extends StatelessWidget {
           _UploadRow(
             icon: FIcons.idCard,
             label: 'identity_card_image_front'.tr,
+            initialImageUrl: controller.initialProfile.frontIdentityCardImage,
             validator: controller.validateProfileImage,
             onPicked: (f) => controller.frontCardFile.value = f,
             onRemoved: () => controller.frontCardFile.value = null,
@@ -448,6 +450,7 @@ class _PartnerCard extends StatelessWidget {
           _UploadRow(
             icon: FIcons.idCard,
             label: 'identity_card_image_back'.tr,
+            initialImageUrl: controller.initialProfile.backIdentityCardImage,
             validator: controller.validateProfileImage,
             onPicked: (f) => controller.backCardFile.value = f,
             onRemoved: () => controller.backCardFile.value = null,
@@ -461,6 +464,7 @@ class _PartnerCard extends StatelessWidget {
 class _UploadRow extends StatelessWidget {
   final IconData icon;
   final String label;
+  final String? initialImageUrl;
   final Future<bool> Function(XFile)? validator;
   final void Function(XFile) onPicked;
   final VoidCallback onRemoved;
@@ -468,6 +472,7 @@ class _UploadRow extends StatelessWidget {
   const _UploadRow({
     required this.icon,
     required this.label,
+    this.initialImageUrl,
     this.validator,
     required this.onPicked,
     required this.onRemoved,
@@ -497,6 +502,7 @@ class _UploadRow extends StatelessWidget {
           onImageRemoved: onRemoved,
           validator: validator,
           description: 'profile_upload_description'.tr,
+          initialImageUrl: initialImageUrl,
         ),
       ],
     );

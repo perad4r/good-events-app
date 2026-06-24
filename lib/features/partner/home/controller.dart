@@ -74,6 +74,22 @@ class PartnerHomeController extends GetxController {
         value: newBalance,
       );
     }
+
+    final newAvatar = dashboardData.value?.avatarUrl;
+
+    logger.d(
+      '[PartnerHomeController] [onInit] currentAvatar: ${avatar.value}, newAvatar: $newAvatar',
+    );
+
+    if (newAvatar != null && newAvatar != avatar.value) {
+      avatar.value = newAvatar;
+
+      StorageService.writeSingleMapData(
+        key: LocalStorageKeys.user,
+        mapKey: 'avatar_url',
+        value: newAvatar,
+      );
+    }
   }
 
   void syncFromStorage() {
@@ -138,6 +154,7 @@ class PartnerHomeController extends GetxController {
     if (current == null) return;
 
     dashboardData.value = DashboardModel(
+      avatarUrl: current.avatarUrl,
       balance: current.balance,
       revenue: current.revenue,
       recentReviewsCount: current.recentReviewsCount,

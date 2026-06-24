@@ -531,6 +531,7 @@ class AppTranslations extends Translations {
           'Sau khi bạn tải lên giấy tờ tùy thân, đội ngũ của chúng tôi sẽ xem xét và xác minh danh tính của bạn trong vòng 24-48 giờ. Bạn sẽ nhận được thông báo khi quá trình xác minh hoàn tất.',
 
       'click_to_upload': 'Nhấn để tải ảnh lên',
+      'click_to_change_image': 'Bấm để thay đổi hình ảnh',
       'upload_description': 'PNG, JPG, JPEG, WEBP (Tối đa 5MB)',
       'profile_upload_description': 'PNG, JPG, JPEG, WEBP (Tối đa 10MB)',
 
@@ -1367,6 +1368,7 @@ class AppTranslations extends Translations {
       'currency': 'VNĐ',
 
       'click_to_upload': 'Click to upload',
+      'click_to_change_image': 'Click to change image',
       'upload_description': 'PNG, JPG, JPEG, WEBP (Maximum 5MB)',
       'profile_upload_description': 'PNG, JPG, JPEG, WEBP (Maximum 10MB)',
 
