@@ -221,7 +221,6 @@ mixin ClientOrderDetailState {
   }
 
   String get partnerAvatarUrl {
-    logger.d('Getting partner avatar URL: ${_historyOrder.value?.partner?.avatarUrl}');
     if (isHistory.value && _historyOrder.value != null) {
       return _historyOrder.value!.partner?.avatarUrl ??
           'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_historyOrder.value!.partner?.name ?? '')}&background=random&size=512&format=png';
