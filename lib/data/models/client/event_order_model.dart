@@ -15,6 +15,7 @@ class EventOrderModel {
   final String categoryImage;
   final String eventName;
   final int applicantCount;
+  final List<String> bookingPhotos;
 
   EventOrderModel({
     required this.id,
@@ -33,6 +34,7 @@ class EventOrderModel {
     required this.categoryImage,
     required this.eventName,
     required this.applicantCount,
+    required this.bookingPhotos,
   });
 
   factory EventOrderModel.fromJson(Map<String, dynamic> json) {
@@ -55,6 +57,17 @@ class EventOrderModel {
       categoryImage: json['category_image'] as String? ?? '',
       eventName: (json['event_name'] as String? ?? '').trim(),
       applicantCount: json['applicant_count'] as int? ?? 0,
+      bookingPhotos: _parseBookingPhotos(json['booking_photos']),
     );
+  }
+
+  static List<String> _parseBookingPhotos(dynamic value) {
+    if (value is! List) return const <String>[];
+
+    return value
+        .map((photo) => photo?.toString().trim() ?? '')
+        .where((photo) => photo.isNotEmpty)
+        .take(5)
+        .toList(growable: false);
   }
 }

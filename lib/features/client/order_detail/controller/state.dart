@@ -196,6 +196,16 @@ mixin ClientOrderDetailState {
     return null;
   }
 
+  List<String> get bookingPhotos {
+    if (isHistory.value && _historyOrder.value != null) {
+      return _historyOrder.value!.bookingPhotos.take(5).toList(growable: false);
+    }
+    if (!isHistory.value && _eventOrder.value != null) {
+      return _eventOrder.value!.bookingPhotos.take(5).toList(growable: false);
+    }
+    return const <String>[];
+  }
+
   int? get partnerId {
     if (isHistory.value && _historyOrder.value != null) {
       return _historyOrder.value!.partner?.id;
