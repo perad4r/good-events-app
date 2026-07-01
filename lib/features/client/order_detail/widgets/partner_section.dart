@@ -28,12 +28,11 @@ class PartnerSection extends GetView<ClientOrderDetailController> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildNoticeBanner(context),
-          const SizedBox(height: 14),
           Obx(() {
             if (!controller.isHistory.value) {
-              return const SizedBox.shrink();
+              return _buildNoticeBanner(context);
             }
+
             return Container(
               width: double.infinity,
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
