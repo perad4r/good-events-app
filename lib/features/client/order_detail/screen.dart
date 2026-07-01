@@ -16,19 +16,31 @@ class ClientOrderDetailScreen extends GetView<ClientOrderDetailController> {
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        Positioned.fill(
+          child: ColoredBox(color: const Color(0xFFF8FAFC)),
+        ),
         Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.transparent,
           appBar: AppBar(
-            titleSpacing: 0,
-            backgroundColor: Colors.white,
+            titleSpacing: 4,
+            backgroundColor: Colors.white.withValues(alpha: 0.92),
             elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+              style: IconButton.styleFrom(
+                backgroundColor: const Color(0xFFF1F5F9),
+                foregroundColor: const Color(0xFF0F172A),
+              ),
+              icon: const Icon(Icons.arrow_back_rounded),
               onPressed: () => Get.back(),
             ),
             title: Text(
               'back_to_list'.tr,
-              style: context.typography.sm.copyWith(color: Colors.black),
+              style: context.typography.sm.copyWith(
+                color: const Color(0xFF0F172A),
+                fontWeight: FontWeight.w700,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -39,12 +51,12 @@ class ClientOrderDetailScreen extends GetView<ClientOrderDetailController> {
               enablePullUp: false,
               header: const ClassicHeader(),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const OrderDetailHeader(),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
                     const PartnerSection(),
                     const SizedBox(height: 16),
                     const BookingPhotosSection(),
@@ -54,7 +66,8 @@ class ClientOrderDetailScreen extends GetView<ClientOrderDetailController> {
                     const UserReviewSection(),
                     const SizedBox(height: 18),
                     const DetailedInfoSection(),
-                    const SizedBox(height: 100), // Bottom padding for fixed buttons
+                    // Bottom padding for fixed buttons.
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
@@ -63,7 +76,8 @@ class ClientOrderDetailScreen extends GetView<ClientOrderDetailController> {
           bottomNavigationBar: const BottomActions(),
         ),
         Obx(() {
-          if (controller.isChoosingPartner.value || controller.isCancellingOrder.value) {
+          if (controller.isChoosingPartner.value ||
+              controller.isCancellingOrder.value) {
             return Container(
               color: Colors.black.withValues(alpha: 0.3),
               child: const Center(

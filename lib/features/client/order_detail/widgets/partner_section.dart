@@ -7,31 +7,51 @@ class PartnerSection extends GetView<ClientOrderDetailController> {
 
   @override
   Widget build(BuildContext context) {
+    final Color primary = FTheme.of(context).colors.primary;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          color: FTheme.of(context).colors.primary.withValues(alpha: 0.2),
-          width: 2,
+          color: primary.withValues(alpha: 0.12),
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          _buildNoticeBanner(context),
+          const SizedBox(height: 14),
           Obx(() {
-            if (!controller.isHistory.value && controller.status != 'pending') {
+            if (!controller.isHistory.value) {
               return const SizedBox.shrink();
             }
-            return Text(
-              controller.isHistory.value
-                  ? 'you_are_viewing_history'.tr
-                  : 'please_wait_a_moment'.tr,
-              style: context.typography.sm.copyWith(color: Colors.grey[600]),
+            return Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
+              child: Text(
+                'you_are_viewing_history'.tr,
+                style: context.typography.sm.copyWith(
+                  color: const Color(0xFF64748B),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             );
           }),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Obx(() {
             // Current orders: loop over applicants from the API
             if (!controller.isHistory.value) {
@@ -46,17 +66,7 @@ class PartnerSection extends GetView<ClientOrderDetailController> {
 
               final allItems = controller.orderDetail.value?.items ?? [];
               if (allItems.isEmpty) {
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  child: Center(
-                    child: Text(
-                      'partner_not_found'.tr,
-                      style: context.typography.sm.copyWith(
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ),
-                );
+                return _buildWaitingQuoteState(context);
               }
 
               // If a partner was already chosen (closed), only show that one
@@ -85,15 +95,91 @@ class PartnerSection extends GetView<ClientOrderDetailController> {
     );
   }
 
+  Widget _buildWaitingQuoteState(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.schedule_rounded,
+            color: Color(0xFF64748B),
+            size: 18,
+          ),
+          const SizedBox(width: 8),
+          Flexible(
+            child: Text(
+              'Đang chờ nhân sự báo giá',
+              style: context.typography.sm.copyWith(
+                color: const Color(0xFF475569),
+                fontWeight: FontWeight.w700,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNoticeBanner(BuildContext context) {
+    const String noticeText =
+        'Lưu ý: Sau khi đặt đơn, bạn có 48 giờ để chót nhân sự. Sau 48 giờ nếu không có nhân sự nào được chốt thì đơn hàng sẽ tự động hủy';
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFFFBEB),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFFDE68A)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 28,
+            width: 28,
+            decoration: const BoxDecoration(
+              color: Color(0xFFFEF3C7),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.info_outline_rounded,
+              color: Color(0xFFD97706),
+              size: 18,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              noticeText,
+              style: context.typography.sm.copyWith(
+                color: const Color(0xFF92400E),
+                fontWeight: FontWeight.w600,
+                height: 1.35,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildHistoryPartnerCard(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border.all(
-          color: FTheme.of(context).colors.primary.withValues(alpha: 0.2),
-          width: 1.5,
+          color: FTheme.of(context).colors.primary.withValues(alpha: 0.14),
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
       ),
       padding: const EdgeInsets.all(16),
       child: Column(
