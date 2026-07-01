@@ -295,4 +295,8 @@ mixin ClientOrderDetailState {
     }
     return null;
   }
+
+  bool get canSubmitReview {
+    return status == 'completed' && review == null;
+  }
 }
