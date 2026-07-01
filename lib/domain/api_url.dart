@@ -29,6 +29,7 @@ class AppUrl {
 
   // Partner Dashboard
   static const String partnerDashboard = '/partner/dashboard';
+  static const String partnerReviews = '/partner/reviews';
 
   // Client Home Screen APIs
   static const String homeSummary = '/event/home';

@@ -137,6 +137,14 @@ class Pages {
       transitionDuration: const Duration(milliseconds: 300),
     ),
 
+    GetPage(
+      name: Routes.partnerReviews,
+      page: () => const PartnerReviewsScreen(),
+      binding: PartnerReviewsBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+
     //Partner Detail
     GetPage(
       name: Routes.partnerDetail,

@@ -685,6 +685,7 @@ class AppTranslations extends Translations {
 
       'my_profile': 'Hồ sơ của tôi',
       'show_calendar': 'Lịch show',
+      'my_reviews': 'Đánh giá của tôi',
       'change_password': 'Đổi mật khẩu',
       'current_password': 'Mật khẩu hiện tại',
       'current_password_hint': 'Nhập mật khẩu hiện tại',
@@ -790,6 +791,13 @@ class AppTranslations extends Translations {
       'delete_account_message':
           'Hành động này không thể hoàn tác. Vui lòng nhập mật khẩu để xác nhận.',
       'password_required': 'Vui lòng nhập mật khẩu.',
+      'review_comment': 'Nội dung đánh giá',
+      'no_review_comment': 'Khách hàng chưa để lại bình luận.',
+      'recommendation': 'Đề xuất',
+      'rating_details': 'Chi tiết điểm đánh giá',
+      'no_partner_reviews': 'Chưa có đánh giá nào',
+      'no_partner_reviews_desc':
+          'Khi khách hàng hoàn tất đánh giá, các nhận xét sẽ xuất hiện tại đây.',
 
       ///my services
       'my_services': 'Dịch vụ của tôi',
@@ -1593,6 +1601,7 @@ class AppTranslations extends Translations {
 
       'my_profile': 'My Profile',
       'show_calendar': 'Show Calendar',
+      'my_reviews': 'My Reviews',
       'change_password': 'Change Password',
       'current_password': 'Current Password',
       'current_password_hint': 'Enter current password',
@@ -1696,6 +1705,13 @@ class AppTranslations extends Translations {
       'delete_account_message':
           'This action cannot be undone. Please enter your password to confirm.',
       'password_required': 'Please enter your password.',
+      'review_comment': 'Review comment',
+      'no_review_comment': 'The client has not left a comment.',
+      'recommendation': 'Recommendation',
+      'rating_details': 'Rating details',
+      'no_partner_reviews': 'No reviews yet',
+      'no_partner_reviews_desc':
+          'Customer reviews will appear here after they are submitted.',
 
       ///my services
       'my_services': 'My Services',

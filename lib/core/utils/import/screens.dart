@@ -21,6 +21,7 @@ export 'package:sukientotapp/features/partner/show_calendar/screen.dart';
 export 'package:sukientotapp/features/partner/my_services/screen.dart';
 export 'package:sukientotapp/features/partner/service_areas/screen.dart';
 export 'package:sukientotapp/features/partner/analytics/screen.dart';
+export 'package:sukientotapp/features/partner/reviews/screen.dart';
 
 //Client
 export 'package:sukientotapp/features/client/bottom_navigation/bottom_navigation.dart';

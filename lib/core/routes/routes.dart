@@ -24,6 +24,7 @@ abstract class Routes {
   static const partnerMyServices = '/partner/my-services';
   static const partnerServiceAreas = '/partner/service-areas';
   static const partnerAnalytics = '/partner/analytics';
+  static const partnerReviews = '/partner/reviews';
 
   // Client
   static const clientHome = '/client/home';
