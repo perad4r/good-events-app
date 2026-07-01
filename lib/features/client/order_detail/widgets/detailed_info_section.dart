@@ -145,7 +145,8 @@ class DetailedInfoSection extends GetView<ClientOrderDetailController> {
           const SizedBox(height: 20),
           Obx(() {
             if (!controller.isHistory.value &&
-                controller.status != 'confirmed') {
+                controller.status != 'confirmed' &&
+                controller.status != 'in_job') {
               return _buildVoucherSection(context, primary);
             }
 
@@ -291,10 +292,7 @@ class DetailedInfoSection extends GetView<ClientOrderDetailController> {
               ],
             ),
           ),
-          if (trailing != null) ...[
-            const SizedBox(width: 8),
-            trailing,
-          ],
+          if (trailing != null) ...[const SizedBox(width: 8), trailing],
         ],
       ),
     );
@@ -339,11 +337,7 @@ class DetailedInfoSection extends GetView<ClientOrderDetailController> {
               if (constraints.maxWidth < 360) {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    field,
-                    const SizedBox(height: 8),
-                    button,
-                  ],
+                  children: [field, const SizedBox(height: 8), button],
                 );
               }
 
@@ -397,9 +391,7 @@ class DetailedInfoSection extends GetView<ClientOrderDetailController> {
           backgroundColor: primary,
           foregroundColor: Colors.white,
           elevation: 0,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
         child: controller.isCheckingVoucher.value
             ? const SizedBox(
