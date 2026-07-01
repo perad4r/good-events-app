@@ -1,3 +1,5 @@
+# build-run-trigger-2
+
 # Sự Kiện Tốt (Good Event App)
 
 Ứng dụng di động dành cho hệ sinh thái tổ chức sự kiện, kết nối khách hàng có nhu cầu với các đối tác cung cấp dịch vụ, vật tư và thiết kế chuyên nghiệp.
