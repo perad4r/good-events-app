@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sukientotapp/core/services/api_service.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
 
@@ -65,10 +66,39 @@ class MessageProvider {
 
   Future<void> sendMessage({
     required String endpoint,
-    required String body,
+    required String type,
+    String? body,
+    List<XFile>? images,
+    Map<String, dynamic>? location,
   }) async {
     try {
-      await _apiService.dio.post(endpoint, data: {'body': body});
+      if (images != null && images.isNotEmpty) {
+        final formData = FormData.fromMap({
+          'type': type,
+          if (body != null && body.trim().isNotEmpty) 'body': body.trim(),
+        });
+
+        for (final image in images) {
+          formData.files.add(
+            MapEntry(
+              'images[]',
+              await MultipartFile.fromFile(image.path, filename: image.name),
+            ),
+          );
+        }
+
+        await _apiService.dio.post(endpoint, data: formData);
+        return;
+      }
+
+      await _apiService.dio.post(
+        endpoint,
+        data: {
+          'type': type,
+          if (body != null && body.trim().isNotEmpty) 'body': body.trim(),
+          if (location != null && location.isNotEmpty) 'location': location,
+        },
+      );
     } on DioException catch (e) {
       logger.e('[MessageProvider] [sendMessage] DioException: ${e.message}');
       if (e.response != null) {

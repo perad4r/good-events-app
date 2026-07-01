@@ -53,6 +53,8 @@
 		<string>Ứng dụng yêu cầu quyền truy cập camera để bạn có thể chụp ảnh hoàn thành đơn hoặc hồ sơ.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
 		<string>Ứng dụng yêu cầu quyền truy cập vào thư viện ảnh để tải lên ảnh hoàn thành đơn hoặc hồ sơ.</string>
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>Ứng dụng yêu cầu quyền truy cập vị trí để bạn có thể gửi vị trí hiện tại trong cuộc trò chuyện.</string>
 		<key>NSUserNotificationUsageDescription</key>
 		<string>Cho phép nhận thông báo đơn hàng và cập nhật từ Sự kiện tốt</string>
 		<key>UIApplicationSceneManifest</key>

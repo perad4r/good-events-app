@@ -35,8 +35,8 @@ class ShowRepositoryImpl implements ShowRepository {
   }
 
   @override
-  Future<bool> completeBill(int billId) async {
-    return _provider.completeBill(billId);
+  Future<bool> completeBill(int billId, XFile image) async {
+    return _provider.completeBill(billId, image);
   }
 
   @override

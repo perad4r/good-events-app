@@ -209,6 +209,7 @@ class NewShowScreen extends GetView<NewShowController> {
               endTime: bill.endTime,
               address: bill.address,
               note: bill.note ?? 'unknown',
+              bookingPhotos: bill.bookingPhotos,
             );
           },
         );

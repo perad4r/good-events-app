@@ -1,13 +1,12 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 
 import 'package:sukientotapp/features/components/widget/badge.dart';
-import 'package:sukientotapp/features/components/widget/confirm_dialog.dart';
 import 'package:sukientotapp/features/components/widget/show_detail.dart';
 
 import 'package:sukientotapp/features/common/message/controller.dart';
 
-import '../controller.dart';
 import 'upload_arrived_photo.dart';
+import 'upload_completion_photo.dart';
 import 'review.dart';
 
 class Show extends StatelessWidget {
@@ -26,6 +25,7 @@ class Show extends StatelessWidget {
     required this.address,
     required this.note,
     required this.currentStatus,
+    this.bookingPhotos = const <String>[],
     this.reviewExists = false,
   });
 
@@ -42,6 +42,7 @@ class Show extends StatelessWidget {
   final String address;
   final String note;
   final String currentStatus;
+  final List<String> bookingPhotos;
   final bool reviewExists;
 
   static const Map<String, Map<String, Color>> _statusColors = {
@@ -303,6 +304,7 @@ class Show extends StatelessWidget {
                       date: date,
                       address: address,
                       note: note,
+                      bookingPhotos: bookingPhotos,
                       total: price,
                     ),
                     isScrollControlled: true,
@@ -336,18 +338,25 @@ class Show extends StatelessWidget {
                               child: GestureDetector(
                                 onTap: () {
                                   if (currentStatus == 'in_job') {
-                                    ConfirmDialog.show(
-                                      title: 'confirm_complete'.tr,
-                                      message: 'confirm_complete_message'.tr,
-                                      confirmText: 'complete'.tr,
-                                      icon: FIcons.checkCheck,
-                                      iconColor: const Color(0xFF15803D),
-                                      confirmColor: const Color(0xFF15803D),
-                                      onConfirm: () {
-                                        Get.find<ShowController>().completeBill(
-                                          billId,
-                                        );
-                                      },
+                                    Get.bottomSheet(
+                                      UploadCompletionPhoto(
+                                        code: code,
+                                        billId: billId,
+                                      ),
+                                      isScrollControlled: true,
+                                      backgroundColor:
+                                          context.fTheme.colors.background,
+                                      enterBottomSheetDuration: const Duration(
+                                        milliseconds: 400,
+                                      ),
+                                      exitBottomSheetDuration: const Duration(
+                                        milliseconds: 300,
+                                      ),
+                                      shape: const RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(20),
+                                        ),
+                                      ),
                                     );
                                   } else {
                                     Get.bottomSheet(

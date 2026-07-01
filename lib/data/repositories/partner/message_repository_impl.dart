@@ -1,3 +1,4 @@
+import 'package:image_picker/image_picker.dart';
 import 'package:sukientotapp/data/providers/common/message_provider.dart';
 import 'package:sukientotapp/domain/api_url.dart';
 import 'package:sukientotapp/domain/repositories/partner/message_repository.dart';
@@ -37,11 +38,17 @@ class MessageRepositoryImpl implements MessageRepository {
   @override
   Future<void> sendMessage({
     required String threadId,
-    required String body,
+    required String type,
+    String? body,
+    List<XFile>? images,
+    Map<String, dynamic>? location,
   }) async {
     return _provider.sendMessage(
       endpoint: AppUrl.chatMessages(threadId),
+      type: type,
       body: body,
+      images: images,
+      location: location,
     );
   }
 }

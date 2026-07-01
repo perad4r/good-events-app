@@ -2,7 +2,9 @@ import 'package:sukientotapp/core/utils/import/global.dart';
 import 'controller/controller.dart';
 import 'widgets/order_detail_header.dart';
 import 'widgets/partner_section.dart';
+import 'widgets/booking_photos_section.dart';
 import 'widgets/arrival_photo_section.dart';
+import 'widgets/completion_photo_section.dart';
 import 'widgets/user_review_section.dart';
 import 'widgets/detailed_info_section.dart';
 import 'widgets/bottom_actions.dart';
@@ -45,7 +47,9 @@ class ClientOrderDetailScreen extends GetView<ClientOrderDetailController> {
                     const SizedBox(height: 16),
                     const PartnerSection(),
                     const SizedBox(height: 16),
+                    const BookingPhotosSection(),
                     const ArrivalPhotoSection(),
+                    const CompletionPhotoSection(),
                     const SizedBox(height: 18),
                     const UserReviewSection(),
                     const SizedBox(height: 18),

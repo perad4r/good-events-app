@@ -59,8 +59,18 @@ class ShowProvider {
     return response.statusCode == 200;
   }
 
-  Future<bool> completeBill(int billId) async {
-    final response = await _apiService.dio.post(AppUrl.partnerBillComplete(billId));
+  Future<bool> completeBill(int billId, XFile image) async {
+    final formData = FormData.fromMap({
+      'completion_photo': await MultipartFile.fromFile(
+        image.path,
+        filename: image.name,
+      ),
+    });
+    final response = await _apiService.dio.post(
+      AppUrl.partnerBillComplete(billId),
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
     return response.statusCode == 200;
   }
 

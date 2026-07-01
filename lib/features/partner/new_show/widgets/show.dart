@@ -19,6 +19,7 @@ class Show extends StatelessWidget {
     required this.endTime,
     required this.address,
     this.note = 'unknown',
+    this.bookingPhotos = const <String>[],
   });
 
   final int billId;
@@ -34,6 +35,7 @@ class Show extends StatelessWidget {
   final String endTime;
   final String address;
   final String note;
+  final List<String> bookingPhotos;
 
   static const _accentColor = Color(0xFF6366F1);
 
@@ -201,6 +203,7 @@ class Show extends StatelessWidget {
                     const SizedBox(height: 6),
                     _buildChip(context, FIcons.notepadText, note, expand: true),
                   ],
+
                 ],
               ),
             ),
@@ -222,6 +225,7 @@ class Show extends StatelessWidget {
                     date: date,
                     address: address,
                     note: note,
+                    bookingPhotos: bookingPhotos,
                     total: 0,
                     isNew: true,
                   ),

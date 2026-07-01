@@ -14,7 +14,7 @@ abstract class ShowRepository {
 
   Future<bool> markInJob(int billId, XFile image);
 
-  Future<bool> completeBill(int billId);
+  Future<bool> completeBill(int billId, XFile image);
 
   Future<bool> cancelAcceptBill(int billId);
 

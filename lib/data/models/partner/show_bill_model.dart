@@ -16,6 +16,7 @@ class ShowBill {
   final String status;
   final String? note;
   final int? threadId;
+  final List<String> bookingPhotos;
 
   final bool? isReviewed;
 
@@ -35,6 +36,7 @@ class ShowBill {
     required this.status,
     this.note,
     this.threadId,
+    this.bookingPhotos = const <String>[],
 
     this.isReviewed,
   });
@@ -55,6 +57,7 @@ class ShowBill {
       status: status ?? this.status,
       note: note,
       threadId: threadId,
+      bookingPhotos: bookingPhotos,
       isReviewed: isReviewed ?? this.isReviewed,
     );
   }
@@ -76,8 +79,19 @@ class ShowBill {
       note: map['note'] as String?,
       threadId: map['thread_id'] as int?,
       event: map['event'] as String,
+      bookingPhotos: _parseBookingPhotos(map['booking_photos']),
       isReviewed: map['review_exists'] == true,
     );
+  }
+
+  static List<String> _parseBookingPhotos(dynamic value) {
+    if (value is! List) return const <String>[];
+
+    return value
+        .map((photo) => photo?.toString().trim() ?? '')
+        .where((photo) => photo.isNotEmpty)
+        .take(5)
+        .toList(growable: false);
   }
 }
 

@@ -105,6 +105,11 @@ class AppUrl {
   static const String partnerWalletConfirmAddFunds =
       '/partner/wallet/confirm-add-funds';
 
+  // Partner Service Areas
+  static const String partnerServiceAreas = '/partner/service-areas';
+  static const String partnerServiceAreasUpdate =
+      '/partner/service-areas/update';
+
   // Partner Analytics
   static const String partnerAnalyticsStatistics =
       '/partner/analytics/statistics';

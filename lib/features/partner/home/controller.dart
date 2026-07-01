@@ -1,6 +1,7 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/domain/repositories/partner/dashboard_repository.dart';
 import 'package:sukientotapp/data/models/partner/dashboard_model.dart';
+import 'widgets/app_notification_card.dart';
 
 class PartnerHomeController extends GetxController {
   final DashboardRepository _dashboardRepository;
@@ -44,6 +45,7 @@ class PartnerHomeController extends GetxController {
   RxBool hasNotification = false.obs;
 
   RxBool isLoading = true.obs;
+  RxBool isAppNotificationDismissed = true.obs;
   Rxn<DashboardModel> dashboardData = Rxn<DashboardModel>();
 
   @override
@@ -160,22 +162,64 @@ class PartnerHomeController extends GetxController {
       recentReviewsCount: current.recentReviewsCount,
       recentReviewsAvatars: current.recentReviewsAvatars,
       quarterlyRevenue: current.quarterlyRevenue,
+      appNotification: current.appNotification,
     );
   }
 
+  void dismissAppNotification() {
+    isAppNotificationDismissed.value = true;
+  }
+
   Future<void> fetchDashboardData() async {
+    DashboardModel? data;
     try {
       isLoading.value = true;
-      final data = await _dashboardRepository.getDashboardData();
+      data = await _dashboardRepository.getDashboardData();
+      isAppNotificationDismissed.value =
+          data.appNotification == null || !data.appNotification!.canDisplay;
       dashboardData.value = data;
-      if (isLegit.value == 'false') {
-        _showVerifyBanner();
-      }
     } catch (e) {
       logger.e('[PartnerHomeController] [fetchDashboardData] error: $e');
     } finally {
       isLoading.value = false;
     }
+
+    if (data != null) {
+      await _showStartupDialogs(data.appNotification);
+    }
+  }
+
+  Future<void> _showStartupDialogs(
+    PartnerAppNotification? appNotification,
+  ) async {
+    await Future<void>.delayed(Duration.zero);
+
+    if (appNotification != null &&
+        appNotification.canDisplay &&
+        !isAppNotificationDismissed.value) {
+      await _showAppNotificationDialog(appNotification);
+    }
+
+    if (isLegit.value == 'false') {
+      _showVerifyBanner();
+    }
+  }
+
+  Future<void> _showAppNotificationDialog(
+    PartnerAppNotification notification,
+  ) async {
+    await Get.dialog<void>(
+      AppNotificationCard(
+        notification: notification,
+        onDismiss: () {
+          dismissAppNotification();
+          Get.back<void>();
+        },
+      ),
+      barrierDismissible: true,
+    );
+
+    dismissAppNotification();
   }
 
   void _showVerifyBanner() {

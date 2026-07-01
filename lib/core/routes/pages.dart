@@ -122,6 +122,14 @@ class Pages {
     ),
 
     GetPage(
+      name: Routes.partnerServiceAreas,
+      page: () => const PartnerServiceAreasScreen(),
+      binding: PartnerServiceAreasBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+
+    GetPage(
       name: Routes.partnerAnalytics,
       page: () => const AnalyticsScreen(),
       binding: AnalyticsBinding(),

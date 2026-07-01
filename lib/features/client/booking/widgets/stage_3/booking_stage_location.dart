@@ -2,6 +2,7 @@ import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/client/booking/controller.dart';
 import 'package:sukientotapp/data/models/location_model.dart';
 import '../booking_fields.dart';
+import '../booking_header.dart';
 import '../booking_layout.dart';
 
 class BookingLocationStage extends GetView<ClientBookingController> {
@@ -12,33 +13,10 @@ class BookingLocationStage extends GetView<ClientBookingController> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Center(
-          child: Column(
-            children: [
-              Icon(
-                FIcons.mapPin,
-                size: 64,
-                color: context.fTheme.colors.mutedForeground,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'booking_stage_location_title'.tr,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Text(
-                'booking_stage_location_subtitle'.tr,
-                textAlign: TextAlign.center,
-                style: context.typography.base.copyWith(
-                  color: context.fTheme.colors.mutedForeground,
-                ),
-              ),
-            ],
-          ),
+        BookingHeader(
+          icon: FIcons.mapPin,
+          title: 'booking_stage_location_title'.tr,
+          subtitle: 'booking_stage_location_subtitle'.tr,
         ),
         const SizedBox(height: 24),
         BookingTwoColumnRow(

@@ -6,6 +6,7 @@ import 'package:sukientotapp/data/models/client/blog_home_model.dart';
 import 'package:sukientotapp/data/models/client/partner_category_model.dart';
 
 import 'package:sukientotapp/features/client/home/widgets/popup_search_sheet.dart';
+import 'package:sukientotapp/features/client/home/widgets/app_notification_card.dart';
 
 class ClientHomeController extends GetxController {
   final HomeRepository _repository;
@@ -20,6 +21,7 @@ class ClientHomeController extends GetxController {
   final isLoadingSummary = false.obs;
   final isLoadingBlogs = false.obs;
   final isLoadingPartners = false.obs;
+  final isAppNotificationDismissed = true.obs;
 
   Future<void> onRefresh() async {
     await fetchSummary();
@@ -46,9 +48,11 @@ class ClientHomeController extends GetxController {
     super.onInit();
     syncFromStorage();
     // Load all data on mount
-    fetchSummary();
+    fetchSummary(showAppNotification: true);
     fetchBlogs();
     fetchPartners();
+
+    logger.i('Fetched home summary: ${summary.value?.notification?.type}');
   }
 
   void syncFromStorage() {
@@ -68,22 +72,61 @@ class ClientHomeController extends GetxController {
             .toString();
   }
 
-  Future<void> fetchSummary() async {
+  Future<void> fetchSummary({bool showAppNotification = false}) async {
     if (isLoadingSummary.value) return;
+    HomeSummaryModel? homeSummary;
     isLoadingSummary.value = true;
     try {
-      summary.value = await _repository.getHomeSummary();
+      homeSummary = await _repository.getHomeSummary();
+      summary.value = homeSummary;
+      isAppNotificationDismissed.value =
+          homeSummary.notification == null ||
+          !homeSummary.notification!.canDisplay;
     } catch (e) {
       logger.e('Failed to fetch home summary: $e');
     } finally {
       isLoadingSummary.value = false;
     }
+
+    if (showAppNotification && homeSummary != null) {
+      await _showStartupDialogs(homeSummary.notification);
+    }
+  }
+
+  void dismissAppNotification() {
+    isAppNotificationDismissed.value = true;
+  }
+
+  Future<void> _showStartupDialogs(AppNotification? appNotification) async {
+    await Future<void>.delayed(Duration.zero);
+
+    if (appNotification != null &&
+        appNotification.canDisplay &&
+        !isAppNotificationDismissed.value) {
+      await _showAppNotificationDialog(appNotification);
+    }
+  }
+
+  Future<void> _showAppNotificationDialog(AppNotification notification) async {
+    await Get.dialog<void>(
+      ClientAppNotificationCard(
+        notification: notification,
+        onDismiss: () {
+          dismissAppNotification();
+          Get.back<void>();
+        },
+      ),
+      barrierDismissible: true,
+    );
+
+    dismissAppNotification();
   }
 
   HomeSummaryModel _currentSummaryOrDefault() {
     return summary.value ??
         const HomeSummaryModel(
           isHasNewNoti: false,
+          notification: null,
           pendingOrders: 0,
           confirmedOrders: 0,
           pendingPartners: 0,
@@ -91,15 +134,15 @@ class ClientHomeController extends GetxController {
         );
   }
 
-  void _updateSummary(HomeSummaryModel Function(HomeSummaryModel current) updater) {
+  void _updateSummary(
+    HomeSummaryModel Function(HomeSummaryModel current) updater,
+  ) {
     summary.value = updater(_currentSummaryOrDefault());
   }
 
   void setHasNewNotification(bool value) {
     _updateSummary((current) {
-      return current.copyWith(
-        isHasNewNoti: value,
-      );
+      return current.copyWith(isHasNewNoti: value);
     });
   }
 
@@ -107,9 +150,7 @@ class ClientHomeController extends GetxController {
     if (by <= 0) return;
 
     _updateSummary((current) {
-      return current.copyWith(
-        pendingOrders: current.pendingOrders + by,
-      );
+      return current.copyWith(pendingOrders: current.pendingOrders + by);
     });
   }
 
@@ -117,10 +158,14 @@ class ClientHomeController extends GetxController {
     final int safeApplicantCount = applicantCount < 0 ? 0 : applicantCount;
 
     _updateSummary((current) {
-      final int nextPendingOrders = current.pendingOrders > 0 ? current.pendingOrders - 1 : 0;
+      final int nextPendingOrders = current.pendingOrders > 0
+          ? current.pendingOrders - 1
+          : 0;
       final int nextConfirmedOrders = current.confirmedOrders + 1;
       final int nextPendingPartners =
-          current.pendingPartners > safeApplicantCount ? current.pendingPartners - safeApplicantCount : 0;
+          current.pendingPartners > safeApplicantCount
+          ? current.pendingPartners - safeApplicantCount
+          : 0;
 
       final List<String> nextAvatars;
       if (safeApplicantCount <= 0 || current.pendingPartnerAvatars.isEmpty) {

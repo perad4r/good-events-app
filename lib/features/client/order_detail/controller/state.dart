@@ -187,6 +187,16 @@ mixin ClientOrderDetailState {
     return null;
   }
 
+  String? get completionPhoto {
+    if (isHistory.value && _historyOrder.value != null) {
+      return _historyOrder.value!.completionPhoto;
+    }
+    if (!isHistory.value && _eventOrder.value != null) {
+      return _eventOrder.value!.completionPhoto;
+    }
+    return null;
+  }
+
   String? get categoryImage {
     if (isHistory.value && _historyOrder.value != null) {
       return _historyOrder.value!.categoryImage;
@@ -194,6 +204,16 @@ mixin ClientOrderDetailState {
       return _eventOrder.value!.categoryImage;
     }
     return null;
+  }
+
+  List<String> get bookingPhotos {
+    if (isHistory.value && _historyOrder.value != null) {
+      return _historyOrder.value!.bookingPhotos.take(5).toList(growable: false);
+    }
+    if (!isHistory.value && _eventOrder.value != null) {
+      return _eventOrder.value!.bookingPhotos.take(5).toList(growable: false);
+    }
+    return const <String>[];
   }
 
   int? get partnerId {
@@ -211,7 +231,6 @@ mixin ClientOrderDetailState {
   }
 
   String get partnerAvatarUrl {
-    logger.d('Getting partner avatar URL: ${_historyOrder.value?.partner?.avatarUrl}');
     if (isHistory.value && _historyOrder.value != null) {
       return _historyOrder.value!.partner?.avatarUrl ??
           'https://ui-avatars.com/api/?name=${Uri.encodeComponent(_historyOrder.value!.partner?.name ?? '')}&background=random&size=512&format=png';

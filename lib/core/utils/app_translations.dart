@@ -253,7 +253,7 @@ class AppTranslations extends Translations {
       'booking_address_detail': 'Địa chỉ chi tiết',
       'booking_address_placeholder': 'Số nhà, đường...',
       'booking_back': 'Làm lại từ đầu',
-      'booking_submit': 'Đặt show ngay',
+      'booking_submit': 'Tìm đối tác',
       'booking_success': 'Đặt lịch thành công!',
       'please_wait': 'Vui lòng chờ...',
       'event_type_custom': 'Khác',
@@ -269,6 +269,21 @@ class AppTranslations extends Translations {
       'booking_stage_location_title': 'Địa điểm tổ chức',
       'booking_stage_location_subtitle':
           'Chọn khu vực và nhập địa chỉ chi tiết.',
+      'booking_stage_photo_title': 'Ảnh đính kèm (Không bắt buộc)',
+      'booking_stage_photo_subtitle':
+          'Tùy chọn: thêm tối đa 5 ảnh tham khảo để đối tác hiểu rõ hơn mong muốn của bạn.',
+      'booking_stage_photo_subtitle_2':
+          'Bạn có thể bỏ qua bước này. Hỗ trợ JPEG, PNG, JPG, WEBP và tối đa 20MB mỗi ảnh.',
+      'booking_stage_photo_cannot_select':
+          'Không thể chọn ảnh. Vui lòng thử lại.',
+      'booking_stage_photo_empty': 'Chưa thêm ảnh',
+      'booking_stage_photo_empty_subtitle':
+          'Ảnh chỉ giúp mô tả yêu cầu rõ hơn, không bắt buộc để đặt show.',
+      'booking_stage_photo_selected_count': '@count/@max ảnh đã chọn',
+      'booking_stage_photo_full': 'Đã đủ ảnh',
+      'booking_stage_photo_max_error':
+          'Bạn chỉ có thể thêm tối đa 5 ảnh yêu cầu.',
+      'booking_stage_photo_max_notice': 'Chỉ nhận tối đa 5 ảnh yêu cầu.',
       'start_over': 'Bắt đầu lại',
 
       // client order
@@ -344,7 +359,10 @@ class AppTranslations extends Translations {
       'submit_review': 'Gửi đánh giá',
       'evaluate': 'Đánh giá',
       'arrival_photo_banner': 'Ảnh đã đến nơi',
+      'completion_photo_banner': 'Ảnh hoàn thành show',
       'click_to_view_photo': 'Bấm để xem ảnh',
+      'booking_photos_title': 'Ảnh đính kèm',
+      'booking_photos_subtitle': '@count Ảnh',
       'detailed_rental_info': 'Thông tin thuê chi tiết',
       'detailed_history_info': 'Chi tiết lịch sử đơn',
       'event_date': 'Ngày sự kiện',
@@ -534,6 +552,7 @@ class AppTranslations extends Translations {
       'click_to_change_image': 'Bấm để thay đổi hình ảnh',
       'upload_description': 'PNG, JPG, JPEG, WEBP (Tối đa 5MB)',
       'profile_upload_description': 'PNG, JPG, JPEG, WEBP (Tối đa 10MB)',
+      'show_photo_upload_description': 'PNG, JPG, JPEG, WEBP (Tối đa 20MB)',
 
       'completed_orders': 'Đơn đã hoàn thành',
       'cancellation_rate': 'Tỷ lệ hủy',
@@ -555,6 +574,10 @@ class AppTranslations extends Translations {
       'error_occurred': 'Đã xảy ra lỗi, vui lòng thử lại.',
 
       'sending': 'Đang gửi...',
+
+      'choose_picture': 'Chọn ảnh',
+      'change_photo': 'Thay đổi ảnh',
+      'remove_photo': 'Bỏ ảnh',
 
       ///Show
       'take_order': 'Show Chờ Nhận',
@@ -581,6 +604,14 @@ class AppTranslations extends Translations {
       'upload_arrived_photo': 'Tải ảnh đã đến nơi',
       'upload_arrived_photo_desc':
           'Tải ảnh lên để xác nhận bạn đã đến địa điểm.',
+      'arrival_photo_required': 'Vui lòng tải ảnh đã đến nơi.',
+
+      'upload_completion_photo': 'Tải ảnh hoàn thành show',
+      'upload_completion_photo_desc':
+          'Tải ảnh lên để xác nhận show đã được hoàn thành.',
+      'completion_photo_required': 'Vui lòng tải ảnh hoàn thành show.',
+      'show_photo_image_too_large':
+          'Ảnh vượt quá 20MB, vui lòng chọn ảnh khác',
 
       'confirm_complete': 'Xác nhận hoàn thành',
       'confirm_complete_message':
@@ -762,6 +793,18 @@ class AppTranslations extends Translations {
 
       ///my services
       'my_services': 'Dịch vụ của tôi',
+      'service_areas': 'Khu vực phục vụ',
+      'select_service_area': 'Chọn khu vực phục vụ',
+      'selected_service_areas': 'Khu vực đã chọn',
+      'select_service_area_wards': 'Chọn phường/khu vực phục vụ',
+      'service_area_count': 'Đã chọn @count khu vực phục vụ',
+      'service_areas_saved': 'Đã lưu khu vực phục vụ thành công!',
+      'no_service_areas': 'Bạn chưa chọn khu vực phục vụ nào',
+      'clear_all': 'Xóa tất cả',
+      'select_all_city_wards': 'Chọn tất cả',
+      'unselect_city_wards': 'Bỏ chọn thành phố này',
+      'ward_count': '@count phường',
+      'unknown_province': 'Chưa rõ thành phố',
       'add_service': 'Thêm dịch vụ',
       'add_service_subtitle':
           'Thêm dịch vụ của bạn. Giới thiệu dịch vụ chỉ hỗ trợ cho admin duyệt không hiển thị cho khách hàng',
@@ -812,7 +855,7 @@ class AppTranslations extends Translations {
       'orders_processed': 'Đơn hàng đã nhận',
       'top_services': 'Dịch vụ phổ biến',
       'orders_placed': 'Đơn hàng đã đặt',
-      
+
       ///Statuses
       'success': 'Thành công',
       'failed': 'Thất bại',
@@ -1141,7 +1184,7 @@ class AppTranslations extends Translations {
       'booking_address_detail': 'Detailed address',
       'booking_address_placeholder': 'Street, building...',
       'booking_back': 'Start over',
-      'booking_submit': 'Book now',
+      'booking_submit': 'Find partners',
       'booking_success': 'Booking successful!',
       'please_wait': 'Please wait...',
       'event_type_custom': 'Others',
@@ -1156,6 +1199,22 @@ class AppTranslations extends Translations {
       'booking_stage_location_title': 'Select location',
       'booking_stage_location_subtitle':
           'Choose area and enter detailed address.',
+      'booking_stage_photo_title': 'Add reference photos (Optional)',
+      'booking_stage_photo_subtitle':
+          'Optional: Add up to 5 reference photos to help the partner understand your requirements better.',
+      'booking_stage_photo_subtitle_2':
+          'You can skip this step. Supports JPEG, PNG, JPG, WEBP, and up to 20MB per photo.',
+      'booking_stage_photo_cannot_select':
+          'Cannot select photo. Please try again.',
+      'booking_stage_photo_empty': 'No photo added',
+      'booking_stage_photo_empty_subtitle':
+          'You can add up to 5 reference photos to help the partner understand your requirements better.',
+      'booking_stage_photo_selected_count': '@count/@max photos selected',
+      'booking_stage_photo_full': 'Photo limit reached',
+      'booking_stage_photo_max_error':
+          'You can add up to 5 requirement photos only.',
+      'booking_stage_photo_max_notice':
+          'Only up to 5 requirement photos are accepted.',
       'start_over': 'Start over',
 
       // client order
@@ -1221,7 +1280,10 @@ class AppTranslations extends Translations {
       'choose_partner': 'Choose Partner',
       'evaluate': 'Evaluate',
       'arrival_photo_banner': 'Arrival Photo',
+      'completion_photo_banner': 'Completion Photo',
       'click_to_view_photo': 'Tap to view photo',
+      'booking_photos_title': 'Attached Photos',
+      'booking_photos_subtitle': '@count photos',
       'detailed_rental_info': 'Detailed Rental Info',
       'detailed_history_info': 'Detailed History Info',
       'event_date': 'Event Date',
@@ -1371,6 +1433,7 @@ class AppTranslations extends Translations {
       'click_to_change_image': 'Click to change image',
       'upload_description': 'PNG, JPG, JPEG, WEBP (Maximum 5MB)',
       'profile_upload_description': 'PNG, JPG, JPEG, WEBP (Maximum 10MB)',
+      'show_photo_upload_description': 'PNG, JPG, JPEG, WEBP (Maximum 20MB)',
 
       'completed_orders': 'Completed Orders',
       'cancellation_rate': 'Cancelled rate',
@@ -1416,6 +1479,10 @@ class AppTranslations extends Translations {
       'sending': 'Sending...',
 
       'warning': 'Warning',
+
+      'choose_picture': 'Choose picture',
+      'change_photo': 'Change photo',
+      'remove_photo': 'Remove photo',
 
       ///Show
       'take_order': 'Show available',
@@ -1463,6 +1530,14 @@ class AppTranslations extends Translations {
       'upload_arrived_photo': 'Upload arrived photo',
       'upload_arrived_photo_desc':
           'Upload a photo to confirm you have arrived at the location.',
+      'arrival_photo_required': 'Please upload an arrival photo.',
+
+      'upload_completion_photo': 'Upload completion photo',
+      'upload_completion_photo_desc':
+          'Upload a photo to confirm the show has been completed.',
+      'completion_photo_required': 'Please upload a completion photo.',
+      'show_photo_image_too_large':
+          'Image exceeds 20MB, please choose another',
 
       'confirm_complete': 'Confirm completion',
       'confirm_complete_message':
@@ -1624,6 +1699,18 @@ class AppTranslations extends Translations {
 
       ///my services
       'my_services': 'My Services',
+      'service_areas': 'Service Areas',
+      'select_service_area': 'Select service area',
+      'selected_service_areas': 'Selected service areas',
+      'select_service_area_wards': 'Select wards/service areas',
+      'service_area_count': '@count service areas selected',
+      'service_areas_saved': 'Service areas saved successfully!',
+      'no_service_areas': 'No service areas selected yet',
+      'clear_all': 'Clear all',
+      'select_all_city_wards': 'Select all',
+      'unselect_city_wards': 'Unselect city',
+      'ward_count': '@count wards',
+      'unknown_province': 'Unknown city',
       'add_service': 'Add Service',
       'add_service_subtitle':
           'Add your service. Service introduction is for admin review only and will not be shown to customers',

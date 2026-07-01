@@ -5,8 +5,8 @@ import 'package:sukientotapp/features/components/widget/upload_photo.dart';
 
 import 'package:sukientotapp/features/partner/show/controller.dart';
 
-class UploadArrivedPhoto extends StatelessWidget {
-  const UploadArrivedPhoto({
+class UploadCompletionPhoto extends StatelessWidget {
+  const UploadCompletionPhoto({
     super.key,
     required this.code,
     required this.billId,
@@ -28,7 +28,6 @@ class UploadArrivedPhoto extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Drag handle
           Padding(
             padding: const EdgeInsets.only(top: 12, bottom: 4),
             child: Container(
@@ -40,8 +39,6 @@ class UploadArrivedPhoto extends StatelessWidget {
               ),
             ),
           ),
-
-          // Header
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 16, 0),
             child: Row(
@@ -52,7 +49,7 @@ class UploadArrivedPhoto extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'upload_arrived_photo'.tr,
+                        'upload_completion_photo'.tr,
                         style: context.typography.xl.copyWith(
                           fontWeight: FontWeight.w700,
                           color: context.fTheme.colors.foreground,
@@ -71,7 +68,8 @@ class UploadArrivedPhoto extends StatelessWidget {
                 ),
                 GestureDetector(
                   onTap: () {
-                    Get.find<ShowController>().selectedImage.value = null;
+                    Get.find<ShowController>().selectedCompletionImage.value =
+                        null;
                     Get.back();
                   },
                   child: Container(
@@ -91,28 +89,24 @@ class UploadArrivedPhoto extends StatelessWidget {
               ],
             ),
           ),
-
           const SizedBox(height: 16),
           Divider(height: 1, color: context.fTheme.colors.border),
-
-          // Body
           Flexible(
             child: SingleChildScrollView(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Info banner
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFEFF6FF),
+                      color: const Color(0xFFF0FDF4),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                        color: const Color(0xFF22C55E).withValues(alpha: 0.3),
                       ),
                     ),
                     child: Row(
@@ -120,14 +114,14 @@ class UploadArrivedPhoto extends StatelessWidget {
                         const Icon(
                           FIcons.info,
                           size: 14,
-                          color: Color(0xFF1D4ED8),
+                          color: Color(0xFF15803D),
                         ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'upload_arrived_photo_desc'.tr,
+                            'upload_completion_photo_desc'.tr,
                             style: context.typography.xs.copyWith(
-                              color: const Color(0xFF1D4ED8),
+                              color: const Color(0xFF15803D),
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -135,28 +129,24 @@ class UploadArrivedPhoto extends StatelessWidget {
                       ],
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // Upload area
                   UploadPhoto(
                     description: 'show_photo_upload_description'.tr,
                     validator: Get.find<ShowController>().validateShowPhoto,
                     onImagePicked: (XFile image) {
-                      Get.find<ShowController>().selectedImage.value = image;
+                      Get.find<ShowController>().selectedCompletionImage.value =
+                          image;
                     },
                     onImageRemoved: () {
-                      Get.find<ShowController>().selectedImage.value = null;
+                      Get.find<ShowController>().selectedCompletionImage.value =
+                          null;
                     },
                   ),
-
                   const SizedBox(height: 24),
                 ],
               ),
             ),
           ),
-
-          // Action buttons
           Padding(
             padding: EdgeInsets.fromLTRB(
               20,
@@ -169,7 +159,9 @@ class UploadArrivedPhoto extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      Get.find<ShowController>().selectedImage.value = null;
+                      Get.find<ShowController>()
+                          .selectedCompletionImage
+                          .value = null;
                       Get.back();
                     },
                     child: Container(
@@ -196,16 +188,17 @@ class UploadArrivedPhoto extends StatelessWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: GestureDetector(
-                    onTap: () =>
-                        Get.find<ShowController>().markInJob(billId),
+                    onTap: () => Get.find<ShowController>().completeBill(
+                      billId,
+                    ),
                     child: Container(
                       height: 46,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6),
+                        color: const Color(0xFF15803D),
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF3B82F6).withValues(
+                            color: const Color(0xFF15803D).withValues(
                               alpha: 0.35,
                             ),
                             blurRadius: 10,
@@ -217,13 +210,13 @@ class UploadArrivedPhoto extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Icon(
-                            FIcons.mapPinCheck,
+                            FIcons.checkCheck,
                             size: 16,
                             color: Colors.white,
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            'confirm'.tr,
+                            'complete'.tr,
                             style: context.typography.sm.copyWith(
                               fontWeight: FontWeight.w700,
                               color: Colors.white,

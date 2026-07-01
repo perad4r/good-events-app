@@ -12,6 +12,7 @@ class PartnerBill {
   final String endTime;
   final String address;
   final String? note;
+  final List<String> bookingPhotos;
 
   const PartnerBill({
     required this.id,
@@ -27,6 +28,7 @@ class PartnerBill {
     required this.endTime,
     required this.address,
     this.note,
+    this.bookingPhotos = const <String>[],
   });
 
   factory PartnerBill.fromMap(Map<String, dynamic> map) {
@@ -46,6 +48,7 @@ class PartnerBill {
       endTime: map['end_time'] as String,
       address: map['address'] as String,
       note: map['note'] as String?,
+      bookingPhotos: _parseBookingPhotos(map['booking_photos']),
     );
   }
 
@@ -64,7 +67,18 @@ class PartnerBill {
       'end_time': endTime,
       'address': address,
       'note': note,
+      'booking_photos': bookingPhotos,
     };
+  }
+
+  static List<String> _parseBookingPhotos(dynamic value) {
+    if (value is! List) return const <String>[];
+
+    return value
+        .map((photo) => photo?.toString().trim() ?? '')
+        .where((photo) => photo.isNotEmpty)
+        .take(5)
+        .toList(growable: false);
   }
 }
 

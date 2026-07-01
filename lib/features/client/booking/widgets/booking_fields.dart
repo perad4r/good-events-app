@@ -26,6 +26,12 @@ class BookingSelectField extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool hasValue = value.trim().isNotEmpty;
     final bool hasError = errorText != null && errorText!.isNotEmpty;
+    final Color borderColor = hasError
+        ? context.fTheme.colors.destructive
+        : hasValue
+            ? AppColors.red600.withValues(alpha: 0.28)
+            : context.fTheme.colors.border;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -44,17 +50,32 @@ class BookingSelectField extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: hasError ? context.fTheme.colors.destructive : context.fTheme.colors.border,
-              ),
+              border: Border.all(color: borderColor),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.025),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
                 if (leading != null) ...[
-                  Icon(
-                    leading,
-                    size: 18,
-                    color: context.fTheme.colors.mutedForeground,
+                  Container(
+                    width: 28,
+                    height: 28,
+                    decoration: BoxDecoration(
+                      color: AppColors.red600.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Icon(
+                      leading,
+                      size: 16,
+                      color: hasValue
+                          ? AppColors.red600
+                          : AppColors.red600.withValues(alpha: 0.72),
+                    ),
                   ),
                   const SizedBox(width: 8),
                 ],
@@ -83,7 +104,9 @@ class BookingSelectField extends StatelessWidget {
                   Icon(
                     trailing ?? FIcons.chevronDown,
                     size: 18,
-                    color: context.fTheme.colors.mutedForeground,
+                    color: hasValue
+                        ? AppColors.red600
+                        : context.fTheme.colors.mutedForeground,
                   ),
               ],
             ),
@@ -141,7 +164,9 @@ class BookingTextField extends StatelessWidget {
           ),
           hint: hint,
           maxLines: maxLines,
-          autovalidateMode: hasError ? AutovalidateMode.always : AutovalidateMode.disabled,
+          autovalidateMode: hasError
+              ? AutovalidateMode.always
+              : AutovalidateMode.disabled,
           validator: (_) => hasError ? errorText : null,
         ),
       ],

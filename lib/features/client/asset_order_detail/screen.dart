@@ -3,6 +3,7 @@ import 'controller.dart';
 import 'widgets/asset_order_detail_header.dart';
 import 'widgets/asset_order_info_section.dart';
 import 'widgets/asset_order_bottom_actions.dart';
+import 'widgets/asset_order_proof_photos_section.dart';
 
 class ClientAssetOrderDetailScreen extends GetView<ClientAssetOrderDetailController> {
   const ClientAssetOrderDetailScreen({super.key});
@@ -32,6 +33,7 @@ class ClientAssetOrderDetailScreen extends GetView<ClientAssetOrderDetailControl
           children: [
             const AssetOrderDetailHeader(),
             const SizedBox(height: 16),
+            const AssetOrderProofPhotosSection(),
             const AssetOrderInfoSection(),
             const SizedBox(height: 100),
           ],

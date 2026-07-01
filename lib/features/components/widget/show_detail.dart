@@ -21,6 +21,7 @@ class ShowDetail extends StatelessWidget {
     required this.address,
     required this.note,
     required this.total,
+    this.bookingPhotos = const <String>[],
     this.isNew = false,
   });
 
@@ -38,6 +39,7 @@ class ShowDetail extends StatelessWidget {
   final String address;
   final String note;
   final int total;
+  final List<String> bookingPhotos;
   final bool isNew;
   @override
   Widget build(BuildContext context) {
@@ -223,6 +225,11 @@ class ShowDetail extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  if (bookingPhotos.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    _BookingPhotosSection(photos: bookingPhotos),
+                  ],
 
                   // Total price highlight
                   if (!isNew) ...[
@@ -411,6 +418,170 @@ class ShowDetail extends StatelessWidget {
       height: 1,
       thickness: 1,
       color: context.fTheme.colors.border.withValues(alpha: 0.6),
+    );
+  }
+}
+
+class _BookingPhotosSection extends StatelessWidget {
+  const _BookingPhotosSection({required this.photos});
+
+  final List<String> photos;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: context.fTheme.colors.muted,
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                FIcons.image,
+                size: 13,
+                color: context.fTheme.colors.mutedForeground,
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  'booking_photos_title'.tr,
+                  style: context.typography.xs.copyWith(
+                    color: context.fTheme.colors.mutedForeground,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.4,
+                  ),
+                ),
+              ),
+              Text(
+                '${photos.length}/5',
+                style: context.typography.xs.copyWith(
+                  color: context.fTheme.colors.primary,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (int index = 0; index < photos.length && index < 5; index++)
+                _BookingPhotoTile(imageUrl: photos[index], index: index),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BookingPhotoTile extends StatelessWidget {
+  const _BookingPhotoTile({required this.imageUrl, required this.index});
+
+  final String imageUrl;
+  final int index;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => _showFullScreenImage(imageUrl),
+      child: Hero(
+        tag: 'show_detail_booking_photo_$imageUrl',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(9),
+          child: Stack(
+            children: [
+              CachedNetworkImage(
+                imageUrl: imageUrl,
+                width: 72,
+                height: 72,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  width: 72,
+                  height: 72,
+                  color: context.fTheme.colors.primary.withValues(alpha: 0.08),
+                  child: const Center(
+                    child: SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  width: 72,
+                  height: 72,
+                  color: Colors.grey[100],
+                  child: Icon(
+                    Icons.broken_image_outlined,
+                    color: Colors.grey[500],
+                    size: 20,
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 5,
+                top: 5,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 5,
+                    vertical: 1,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.55),
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                  child: Text(
+                    '${index + 1}',
+                    style: context.typography.xs.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 10,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFullScreenImage(String imageUrl) {
+    Get.dialog(
+      GestureDetector(
+        onTap: () => Get.back(),
+        child: Scaffold(
+          backgroundColor: Colors.black87,
+          body: Center(
+            child: InteractiveViewer(
+              panEnabled: true,
+              minScale: 1,
+              maxScale: 4,
+              child: Hero(
+                tag: 'show_detail_booking_photo_$imageUrl',
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) =>
+                      const CircularProgressIndicator(color: Colors.white),
+                  errorWidget: (context, url, error) =>
+                      const Icon(Icons.error, color: Colors.white, size: 48),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+      barrierDismissible: true,
+      barrierColor: Colors.black87,
     );
   }
 }

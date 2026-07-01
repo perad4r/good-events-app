@@ -19,6 +19,7 @@ export 'package:sukientotapp/features/common/home/binding.dart';
 export 'package:sukientotapp/features/partner/bottom_navigation/binding.dart';
 export 'package:sukientotapp/features/partner/show_calendar/binding.dart';
 export 'package:sukientotapp/features/partner/my_services/binding.dart';
+export 'package:sukientotapp/features/partner/service_areas/binding.dart';
 export 'package:sukientotapp/features/partner/analytics/binding.dart';
 
 //Client

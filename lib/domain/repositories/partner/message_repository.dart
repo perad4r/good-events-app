@@ -1,3 +1,5 @@
+import 'package:image_picker/image_picker.dart';
+
 abstract class MessageRepository {
   Future<Map<String, dynamic>> getThreads({
     required int page,
@@ -12,6 +14,9 @@ abstract class MessageRepository {
 
   Future<void> sendMessage({
     required String threadId,
-    required String body,
+    required String type,
+    String? body,
+    List<XFile>? images,
+    Map<String, dynamic>? location,
   });
 }

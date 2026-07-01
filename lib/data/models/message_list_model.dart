@@ -65,13 +65,24 @@ class MessageListModel {
         .toList();
 
     final isUnread = json['is_unread'] as bool? ?? false;
+    final latestType = latestMessage?['type'] as String? ?? 'text';
+    final latestBody = latestMessage?['body'] as String? ?? '';
+    final latestPreviewText =
+        (latestMessage?['preview_text'] as String?) ??
+        (latestBody.isNotEmpty
+            ? latestBody
+            : latestType == 'image'
+                ? '[Ảnh]'
+                : latestType == 'location'
+                    ? 'Vị trí hiện tại'
+                    : null);
 
     return MessageListModel(
       id: json['id'].toString(),
       subject: json['subject'] as String? ?? '',
       names: participantNames,
       code: json['code'] as String? ?? '',
-      newestMessage: latestMessage?['body'] as String?,
+      newestMessage: latestPreviewText,
       newestMessageSender: latestMessage?['sender_name'] as String?,
       time: latestMessage?['created_at'] as String? ?? '',
       isRead: !isUnread,

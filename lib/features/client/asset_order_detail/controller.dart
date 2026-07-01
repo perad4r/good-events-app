@@ -24,6 +24,8 @@ class ClientAssetOrderDetailController extends GetxController {
   String get statusLabel => _order.statusLabel;
   String get paymentMethod => _order.paymentMethod;
   String? get thumbnail => _order.thumbnail;
+  String? get arrivalPhoto => _order.arrivalPhoto;
+  String? get completionPhoto => _order.completionPhoto;
   double get total => _order.total;
   double? get tax => _order.tax;
   double? get finalTotal => _order.finalTotal;

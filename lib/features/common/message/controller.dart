@@ -1,5 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 
@@ -38,7 +42,18 @@ class MessageController extends GetxController {
   final ScrollController scrollController = ScrollController();
   final ScrollController listScrollController = ScrollController();
 
-  var selectedFiles = <dynamic>[].obs;
+  final RxList<XFile> selectedImages = <XFile>[].obs;
+  final RxBool isSendingMessage = false.obs;
+  final RxBool isResolvingLocation = false.obs;
+  final ImagePicker _imagePicker = ImagePicker();
+
+  static const int _maxImageSizeBytes = 20 * 1024 * 1024;
+  static const Set<String> _allowedImageExtensions = {
+    'jpg',
+    'jpeg',
+    'png',
+    'webp',
+  };
 
   @override
   void onInit() {
@@ -184,7 +199,7 @@ class MessageController extends GetxController {
       final idx = filteredMessages.indexWhere((t) => t.id == threadId);
       if (idx != -1) {
         final updated = filteredMessages[idx].copyWith(
-          newestMessage: incoming.text,
+          newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: incoming.isSender,
@@ -224,7 +239,7 @@ class MessageController extends GetxController {
     final idx = filteredMessages.indexWhere((t) => t.id == threadId);
     if (idx != -1) {
       filteredMessages[idx] = filteredMessages[idx].copyWith(
-        newestMessage: lastMessage.text,
+        newestMessage: lastMessage.previewText,
         newestMessageSender: lastMessage.sender,
         time: lastMessage.time,
         isRead: true,
@@ -315,7 +330,7 @@ class MessageController extends GetxController {
       final idx = filteredMessages.indexWhere((t) => t.id == threadId);
       if (idx != -1) {
         final updated = filteredMessages[idx].copyWith(
-          newestMessage: incoming.text,
+          newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: true,
@@ -445,20 +460,89 @@ class MessageController extends GetxController {
 
   // ─── Send Message ─────────────────────────────────────────────────────────────
 
+  Future<void> pickImagesForMessage() async {
+    if (selectedImages.length >= 20) {
+      AppSnackbar.showError(message: 'Chỉ có thể chọn tối đa 20 ảnh.');
+      return;
+    }
+
+    final picked = await _imagePicker.pickMultiImage(imageQuality: 85);
+    if (picked.isEmpty) return;
+
+    final remainingSlots = 20 - selectedImages.length;
+    final candidates = picked.take(remainingSlots).toList();
+    if (picked.length > remainingSlots) {
+      AppSnackbar.showInfo(
+        message: 'Chỉ lấy thêm $remainingSlots ảnh để đủ giới hạn 20 ảnh.',
+      );
+    }
+
+    final validImages = <XFile>[];
+    for (final image in candidates) {
+      final ext = image.name.split('.').last.toLowerCase();
+      if (!_allowedImageExtensions.contains(ext)) {
+        AppSnackbar.showError(message: 'Định dạng ảnh không được hỗ trợ.');
+        continue;
+      }
+
+      final size = await image.length();
+      if (size > _maxImageSizeBytes) {
+        AppSnackbar.showError(message: 'Mỗi ảnh không được vượt quá 20MB.');
+        continue;
+      }
+
+      validImages.add(image);
+    }
+
+    if (validImages.isNotEmpty) {
+      selectedImages.addAll(validImages);
+    }
+  }
+
+  void removeSelectedImage(int index) {
+    if (index < 0 || index >= selectedImages.length) return;
+    selectedImages.removeAt(index);
+  }
+
+  void clearSelectedImages() {
+    selectedImages.clear();
+  }
+
   Future<void> sendMessage() async {
     final text = messageController.text.trim();
-    if (text.isEmpty) return;
+    final images = List<XFile>.from(selectedImages);
+    if (text.isEmpty && images.isEmpty) return;
     final threadId = selectedThreadId;
     if (threadId.isEmpty) return;
+    if (isSendingMessage.value) return;
+
+    final bool isImageMessage = images.isNotEmpty;
+    final String previewText = isImageMessage
+        ? (text.isEmpty ? '[Ảnh]' : text)
+        : text;
 
     final currentUserName =
         StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
             as String? ??
         '';
+    final optimisticAttachments = isImageMessage
+        ? images
+              .map(
+                (image) => MessageAttachmentModel(
+                  name: image.name,
+                  fileName: image.name,
+                  localPath: image.path,
+                ),
+              )
+              .toList()
+        : <MessageAttachmentModel>[];
 
     final optimistic = MessageModel(
       sender: currentUserName,
-      text: text,
+      text: isImageMessage ? text : previewText,
+      type: isImageMessage ? 'image' : 'text',
+      previewText: previewText,
+      attachments: optimisticAttachments,
       isSender: true,
       sended: false,
       time: 'just_now'.tr,
@@ -467,46 +551,214 @@ class MessageController extends GetxController {
 
     messagesDetail.insert(0, optimistic);
     messageController.clear();
+    selectedImages.clear();
     scrollToBottom();
 
     try {
-      await _repository.sendMessage(threadId: threadId, body: text);
-      final idx = messagesDetail.indexOf(optimistic);
-      if (idx != -1) {
-        messagesDetail[idx] = MessageModel(
-          sender: optimistic.sender,
-          text: optimistic.text,
-          isSender: optimistic.isSender,
-          sended: true,
-          time: optimistic.time,
-          date: optimistic.date,
-        );
-      }
-      // Move thread to top of list
-      final currentUserName =
-          StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
-              as String? ??
-          '';
-      final threadIdx = filteredMessages.indexWhere((t) => t.id == threadId);
-      if (threadIdx != -1) {
-        final updated = filteredMessages[threadIdx].copyWith(
-          newestMessage: text,
-          newestMessageSender: currentUserName,
-          time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
-          isRead: true,
-          unreadMessages: 0,
-        );
-        filteredMessages.removeAt(threadIdx);
-        filteredMessages.insert(0, updated);
-      }
+      isSendingMessage.value = true;
+      await _repository.sendMessage(
+        threadId: threadId,
+        type: isImageMessage ? 'image' : 'text',
+        body: text.isEmpty ? null : text,
+        images: isImageMessage ? images : null,
+      );
+      _markOptimisticSent(optimistic);
+      _updateThreadPreview(threadId: threadId, text: previewText);
       logger.i('[MessageController] [sendMessage] Sent to thread=$threadId');
     } catch (e) {
       logger.e('[MessageController] [sendMessage] Error: $e');
       messagesDetail.remove(optimistic);
       messageController.text = text; // restore text on failure
+      selectedImages.assignAll(images);
       AppSnackbar.showError(
         message: e.toString().replaceFirst('Exception: ', ''),
       );
+    } finally {
+      isSendingMessage.value = false;
     }
+  }
+
+  Future<void> sendCurrentLocation() async {
+    final threadId = selectedThreadId;
+    if (threadId.isEmpty || isResolvingLocation.value || isSendingMessage.value) {
+      return;
+    }
+
+    MessageModel? optimistic;
+    try {
+      isResolvingLocation.value = true;
+      isSendingMessage.value = true;
+      final position = await _getCurrentPosition();
+      if (position == null) return;
+
+      final currentUserName =
+          StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
+              as String? ??
+          '';
+      const previewText = '[Vị trí]';
+      optimistic = MessageModel(
+        sender: currentUserName,
+        text: previewText,
+        type: 'location',
+        previewText: previewText,
+        location: MessageLocationModel(
+          latitude: position.latitude,
+          longitude: position.longitude,
+          label: 'Vị trí hiện tại',
+        ),
+        isSender: true,
+        sended: false,
+        time: 'just_now'.tr,
+        date: '',
+      );
+
+      final shouldShowOptimistic = selectedThreadId == threadId;
+      if (shouldShowOptimistic) {
+        messagesDetail.insert(0, optimistic);
+        scrollToBottom();
+      }
+
+      await _repository.sendMessage(
+        threadId: threadId,
+        type: 'location',
+        location: {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'label': null,
+          'address': null,
+        },
+      );
+
+      if (shouldShowOptimistic) {
+        _markOptimisticSent(optimistic);
+      }
+      _updateThreadPreview(threadId: threadId, text: previewText);
+      logger.i(
+        '[MessageController] [sendCurrentLocation] Sent to thread=$threadId',
+      );
+    } catch (e) {
+      logger.e('[MessageController] [sendCurrentLocation] Error: $e');
+      if (optimistic != null) {
+        messagesDetail.remove(optimistic);
+      }
+      AppSnackbar.showError(
+        message: e.toString().replaceFirst('Exception: ', ''),
+      );
+    } finally {
+      isSendingMessage.value = false;
+      isResolvingLocation.value = false;
+    }
+  }
+
+  Future<Position?> _getCurrentPosition() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        AppSnackbar.showInfo(
+          message: 'Vui lòng bật dịch vụ vị trí để gửi vị trí hiện tại.',
+        );
+        await Geolocator.openLocationSettings();
+        serviceEnabled = await Geolocator.isLocationServiceEnabled();
+        if (!serviceEnabled) {
+          AppSnackbar.showError(
+            message: 'Chưa thể lấy vị trí vì dịch vụ vị trí đang tắt.',
+          );
+          return null;
+        }
+      }
+
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied) {
+        AppSnackbar.showError(
+          message: 'Bạn cần cấp quyền vị trí để gửi vị trí.',
+        );
+        return null;
+      }
+
+      if (permission == LocationPermission.deniedForever) {
+        AppSnackbar.showError(
+          message:
+              'Quyền vị trí đang bị chặn. Vui lòng mở cài đặt để cấp quyền.',
+        );
+        await Geolocator.openAppSettings();
+        return null;
+      }
+
+      return Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      ).timeout(const Duration(seconds: 12));
+    } on TimeoutException {
+      AppSnackbar.showError(
+        message:
+            'Không lấy được vị trí hiện tại. Vui lòng thử lại ở nơi có tín hiệu GPS tốt hơn.',
+      );
+      return null;
+    } on LocationServiceDisabledException {
+      AppSnackbar.showError(
+        message: 'Dịch vụ vị trí đang tắt. Vui lòng bật vị trí rồi thử lại.',
+      );
+      return null;
+    } on PermissionDeniedException {
+      AppSnackbar.showError(
+        message: 'Bạn cần cấp quyền vị trí để gửi vị trí hiện tại.',
+      );
+      return null;
+    } on MissingPluginException {
+      AppSnackbar.showError(
+        message:
+            'Plugin vị trí chưa được đăng ký. Vui lòng tắt hẳn app và build/run lại sau khi thêm geolocator.',
+      );
+      return null;
+    } catch (e) {
+      logger.e('[MessageController] [_getCurrentPosition] Error: $e');
+      AppSnackbar.showError(
+        message:
+            'Không thể lấy vị trí hiện tại. Vui lòng kiểm tra quyền vị trí và thử lại.',
+      );
+      return null;
+    }
+  }
+
+  void _markOptimisticSent(MessageModel optimistic) {
+    final idx = messagesDetail.indexOf(optimistic);
+    if (idx == -1) return;
+
+    messagesDetail[idx] = MessageModel(
+      sender: optimistic.sender,
+      text: optimistic.text,
+      type: optimistic.type,
+      previewText: optimistic.previewText,
+      attachments: optimistic.attachments,
+      location: optimistic.location,
+      isSender: optimistic.isSender,
+      sended: true,
+      time: optimistic.time,
+      date: optimistic.date,
+    );
+  }
+
+  void _updateThreadPreview({required String threadId, required String text}) {
+    final currentUserName =
+        StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
+            as String? ??
+        '';
+    final threadIdx = filteredMessages.indexWhere((t) => t.id == threadId);
+    if (threadIdx == -1) return;
+
+    final updated = filteredMessages[threadIdx].copyWith(
+      newestMessage: text,
+      newestMessageSender: currentUserName,
+      time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
+      isRead: true,
+      unreadMessages: 0,
+    );
+    filteredMessages.removeAt(threadIdx);
+    filteredMessages.insert(0, updated);
   }
 }

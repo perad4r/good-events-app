@@ -254,6 +254,13 @@ class _AccountScreenState extends State<AccountScreen> {
                                 ),
                               if (controller.role.value == 'partner')
                                 _MenuItem(
+                                  'service_areas'.tr,
+                                  FIcons.mapPinned,
+                                  () =>
+                                      Get.toNamed(Routes.partnerServiceAreas),
+                                ),
+                              if (controller.role.value == 'partner')
+                                _MenuItem(
                                   'revenue_statistics'.tr,
                                   FIcons.chartArea,
                                   () => Get.toNamed(Routes.partnerAnalytics),

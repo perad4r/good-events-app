@@ -15,6 +15,7 @@ class ShowController extends GetxController
   final isLoading = false.obs;
   final isSearching = false.obs;
   final selectedImage = Rxn<XFile>();
+  final selectedCompletionImage = Rxn<XFile>();
 
   final searchController = TextEditingController();
 
@@ -424,10 +425,43 @@ class ShowController extends GetxController
 
   // ─── Complete Bill ────────────────────────────────────────────────────────────
 
+  Future<bool> validateShowPhoto(XFile image) async {
+    const maxSizeBytes = 20 * 1024 * 1024;
+    const allowedExtensions = {'jpg', 'jpeg', 'png', 'webp'};
+
+    final ext = image.name.split('.').last.toLowerCase();
+    if (!allowedExtensions.contains(ext)) {
+      AppSnackbar.showError(
+        title: 'error'.tr,
+        message: 'image_format_not_supported'.tr,
+      );
+      return false;
+    }
+
+    final size = await image.length();
+    if (size > maxSizeBytes) {
+      AppSnackbar.showError(
+        title: 'error'.tr,
+        message: 'show_photo_image_too_large'.tr,
+      );
+      return false;
+    }
+
+    return true;
+  }
+
   Future<void> completeBill(int billId) async {
+    final image = selectedCompletionImage.value;
+    if (image == null) {
+      AppSnackbar.showError(message: 'completion_photo_required'.tr);
+      return;
+    }
+
     isLoading.value = true;
     try {
-      final success = await _repository.completeBill(billId);
+      final success = await _repository.completeBill(billId, image);
+      Get.back();
+
       if (!success) {
         refreshData();
 
@@ -435,6 +469,7 @@ class ShowController extends GetxController
         return;
       }
 
+      selectedCompletionImage.value = null;
       final index = upcomingBills.indexWhere((b) => b.id == billId);
       if (index != -1) {
         final completedBill = upcomingBills[index].copyWith(
@@ -473,7 +508,10 @@ class ShowController extends GetxController
 
   Future<void> markInJob(int billId) async {
     final image = selectedImage.value;
-    if (image == null) return;
+    if (image == null) {
+      AppSnackbar.showError(message: 'arrival_photo_required'.tr);
+      return;
+    }
 
     isLoading.value = true;
     try {

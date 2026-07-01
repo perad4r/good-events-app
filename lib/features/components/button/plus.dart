@@ -24,6 +24,7 @@ class CustomButtonPlus extends StatelessWidget {
   final String? svgImage;
   final Color? iconColor;
   final Color? imageColor;
+  final bool shrinkText;
 
   const CustomButtonPlus({
     super.key,
@@ -50,6 +51,7 @@ class CustomButtonPlus extends StatelessWidget {
     this.svgImage,
     this.iconColor,
     this.imageColor,
+    this.shrinkText = false,
   });
 
   @override
@@ -104,19 +106,29 @@ class CustomButtonPlus extends StatelessWidget {
                     ),
                     if (btnText != null) const SizedBox(width: 8),
                   ],
-                  if (btnText != null) ...[
-                    Text(
-                      btnText!,
-                      style: TextStyle(
-                        color: textColor,
-                        fontSize: textSize,
-                        fontWeight: fontWeight,
-                      ),
-                    ),
-                  ],
+                  if (btnText != null) ...[_buildText()],
                 ],
               ),
       ),
     );
+  }
+
+  Widget _buildText() {
+    final text = Text(
+      btnText!,
+      maxLines: 1,
+      overflow: shrinkText ? TextOverflow.ellipsis : TextOverflow.clip,
+      style: TextStyle(
+        color: textColor,
+        fontSize: textSize,
+        fontWeight: fontWeight,
+      ),
+    );
+
+    if (shrinkText) {
+      return Flexible(child: text);
+    }
+
+    return text;
   }
 }

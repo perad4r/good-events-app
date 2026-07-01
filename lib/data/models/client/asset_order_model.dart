@@ -61,6 +61,8 @@ class AssetOrderModel {
   final String paymentMethod;
   final String createdAt;
   final String updatedAt;
+  final String? arrivalPhoto;
+  final String? completionPhoto;
   final bool canRepay;
   final bool canDownload;
   final AssetOrderFileProduct? fileProduct;
@@ -77,6 +79,8 @@ class AssetOrderModel {
     required this.paymentMethod,
     required this.createdAt,
     required this.updatedAt,
+    this.arrivalPhoto,
+    this.completionPhoto,
     required this.canRepay,
     required this.canDownload,
     this.fileProduct,
@@ -97,6 +101,8 @@ class AssetOrderModel {
       paymentMethod: json['payment_method'] as String? ?? '',
       createdAt: json['created_at'] as String? ?? '',
       updatedAt: json['updated_at'] as String? ?? '',
+      arrivalPhoto: json['arrival_photo'] as String?,
+      completionPhoto: json['completion_photo'] as String?,
       canRepay: json['can_repay'] as bool? ?? false,
       canDownload: json['can_download'] as bool? ?? false,
       fileProduct: json['file_product'] != null
