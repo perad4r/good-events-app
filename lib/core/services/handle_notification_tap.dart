@@ -25,6 +25,9 @@ class HandleNotificationTap {
         case 'NEW_MESSAGE':
           HandleNotificationTap().handleNewMessageCode(data);
           break;
+        case 'NEW_REVIEW_RECEIVED':
+          HandleNotificationTap().handleNewReviewReceivedCode(data);
+          break;
         default:
           logger.w('[HandleNotificationTap] Unknown code: $code');
       }
@@ -62,6 +65,14 @@ class HandleNotificationTap {
         '[HandleNotificationTap] MessageController not registered, cannot open thread',
       );
     }
+  }
+
+  void handleNewReviewReceivedCode(Map<String, dynamic> data) {
+    logger.i('[HandleNotificationTap] Handling tap for new review received');
+    if (Get.currentRoute == Routes.partnerReviews) {
+      return;
+    }
+    Get.toNamed(Routes.partnerReviews);
   }
 
   void _openNewShowScreen() {

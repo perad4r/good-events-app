@@ -17,7 +17,6 @@ class NewShowController extends GetxController {
   final ScrollController scrollController = ScrollController();
 
   final bills = <PartnerBill>[].obs;
-  final availableCategories = <AvailableCategory>[].obs;
   final lastUpdated = ''.obs;
 
   // ─── Filter State ────────────────────────────────────────────────────────────
@@ -170,8 +169,7 @@ class NewShowController extends GetxController {
           }
         }
         bills.assignAll(response.partnerBills);
-        availableCategories.assignAll(response.availableCategories);
-        await _subscribeToCategories();
+        await _subscribeToBroadcastChannels(response.broadcastChannels);
       } else {
         bills.addAll(response.partnerBills);
       }
@@ -215,6 +213,43 @@ class NewShowController extends GetxController {
     _lastPage = 1;
     hasMorePages.value = true;
     await fetchRealtimeBills(isInitialFetch: false);
+  }
+
+  Future<void> reloadAfterServiceAreasChanged() async {
+    if (isLoading.value) {
+      logger.w(
+        '[NewShow] [ServiceAreasReload] Waiting for current loading to finish',
+      );
+      await _waitForCurrentLoading();
+      if (isLoading.value) {
+        logger.w('[NewShow] [ServiceAreasReload] Skipped after wait timeout');
+        return;
+      }
+    }
+
+    logger.i('[NewShow] [ServiceAreasReload] Reloading bills and channels');
+
+    await _unsubscribeAll();
+    _currentPage = 1;
+    _lastPage = 1;
+    _lastScrollFetchTime = null;
+    _lastRefreshTime = null;
+    hasMorePages.value = true;
+    bills.clear();
+    filterSearch.value = '';
+    filterDate.value = 'all';
+    filterSort.value = 'date_asc';
+    filteredBills.clear();
+    lastUpdated.value = '';
+
+    await fetchRealtimeBills();
+  }
+
+  Future<void> _waitForCurrentLoading() async {
+    for (int i = 0; i < 20; i++) {
+      if (!isLoading.value) return;
+      await Future<void>.delayed(const Duration(milliseconds: 100));
+    }
   }
 
   final isAccepting = false.obs;
@@ -271,11 +306,10 @@ class NewShowController extends GetxController {
     }
   }
 
-  Future<void> _subscribeToCategories() async {
+  Future<void> _subscribeToBroadcastChannels(List<String> channels) async {
     await _unsubscribeAll();
 
-    for (final category in availableCategories) {
-      final channelName = 'private-category.${category.id}';
+    for (final channelName in channels) {
       await PusherService.subscribe(
         channelName: channelName,
         eventName: _pusherEventName,

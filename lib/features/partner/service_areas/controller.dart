@@ -3,6 +3,7 @@ import 'package:sukientotapp/data/models/location_model.dart';
 import 'package:sukientotapp/data/models/partner/service_area_model.dart';
 import 'package:sukientotapp/domain/repositories/location_repository.dart';
 import 'package:sukientotapp/domain/repositories/partner/service_area_repository.dart';
+import 'package:sukientotapp/features/partner/new_show/controller.dart';
 
 class PartnerServiceAreasController extends GetxController {
   final PartnerServiceAreaRepository _repository;
@@ -134,6 +135,7 @@ class PartnerServiceAreasController extends GetxController {
       selectedLocationIds.assignAll(response.serviceAreaLocationIds);
       serviceAreas.assignAll(response.serviceAreas);
       _notifySelectionChanged();
+      await _reloadNewShows();
       AppSnackbar.showSuccess(
         title: 'success'.tr,
         message: 'service_areas_saved'.tr,
@@ -162,5 +164,10 @@ class PartnerServiceAreasController extends GetxController {
 
   void _notifySelectionChanged() {
     selectionVersion.value++;
+  }
+
+  Future<void> _reloadNewShows() async {
+    if (!Get.isRegistered<NewShowController>()) return;
+    await Get.find<NewShowController>().reloadAfterServiceAreasChanged();
   }
 }

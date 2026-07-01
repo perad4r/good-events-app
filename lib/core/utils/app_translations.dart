@@ -335,6 +335,8 @@ class AppTranslations extends Translations {
       'please_wait_a_moment':
           'Vui lòng đợi một lúc, chúng tôi đang gửi thông báo đến cho các đối tác gần đó và sẽ tải lại trang cho bạn',
       'proposed_partner_price': 'Giá đối tác đề xuất',
+      'time_warning':
+          'Lưu ý: Sau khi đặt đơn, bạn có 48 giờ để chốt nhân sự. Sau 48 giờ nếu không có nhân sự nào được chốt thì đơn hàng sẽ tự động hủy',
       'completion_rate': 'Tỷ lệ hoàn thành',
       'profile': 'Hồ sơ',
       'choose_partner': 'Chọn đối tác',
@@ -610,8 +612,7 @@ class AppTranslations extends Translations {
       'upload_completion_photo_desc':
           'Tải ảnh lên để xác nhận show đã được hoàn thành.',
       'completion_photo_required': 'Vui lòng tải ảnh hoàn thành show.',
-      'show_photo_image_too_large':
-          'Ảnh vượt quá 20MB, vui lòng chọn ảnh khác',
+      'show_photo_image_too_large': 'Ảnh vượt quá 20MB, vui lòng chọn ảnh khác',
 
       'confirm_complete': 'Xác nhận hoàn thành',
       'confirm_complete_message':
@@ -643,20 +644,20 @@ class AppTranslations extends Translations {
       'accept_new_show': ' Nhận show mới',
       'accept_new_show_desc': 'Xem show mới theo thời gian thực.',
 
-      'apply_for_show': 'Nhận show',
+      'apply_for_show': 'Báo giá show',
       'price_quote': 'Báo giá show',
       'price_quote_for_show': 'Báo giá cho show #@code',
       'input_price_quote': 'Nhập giá của bạn',
 
       'invalid_price': 'Vui lòng nhập giá hợp lệ (tối thiểu @min)',
-      'accepted_show': 'Bạn đã nhận show #@code',
-      'failed_to_accept_show':
-          'Không thể nhận show vì bạn đã bị cấm hoặc số dư không đủ.',
-      'accept_error_not_allowed': 'Tài khoản của bạn không được phép nhận đơn.',
-      'accept_error_insufficient_balance':
-          'Số dư tài khoản không đủ mức tối thiểu để nhận show này.',
-      'accept_error_order_not_pending':
-          'Đơn hàng này không còn ở trạng thái chờ, không thể nhận.',
+      'price_quoted': 'Bạn đã báo giá cho show #@code',
+      'failed_to_quote_price':
+          'Không thể báo giá vì bạn đã bị cấm hoặc số dư không đủ.',
+      'quote_error_not_allowed': 'Tài khoản của bạn không được phép báo giá.',
+      'quote_error_insufficient_balance':
+          'Số dư tài khoản không đủ mức tối thiểu để báo giá show này.',
+      'quote_error_order_not_pending':
+          'Đơn hàng này không còn ở trạng thái chờ, không thể báo giá.',
 
       'needs': 'Cần tìm',
 
@@ -685,6 +686,7 @@ class AppTranslations extends Translations {
 
       'my_profile': 'Hồ sơ của tôi',
       'show_calendar': 'Lịch show',
+      'my_reviews': 'Đánh giá của tôi',
       'change_password': 'Đổi mật khẩu',
       'current_password': 'Mật khẩu hiện tại',
       'current_password_hint': 'Nhập mật khẩu hiện tại',
@@ -790,6 +792,13 @@ class AppTranslations extends Translations {
       'delete_account_message':
           'Hành động này không thể hoàn tác. Vui lòng nhập mật khẩu để xác nhận.',
       'password_required': 'Vui lòng nhập mật khẩu.',
+      'review_comment': 'Nội dung đánh giá',
+      'no_review_comment': 'Khách hàng chưa để lại bình luận.',
+      'recommendation': 'Đề xuất',
+      'rating_details': 'Chi tiết điểm đánh giá',
+      'no_partner_reviews': 'Chưa có đánh giá nào',
+      'no_partner_reviews_desc':
+          'Khi khách hàng hoàn tất đánh giá, các nhận xét sẽ xuất hiện tại đây.',
 
       ///my services
       'my_services': 'Dịch vụ của tôi',
@@ -1275,6 +1284,8 @@ class AppTranslations extends Translations {
       'please_wait_a_moment':
           'Please wait a moment, we are sending notifications to nearby partners and will reload the page for you.',
       'proposed_partner_price': 'Partner Proposed Price',
+      'time_warning':
+          'Note: After placing your order, you have 48 hours to finalize your staffing. After 48 hours, if no staff is finalized, the order will be automatically canceled.',
       'completion_rate': 'Completion Rate',
       'profile': 'Profile',
       'choose_partner': 'Choose Partner',
@@ -1536,8 +1547,7 @@ class AppTranslations extends Translations {
       'upload_completion_photo_desc':
           'Upload a photo to confirm the show has been completed.',
       'completion_photo_required': 'Please upload a completion photo.',
-      'show_photo_image_too_large':
-          'Image exceeds 20MB, please choose another',
+      'show_photo_image_too_large': 'Image exceeds 20MB, please choose another',
 
       'confirm_complete': 'Confirm completion',
       'confirm_complete_message':
@@ -1550,21 +1560,20 @@ class AppTranslations extends Translations {
       'accept_new_show': ' Accept New Show',
       'accept_new_show_desc': 'View new show in real time.',
 
-      'apply_for_show': 'Apply for Show',
+      'apply_for_show': 'Quote for Show',
       'price_quote': 'Show price Quote',
       'price_quote_for_show': 'Price Quote for Show #@code',
       'input_price_quote': 'Input your price',
 
       'invalid_price': 'Please enter a valid price (minimum @min)',
-      'accepted_show': 'You have accepted show #@code',
-      'failed_to_accept_show':
-          'Failed to accept show because you are either banned or have insufficient balance.',
-      'accept_error_not_allowed':
-          'Your account is not allowed to accept orders.',
-      'accept_error_insufficient_balance':
-          'Your account balance does not meet the minimum requirement to accept this show.',
-      'accept_error_order_not_pending':
-          'This order is no longer pending and cannot be accepted.',
+      'price_quoted': 'You have quoted for show #@code',
+      'failed_to_quote_price':
+          'Failed to quote price because you are either banned or have insufficient balance.',
+      'quote_error_not_allowed': 'Your account is not allowed to quote prices.',
+      'quote_error_insufficient_balance':
+          'Your account balance does not meet the minimum requirement to quote for this show.',
+      'quote_error_order_not_pending':
+          'This order is no longer pending and cannot be quoted.',
 
       'needs': 'Needs',
 
@@ -1593,6 +1602,7 @@ class AppTranslations extends Translations {
 
       'my_profile': 'My Profile',
       'show_calendar': 'Show Calendar',
+      'my_reviews': 'My Reviews',
       'change_password': 'Change Password',
       'current_password': 'Current Password',
       'current_password_hint': 'Enter current password',
@@ -1696,6 +1706,13 @@ class AppTranslations extends Translations {
       'delete_account_message':
           'This action cannot be undone. Please enter your password to confirm.',
       'password_required': 'Please enter your password.',
+      'review_comment': 'Review comment',
+      'no_review_comment': 'The client has not left a comment.',
+      'recommendation': 'Recommendation',
+      'rating_details': 'Rating details',
+      'no_partner_reviews': 'No reviews yet',
+      'no_partner_reviews_desc':
+          'Customer reviews will appear here after they are submitted.',
 
       ///my services
       'my_services': 'My Services',

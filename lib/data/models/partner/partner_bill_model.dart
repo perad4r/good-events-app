@@ -82,19 +82,6 @@ class PartnerBill {
   }
 }
 
-class AvailableCategory {
-  final int id;
-  final String name;
-
-  const AvailableCategory({required this.id, required this.name});
-
-  factory AvailableCategory.fromMap(Map<String, dynamic> map) {
-    return AvailableCategory(id: map['id'] as int, name: map['name'] as String);
-  }
-
-  Map<String, dynamic> toMap() => {'id': id, 'name': name};
-}
-
 class PaginationMeta {
   final int currentPage;
   final int perPage;
@@ -120,13 +107,13 @@ class PaginationMeta {
 
 class RealtimeBillsResponse {
   final List<PartnerBill> partnerBills;
-  final List<AvailableCategory> availableCategories;
+  final List<String> broadcastChannels;
   final String lastUpdated;
   final PaginationMeta meta;
 
   const RealtimeBillsResponse({
     required this.partnerBills,
-    required this.availableCategories,
+    required this.broadcastChannels,
     required this.lastUpdated,
     required this.meta,
   });
@@ -137,8 +124,9 @@ class RealtimeBillsResponse {
       partnerBills: (partnerBillsRaw['data'] as List<dynamic>)
           .map((e) => PartnerBill.fromMap(e as Map<String, dynamic>))
           .toList(),
-      availableCategories: (map['available_categories'] as List<dynamic>)
-          .map((e) => AvailableCategory.fromMap(e as Map<String, dynamic>))
+      broadcastChannels: (map['broadcast_channels'] as List<dynamic>? ?? const [])
+          .map((e) => e.toString())
+          .where((channel) => channel.isNotEmpty)
           .toList(),
       lastUpdated: map['last_updated'] as String,
       meta: PaginationMeta.fromMap(

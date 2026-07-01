@@ -22,6 +22,9 @@ class HandleNotificationTerminatedTap {
         case 'NEW_MESSAGE':
           HandleNotificationTerminatedTap().handleNewMessageCode(data);
           break;
+        case 'NEW_REVIEW_RECEIVED':
+          HandleNotificationTerminatedTap().handleNewReviewReceivedCode(data);
+          break;
         default:
           logger.w('[HandleNotificationTerminatedTap] Unknown code: $code');
       }
@@ -89,6 +92,19 @@ class HandleNotificationTerminatedTap {
     );
     logger.i(
       '[HandleNotificationTerminatedTap] Saved pendingThreadId=$threadId',
+    );
+  }
+
+  void handleNewReviewReceivedCode(Map<String, dynamic> data) {
+    logger.i(
+      '[HandleNotificationTerminatedTap] Handling tap for new review received',
+    );
+    StorageService.writeStringData(
+      key: LocalStorageKeys.pendingPartnerRoute,
+      value: LocalStorageKeys.pendingPartnerRouteReviews,
+    );
+    logger.i(
+      '[HandleNotificationTerminatedTap] Saved pendingPartnerRoute=reviews',
     );
   }
 }

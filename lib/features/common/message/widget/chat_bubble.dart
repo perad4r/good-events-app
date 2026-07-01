@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/gestures.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/data/models/message_model.dart'; // Correct import
 import 'package:url_launcher/url_launcher.dart';
@@ -121,8 +122,8 @@ class _BubbleContent extends StatelessWidget {
       return _LocationMessageContent(message: message, isSender: isSender);
     }
 
-    return Text(
-      message.text.isEmpty ? message.previewText : message.text,
+    return _LinkifiedMessageText(
+      text: message.text.isEmpty ? message.previewText : message.text,
       style: TextStyle(
         color: isSender ? Colors.white : const Color(0xFF1F2937),
         fontSize: 14,
@@ -147,8 +148,8 @@ class _ImageMessageContent extends StatelessWidget {
         )
         .toList();
     if (attachments.isEmpty) {
-      return Text(
-        message.previewText,
+      return _LinkifiedMessageText(
+        text: message.previewText,
         style: TextStyle(
           color: isSender ? Colors.white : const Color(0xFF1F2937),
           fontSize: 14,
@@ -208,8 +209,8 @@ class _ImageMessageContent extends StatelessWidget {
           const SizedBox(height: 8),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6),
-            child: Text(
-              message.text,
+            child: _LinkifiedMessageText(
+              text: message.text,
               style: TextStyle(
                 color: isSender ? Colors.white : const Color(0xFF1F2937),
                 fontSize: 14,
@@ -235,6 +236,116 @@ class _ImageMessageContent extends StatelessWidget {
       transition: Transition.fadeIn,
       duration: const Duration(milliseconds: 180),
     );
+  }
+}
+
+class _LinkifiedMessageText extends StatefulWidget {
+  const _LinkifiedMessageText({required this.text, required this.style});
+
+  final String text;
+  final TextStyle style;
+
+  @override
+  State<_LinkifiedMessageText> createState() => _LinkifiedMessageTextState();
+}
+
+class _LinkifiedMessageTextState extends State<_LinkifiedMessageText> {
+  final List<TapGestureRecognizer> _recognizers = <TapGestureRecognizer>[];
+
+  static final RegExp _urlRegExp = RegExp(
+    r'((https?:\/\/)?([\w-]+\.)+[\w-]{2,}(\/[^\s]*)?)',
+    caseSensitive: false,
+  );
+
+  @override
+  void didUpdateWidget(covariant _LinkifiedMessageText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) {
+      _disposeRecognizers();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposeRecognizers();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    _disposeRecognizers();
+    final spans = <InlineSpan>[];
+    int currentIndex = 0;
+
+    for (final match in _urlRegExp.allMatches(widget.text)) {
+      if (match.start > currentIndex) {
+        spans.add(
+          TextSpan(text: widget.text.substring(currentIndex, match.start)),
+        );
+      }
+
+      final rawMatch = widget.text.substring(match.start, match.end);
+      final trimmed = _trimTrailingPunctuation(rawMatch);
+      final trailing = rawMatch.substring(trimmed.length);
+      final recognizer = TapGestureRecognizer()
+        ..onTap = () => _openUrl(trimmed);
+      _recognizers.add(recognizer);
+
+      spans.add(
+        TextSpan(
+          text: trimmed,
+          style: widget.style.copyWith(
+            color: _linkColor(widget.style.color),
+            decoration: TextDecoration.underline,
+            decorationColor: _linkColor(widget.style.color),
+          ),
+          recognizer: recognizer,
+        ),
+      );
+
+      if (trailing.isNotEmpty) {
+        spans.add(TextSpan(text: trailing));
+      }
+      currentIndex = match.end;
+    }
+
+    if (currentIndex < widget.text.length) {
+      spans.add(TextSpan(text: widget.text.substring(currentIndex)));
+    }
+
+    return RichText(
+      text: TextSpan(style: widget.style, children: spans),
+    );
+  }
+
+  String _trimTrailingPunctuation(String value) {
+    return value.replaceFirst(RegExp(r'[.,;:!?)]*$'), '');
+  }
+
+  Color _linkColor(Color? baseColor) {
+    if (baseColor == Colors.white) return Colors.white;
+    return AppColors.primary;
+  }
+
+  Future<void> _openUrl(String value) async {
+    final normalized = value.startsWith(
+      RegExp(r'https?:\/\/', caseSensitive: false),
+    )
+        ? value
+        : 'https://$value';
+    final uri = Uri.tryParse(normalized);
+    if (uri == null) return;
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void _disposeRecognizers() {
+    for (final recognizer in _recognizers) {
+      recognizer.dispose();
+    }
+    _recognizers.clear();
   }
 }
 

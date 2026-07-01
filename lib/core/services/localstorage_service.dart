@@ -86,6 +86,8 @@ class LocalStorageKeys {
   static const String pendingPartnerTabIndex = "pending_partner_tab_index";
   static const String pendingPartnerShowTabIndex =
       "pending_partner_show_tab_index";
+  static const String pendingPartnerRoute = "pending_partner_route";
+  static const String pendingPartnerRouteReviews = "reviews";
   static const String pendingClientTabIndex = "pending_client_tab_index";
 
   // App settings

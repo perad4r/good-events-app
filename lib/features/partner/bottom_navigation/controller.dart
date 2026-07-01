@@ -78,6 +78,7 @@ class PartnerBottomNavigationController extends GetxController {
     final args = Get.arguments;
     int? initialIndex;
     int? initialShowTabIndex;
+    String? pendingRoute;
 
     if (args is Map) {
       if (args['initialIndex'] is int) {
@@ -93,6 +94,9 @@ class PartnerBottomNavigationController extends GetxController {
       final pendingShowTabIndex = StorageService.readData(
         key: LocalStorageKeys.pendingPartnerShowTabIndex,
       )?.toString();
+      pendingRoute = StorageService.readData(
+        key: LocalStorageKeys.pendingPartnerRoute,
+      )?.toString();
 
       if (pendingIndex != null) {
         StorageService.removeData(key: LocalStorageKeys.pendingPartnerTabIndex);
@@ -102,6 +106,14 @@ class PartnerBottomNavigationController extends GetxController {
         initialIndex = int.tryParse(pendingIndex);
         initialShowTabIndex = int.tryParse(pendingShowTabIndex ?? '');
       }
+
+      if (pendingRoute != null) {
+        StorageService.removeData(key: LocalStorageKeys.pendingPartnerRoute);
+      }
+    }
+
+    if (pendingRoute == LocalStorageKeys.pendingPartnerRouteReviews) {
+      Future.microtask(() => Get.toNamed(Routes.partnerReviews));
     }
 
     if (initialIndex == null) return;

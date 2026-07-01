@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.7.0+70]
+
+- Fix UI in bill detail at client side
+- Fix can't click link in chat
+- Fix review button still show after reviewed
+- Add send image & location in chat
+- Add partner service area
+- Add completed image at partner side
+- Add attach image in booking stage
+- Add new notification form admin
+- Add review view at partner side
+
 ## [v2.6.4+69]
 
 - Add filter when click in bill count at client home

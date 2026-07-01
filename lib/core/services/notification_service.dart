@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import './handle_notification_code.dart';
 import './handle_notification_tap.dart';
 import './handle_notification_terminated_tap.dart';
@@ -40,7 +42,31 @@ class NotificationService {
       android: androidSettings,
       iOS: darwinSettings,
     );
-    await _localNotifications.initialize(settings: initSettings);
+    await _localNotifications.initialize(
+      settings: initSettings,
+      onDidReceiveNotificationResponse: (response) {
+        final payload = response.payload;
+        if (payload == null || payload.isEmpty) return;
+
+        try {
+          final decoded = jsonDecode(payload);
+          if (decoded is Map<String, dynamic>) {
+            HandleNotificationTap.handleTap(decoded);
+          } else if (decoded is Map) {
+            HandleNotificationTap.handleTap(
+              decoded.map(
+                (key, value) => MapEntry(key.toString(), value),
+              ),
+            );
+          }
+        } catch (e) {
+          logger.e(
+            '[FCM] Failed to decode local notification payload',
+            error: e,
+          );
+        }
+      },
+    );
 
     await _messaging.setForegroundNotificationPresentationOptions(
       alert: true,
@@ -79,6 +105,7 @@ class NotificationService {
       title: notification.title,
       body: notification.body,
       notificationDetails: notificationDetails,
+      payload: jsonEncode(message.data),
     );
   }
 

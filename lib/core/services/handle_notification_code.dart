@@ -4,6 +4,7 @@ import 'package:sukientotapp/features/client/order/controller.dart';
 import 'package:sukientotapp/features/partner/show/controller.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/partner/home/controller.dart';
+import 'package:sukientotapp/features/partner/reviews/controller.dart';
 
 class NotificationHandler {
   static void handleMessage(Map<String, dynamic> data) {
@@ -21,6 +22,9 @@ class NotificationHandler {
           break;
         case 'NEW_MESSAGE':
           NotificationHandler().handleNewMessageCode(data);
+          break;
+        case 'NEW_REVIEW_RECEIVED':
+          NotificationHandler().handleNewReviewReceivedCode(data);
           break;
         case 'TEST_NOTIFICATION':
           logger.i(
@@ -92,6 +96,18 @@ class NotificationHandler {
       return;
     } else {
       logger.i('[NotificationHandler] New message for threadId: $threadId');
+    }
+  }
+
+  void handleNewReviewReceivedCode(Map<String, dynamic> data) {
+    logger.i('[NotificationHandler] Handling new review received');
+
+    if (Get.isRegistered<PartnerReviewsController>()) {
+      Get.find<PartnerReviewsController>().fetchReviews(refresh: true);
+    } else {
+      logger.w(
+        '[NotificationHandler] PartnerReviewsController not registered, cannot refresh reviews',
+      );
     }
   }
 }

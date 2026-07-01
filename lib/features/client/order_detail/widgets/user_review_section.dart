@@ -36,7 +36,7 @@ class UserReviewSection extends GetView<ClientOrderDetailController> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Đánh giá của bạn (${review.rating}sao)', // text-xs text-amber-700
+                    'Đánh giá của bạn (${review.rating} sao)', // text-xs text-amber-700
                     style: context.typography.xs.copyWith(
                       color: Colors.orange[700],
                       fontWeight: FontWeight.w600,

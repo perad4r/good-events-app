@@ -265,6 +265,12 @@ class _AccountScreenState extends State<AccountScreen> {
                                   FIcons.chartArea,
                                   () => Get.toNamed(Routes.partnerAnalytics),
                                 ),
+                              if (controller.role.value == 'partner')
+                                _MenuItem(
+                                  'my_reviews'.tr,
+                                  FIcons.messageSquareText,
+                                  () => Get.toNamed(Routes.partnerReviews),
+                                ),
                               _MenuItem(
                                 'change_password'.tr,
                                 FIcons.lockKeyholeOpen,
