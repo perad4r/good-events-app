@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [v2.7.1+71]
+
+- Fix wrong API build
+
 ## [v2.7.0+70]
 
 - Fix UI in bill detail at client side

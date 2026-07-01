@@ -3,7 +3,7 @@
 <plist version="1.0">
 	<dict>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
-		<true/>
+		<true />
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
@@ -48,19 +48,25 @@
 		<key>GIDClientID</key>
 		<string>377547535680-0r4hhues9ql79fi8or7e8nsneu17p1qp.apps.googleusercontent.com</string>
 		<key>LSRequiresIPhoneOS</key>
-		<true/>
+		<true />
 		<key>NSCameraUsageDescription</key>
-		<string>Ứng dụng yêu cầu quyền truy cập camera để bạn có thể chụp ảnh hoàn thành đơn hoặc hồ sơ.</string>
+		<string>Ứng dụng yêu cầu quyền truy cập camera để bạn có thể chụp ảnh hoàn thành đơn hoặc hồ
+			sơ.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>Ứng dụng yêu cầu quyền truy cập vào thư viện ảnh để tải lên ảnh hoàn thành đơn hoặc hồ sơ.</string>
+		<string>Ứng dụng yêu cầu quyền truy cập vào thư viện ảnh để tải lên ảnh hoàn thành đơn hoặc
+			hồ sơ.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>Ứng dụng yêu cầu quyền truy cập vị trí để bạn có thể gửi vị trí hiện tại trong cuộc trò chuyện.</string>
+		<string>Ứng dụng yêu cầu quyền truy cập vị trí để bạn có thể gửi vị trí hiện tại trong cuộc
+			trò chuyện.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>Ứng dụng yêu cầu quyền truy cập vị trí để hỗ trợ chia sẻ vị trí hiện tại và cập nhật
+			dịch vụ sự kiện khi cần.</string>
 		<key>NSUserNotificationUsageDescription</key>
 		<string>Cho phép nhận thông báo đơn hàng và cập nhật từ Sự kiện tốt</string>
 		<key>UIApplicationSceneManifest</key>
 		<dict>
 			<key>UIApplicationSupportsMultipleScenes</key>
-			<false/>
+			<false />
 			<key>UISceneConfigurations</key>
 			<dict>
 				<key>UIWindowSceneSessionRoleApplication</key>
@@ -79,7 +85,7 @@
 			</dict>
 		</dict>
 		<key>UIApplicationSupportsIndirectInputEvents</key>
-		<true/>
+		<true />
 		<key>UIBackgroundModes</key>
 		<array>
 			<string>fetch</string>
@@ -103,6 +109,6 @@
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
 		<key>UIViewControllerBasedStatusBarAppearance</key>
-		<false/>
+		<false />
 	</dict>
 </plist>
