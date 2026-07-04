@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-upload:
-    runs-on: [self-hosted, macOS]
+    runs-on: [self-hosted, macOS, personal]
 
     steps:
       - name: Checkout repository
