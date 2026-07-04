@@ -23,6 +23,7 @@ class PartnerServiceAreasScreen extends GetView<PartnerServiceAreasController> {
                 children: [
                   Expanded(
                     child: SingleChildScrollView(
+                      controller: controller.scrollController,
                       padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -40,6 +41,7 @@ class PartnerServiceAreasScreen extends GetView<PartnerServiceAreasController> {
                           _SectionLabel(label: 'selected_service_areas'.tr),
                           const SizedBox(height: 10),
                           _SelectedAreasCard(controller: controller),
+                          _LoadMoreServiceAreas(controller: controller),
                         ],
                       ),
                     ),
@@ -49,6 +51,39 @@ class PartnerServiceAreasScreen extends GetView<PartnerServiceAreasController> {
               ),
       ),
     );
+  }
+}
+
+class _LoadMoreServiceAreas extends StatelessWidget {
+  final PartnerServiceAreasController controller;
+
+  const _LoadMoreServiceAreas({required this.controller});
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (!controller.hasMoreServiceAreas.value &&
+          !controller.isLoadingMoreServiceAreas.value) {
+        return const SizedBox.shrink();
+      }
+
+      return Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: Center(
+          child: controller.isLoadingMoreServiceAreas.value
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : TextButton.icon(
+                  onPressed: controller.loadMoreServiceAreas,
+                  icon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+                  label: Text('load_more_service_areas'.tr),
+                ),
+        ),
+      );
+    });
   }
 }
 
@@ -102,8 +137,7 @@ class _HeroCard extends StatelessWidget {
                 Obx(
                   () => Text(
                     'service_area_count'.trParams({
-                      'count': controller.selectedLocationIds.length
-                          .toString(),
+                      'count': controller.selectedServiceAreaCountLabel,
                     }),
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.78),
@@ -208,7 +242,11 @@ class _LocationSection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(10),
                     onTap: noProvince
                         ? null
-                        : () => _showMultiLocationBottomSheet(context),
+                        : () async {
+                            await controller.ensureAllServiceAreasLoaded();
+                            if (!context.mounted) return;
+                            _showMultiLocationBottomSheet(context);
+                          },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 12,
@@ -401,8 +439,7 @@ class _LocationSection extends StatelessWidget {
                       Expanded(
                         child: Text(
                           'service_area_count'.trParams({
-                            'count': controller.selectedLocationIds.length
-                                .toString(),
+                            'count': controller.selectedServiceAreaCountLabel,
                           }),
                           style: TextStyle(
                             color: context.fTheme.colors.mutedForeground,
@@ -526,6 +563,18 @@ class _SelectedAreasCard extends StatelessWidget {
 
   const _SelectedAreasCard({required this.controller});
 
+  String _removeDiacritics(String str) {
+    const withDiacritics =
+        'áàảãạâấầẩẫậăắằẳẵặđéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ';
+    const withoutDiacritics =
+        'aaaaaaaaaaaaaaaaadeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyy';
+    var lowerStr = str.toLowerCase();
+    for (int i = 0; i < withDiacritics.length; i++) {
+      lowerStr = lowerStr.replaceAll(withDiacritics[i], withoutDiacritics[i]);
+    }
+    return lowerStr;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -561,8 +610,23 @@ class _SelectedAreasCard extends StatelessWidget {
           );
         }
 
+        final searchQuery = _removeDiacritics(
+          controller.selectedAreaSearch.value.trim(),
+        );
+        final visibleServiceAreas = searchQuery.isEmpty
+            ? controller.serviceAreas.toList()
+            : controller.serviceAreas
+                  .where((area) {
+                    final searchable = _removeDiacritics(
+                      '${area.name} ${area.provinceName}',
+                    );
+
+                    return searchable.contains(searchQuery);
+                  })
+                  .toList();
+
         final groupedAreas = <String, List<PartnerServiceAreaModel>>{};
-        for (final area in controller.serviceAreas) {
+        for (final area in visibleServiceAreas) {
           final provinceName = area.provinceName.isEmpty
               ? 'unknown_province'.tr
               : area.provinceName;
@@ -571,130 +635,223 @@ class _SelectedAreasCard extends StatelessWidget {
         final provinceNames = groupedAreas.keys.toList()..sort();
 
         return Column(
-          children: provinceNames.map((provinceName) {
-            final areas = groupedAreas[provinceName]!;
-            areas.sort((a, b) => a.name.compareTo(b.name));
-
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: context.fTheme.colors.muted.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: context.fTheme.colors.border.withValues(alpha: 0.7),
+          children: [
+            _SelectedAreaSearchField(controller: controller),
+            if (visibleServiceAreas.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 18),
+                child: Text(
+                  'no_matching_service_areas'.tr,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: context.fTheme.colors.mutedForeground,
+                    fontSize: 13,
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
-                      child: Row(
-                        children: [
-                          Icon(
-                            FIcons.mapPinned,
-                            size: 15,
-                            color: context.fTheme.colors.primary,
-                          ),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              provinceName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 3,
-                            ),
-                            decoration: BoxDecoration(
-                              color: context.fTheme.colors.primary.withValues(
-                                alpha: 0.1,
-                              ),
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                            child: Text(
-                              'ward_count'.trParams({
-                                'count': areas.length.toString(),
-                              }),
-                              style: TextStyle(
-                                color: context.fTheme.colors.primary,
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
+              ),
+            ...provinceNames.map((provinceName) {
+              final areas = groupedAreas[provinceName]!;
+              areas.sort((a, b) => a.name.compareTo(b.name));
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: context.fTheme.colors.muted.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: context.fTheme.colors.border.withValues(
+                        alpha: 0.7,
                       ),
                     ),
-                    Divider(height: 1, color: context.fTheme.colors.border),
-                    ...List.generate(areas.length, (index) {
-                      final area = areas[index];
-                      final isLast = index == areas.length - 1;
-                      return Column(
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 10,
+                  ),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(12, 10, 12, 8),
+                        child: Row(
+                          children: [
+                            Icon(
+                              FIcons.mapPinned,
+                              size: 15,
+                              color: context.fTheme.colors.primary,
                             ),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    area.name,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: context.fTheme.colors.foreground,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                provinceName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.w700,
                                 ),
-                                GestureDetector(
-                                  onTap: () =>
-                                      controller.removeServiceArea(area.id),
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(4),
-                                    child: Icon(
-                                      FIcons.x,
-                                      size: 15,
-                                      color: context
-                                          .fTheme
-                                          .colors
-                                          .mutedForeground,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          if (!isLast)
-                            Divider(
-                              height: 1,
-                              indent: 12,
-                              endIndent: 12,
-                              color: context.fTheme.colors.border.withValues(
-                                alpha: 0.55,
                               ),
                             ),
-                        ],
-                      );
-                    }),
-                  ],
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                                vertical: 3,
+                              ),
+                              decoration: BoxDecoration(
+                                color: context.fTheme.colors.primary
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                              child: Text(
+                                'ward_count'.trParams({
+                                  'count': areas.length.toString(),
+                                }),
+                                style: TextStyle(
+                                  color: context.fTheme.colors.primary,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Divider(height: 1, color: context.fTheme.colors.border),
+                      ...List.generate(areas.length, (index) {
+                        final area = areas[index];
+                        final isLast = index == areas.length - 1;
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      area.name,
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: context.fTheme.colors.foreground,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  GestureDetector(
+                                    onTap: () =>
+                                        controller.removeServiceArea(area.id),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(4),
+                                      child: Icon(
+                                        FIcons.x,
+                                        size: 15,
+                                        color: context
+                                            .fTheme
+                                            .colors
+                                            .mutedForeground,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            if (!isLast)
+                              Divider(
+                                height: 1,
+                                indent: 12,
+                                endIndent: 12,
+                                color: context.fTheme.colors.border.withValues(
+                                  alpha: 0.55,
+                                ),
+                              ),
+                          ],
+                        );
+                      }),
+                    ],
+                  ),
                 ),
-              ),
-            );
-          }).toList(),
+              );
+            }),
+          ],
         );
       }),
+    );
+  }
+}
+
+class _SelectedAreaSearchField extends StatefulWidget {
+  final PartnerServiceAreasController controller;
+
+  const _SelectedAreaSearchField({required this.controller});
+
+  @override
+  State<_SelectedAreaSearchField> createState() =>
+      _SelectedAreaSearchFieldState();
+}
+
+class _SelectedAreaSearchFieldState extends State<_SelectedAreaSearchField> {
+  late final TextEditingController _textController;
+
+  @override
+  void initState() {
+    super.initState();
+    _textController = TextEditingController(
+      text: widget.controller.selectedAreaSearch.value,
+    );
+  }
+
+  @override
+  void dispose() {
+    _textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: SizedBox(
+        height: 40,
+        child: Material(
+          type: MaterialType.transparency,
+          child: TextField(
+            controller: _textController,
+            onChanged: (value) =>
+                widget.controller.selectedAreaSearch.value = value,
+            style: const TextStyle(fontSize: 13),
+            decoration: InputDecoration(
+              hintText: 'search_service_area_to_remove'.tr,
+              prefixIcon: Icon(
+                Icons.search_rounded,
+                size: 18,
+                color: context.fTheme.colors.mutedForeground,
+              ),
+              suffixIcon: Obx(
+                () => widget.controller.selectedAreaSearch.value.isEmpty
+                    ? const SizedBox.shrink()
+                    : IconButton(
+                        onPressed: () {
+                          _textController.clear();
+                          widget.controller.selectedAreaSearch.value = '';
+                        },
+                        icon: Icon(
+                          FIcons.x,
+                          size: 15,
+                          color: context.fTheme.colors.mutedForeground,
+                        ),
+                      ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 8,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

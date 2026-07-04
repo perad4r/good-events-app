@@ -105,11 +105,28 @@ class PaginationMeta {
   }
 }
 
+class RealtimePaginationMeta {
+  final int currentPage;
+  final int perPage;
+
+  const RealtimePaginationMeta({
+    required this.currentPage,
+    required this.perPage,
+  });
+
+  factory RealtimePaginationMeta.fromMap(Map<String, dynamic> map) {
+    return RealtimePaginationMeta(
+      currentPage: map['current_page'] as int,
+      perPage: map['per_page'] as int,
+    );
+  }
+}
+
 class RealtimeBillsResponse {
   final List<PartnerBill> partnerBills;
   final List<String> broadcastChannels;
   final String lastUpdated;
-  final PaginationMeta meta;
+  final RealtimePaginationMeta meta;
 
   const RealtimeBillsResponse({
     required this.partnerBills,
@@ -129,7 +146,7 @@ class RealtimeBillsResponse {
           .where((channel) => channel.isNotEmpty)
           .toList(),
       lastUpdated: map['last_updated'] as String,
-      meta: PaginationMeta.fromMap(
+      meta: RealtimePaginationMeta.fromMap(
         partnerBillsRaw['meta'] as Map<String, dynamic>,
       ),
     );

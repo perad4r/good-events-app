@@ -9,9 +9,15 @@ class PartnerServiceAreaRepositoryImpl implements PartnerServiceAreaRepository {
   PartnerServiceAreaRepositoryImpl(this._provider);
 
   @override
-  Future<PartnerServiceAreasResponse> getServiceAreas() async {
+  Future<PartnerServiceAreasResponse> getServiceAreas({
+    int page = 1,
+    int perPage = 50,
+  }) async {
     try {
-      final raw = await _provider.getServiceAreas();
+      final raw = await _provider.getServiceAreas(
+        page: page,
+        perPage: perPage,
+      );
       return PartnerServiceAreasResponse.fromJson(raw);
     } catch (e) {
       logger.e('[PartnerServiceAreaRepositoryImpl] [getServiceAreas] $e');
@@ -21,10 +27,16 @@ class PartnerServiceAreaRepositoryImpl implements PartnerServiceAreaRepository {
 
   @override
   Future<PartnerServiceAreasResponse> addServiceAreas(
-    List<int> locationIds,
-  ) async {
+    List<int> locationIds, {
+    int page = 1,
+    int perPage = 50,
+  }) async {
     try {
-      final raw = await _provider.addServiceAreas(locationIds);
+      final raw = await _provider.addServiceAreas(
+        locationIds,
+        page: page,
+        perPage: perPage,
+      );
       return PartnerServiceAreasResponse.fromJson(raw);
     } catch (e) {
       logger.e('[PartnerServiceAreaRepositoryImpl] [addServiceAreas] $e');
@@ -34,10 +46,16 @@ class PartnerServiceAreaRepositoryImpl implements PartnerServiceAreaRepository {
 
   @override
   Future<PartnerServiceAreasResponse> updateServiceAreas(
-    List<int> locationIds,
-  ) async {
+    List<int> locationIds, {
+    int page = 1,
+    int perPage = 50,
+  }) async {
     try {
-      final raw = await _provider.updateServiceAreas(locationIds);
+      final raw = await _provider.updateServiceAreas(
+        locationIds,
+        page: page,
+        perPage: perPage,
+      );
       return PartnerServiceAreasResponse.fromJson(raw);
     } catch (e) {
       logger.e('[PartnerServiceAreaRepositoryImpl] [updateServiceAreas] $e');

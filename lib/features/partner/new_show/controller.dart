@@ -31,7 +31,6 @@ class NewShowController extends GetxController {
       filterSort.value != 'date_asc';
 
   int _currentPage = 1;
-  int _lastPage = 1;
   final _subscribedChannels = <String>[];
   DateTime? _lastScrollFetchTime;
   DateTime? _lastRefreshTime;
@@ -175,9 +174,8 @@ class NewShowController extends GetxController {
       }
 
       lastUpdated.value = response.lastUpdated;
-      _lastPage = response.meta.lastPage;
 
-      if (response.meta.currentPage < _lastPage) {
+      if (response.partnerBills.length >= response.meta.perPage) {
         _currentPage = response.meta.currentPage + 1;
         hasMorePages.value = true;
       } else {
@@ -185,7 +183,7 @@ class NewShowController extends GetxController {
       }
 
       logger.i(
-        '[NewShow] [Fetch] Page $pageToFetch/$_lastPage - ${bills.length} total bills',
+        '[NewShow] [Fetch] Page $pageToFetch - ${bills.length} loaded bills',
       );
     } catch (e) {
       logger.e('[NewShow] [Fetch] Error: $e');
@@ -210,7 +208,6 @@ class NewShowController extends GetxController {
     }
     _lastRefreshTime = now;
     _currentPage = 1;
-    _lastPage = 1;
     hasMorePages.value = true;
     await fetchRealtimeBills(isInitialFetch: false);
   }
@@ -231,7 +228,6 @@ class NewShowController extends GetxController {
 
     await _unsubscribeAll();
     _currentPage = 1;
-    _lastPage = 1;
     _lastScrollFetchTime = null;
     _lastRefreshTime = null;
     hasMorePages.value = true;

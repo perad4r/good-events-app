@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.4+74]
+
+- Fix realtime bill overload error
+- Fix service area overload error
+
 ## [2.7.3+73]
 
 - Fix env

@@ -33,11 +33,13 @@ class PartnerServiceAreaModel {
 class PartnerServiceAreasResponse {
   final List<int> serviceAreaLocationIds;
   final List<PartnerServiceAreaModel> serviceAreas;
+  final ServiceAreasPaginationMeta meta;
   final bool success;
 
   const PartnerServiceAreasResponse({
     required this.serviceAreaLocationIds,
     required this.serviceAreas,
+    required this.meta,
     this.success = false,
   });
 
@@ -55,6 +57,29 @@ class PartnerServiceAreasResponse {
             ),
           )
           .toList(),
+      meta: ServiceAreasPaginationMeta.fromJson(
+        json['meta'] as Map<String, dynamic>? ?? const {},
+      ),
+    );
+  }
+}
+
+class ServiceAreasPaginationMeta {
+  final int currentPage;
+  final int perPage;
+  final bool hasMorePages;
+
+  const ServiceAreasPaginationMeta({
+    required this.currentPage,
+    required this.perPage,
+    required this.hasMorePages,
+  });
+
+  factory ServiceAreasPaginationMeta.fromJson(Map<String, dynamic> json) {
+    return ServiceAreasPaginationMeta(
+      currentPage: json['current_page'] as int? ?? 1,
+      perPage: json['per_page'] as int? ?? 50,
+      hasMorePages: json['has_more_pages'] as bool? ?? false,
     );
   }
 }

@@ -8,9 +8,18 @@ class PartnerServiceAreaProvider {
 
   PartnerServiceAreaProvider(this._apiService);
 
-  Future<Map<String, dynamic>> getServiceAreas() async {
+  Future<Map<String, dynamic>> getServiceAreas({
+    int page = 1,
+    int perPage = 50,
+  }) async {
     try {
-      final response = await _apiService.dio.get(AppUrl.partnerServiceAreas);
+      final response = await _apiService.dio.get(
+        AppUrl.partnerServiceAreas,
+        queryParameters: {
+          'page': page,
+          'per_page': perPage,
+        },
+      );
       if (response.statusCode == 200) {
         return response.data as Map<String, dynamic>;
       }
@@ -26,10 +35,18 @@ class PartnerServiceAreaProvider {
     }
   }
 
-  Future<Map<String, dynamic>> addServiceAreas(List<int> locationIds) async {
+  Future<Map<String, dynamic>> addServiceAreas(
+    List<int> locationIds, {
+    int page = 1,
+    int perPage = 50,
+  }) async {
     try {
       final response = await _apiService.dio.post(
         AppUrl.partnerServiceAreas,
+        queryParameters: {
+          'page': page,
+          'per_page': perPage,
+        },
         data: {'location_ids': locationIds},
       );
       if (response.statusCode == 200) {
@@ -47,10 +64,18 @@ class PartnerServiceAreaProvider {
     }
   }
 
-  Future<Map<String, dynamic>> updateServiceAreas(List<int> locationIds) async {
+  Future<Map<String, dynamic>> updateServiceAreas(
+    List<int> locationIds, {
+    int page = 1,
+    int perPage = 50,
+  }) async {
     try {
       final response = await _apiService.dio.post(
         AppUrl.partnerServiceAreasUpdate,
+        queryParameters: {
+          'page': page,
+          'per_page': perPage,
+        },
         data: {'location_ids': locationIds},
       );
       if (response.statusCode == 200) {
