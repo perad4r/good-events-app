@@ -1,3 +1,5 @@
+import 'package:sukientotapp/data/models/client/order_voucher_summary_model.dart';
+
 class EventOrderModel {
   final int id;
   final String code;
@@ -17,6 +19,7 @@ class EventOrderModel {
   final String eventName;
   final int applicantCount;
   final List<String> bookingPhotos;
+  final OrderVoucherSummaryModel? voucher;
 
   EventOrderModel({
     required this.id,
@@ -37,6 +40,7 @@ class EventOrderModel {
     required this.eventName,
     required this.applicantCount,
     required this.bookingPhotos,
+    this.voucher,
   });
 
   factory EventOrderModel.fromJson(Map<String, dynamic> json) {
@@ -61,6 +65,11 @@ class EventOrderModel {
       eventName: (json['event_name'] as String? ?? '').trim(),
       applicantCount: json['applicant_count'] as int? ?? 0,
       bookingPhotos: _parseBookingPhotos(json['booking_photos']),
+      voucher: json['voucher'] is Map<String, dynamic>
+          ? OrderVoucherSummaryModel.fromJson(
+              json['voucher'] as Map<String, dynamic>,
+            )
+          : null,
     );
   }
 

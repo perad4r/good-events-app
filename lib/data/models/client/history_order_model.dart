@@ -1,3 +1,5 @@
+import 'package:sukientotapp/data/models/client/order_voucher_summary_model.dart';
+
 class PartnerProfileModel {
   final int? id;
   final String? partnerName;
@@ -93,6 +95,7 @@ class HistoryOrderModel {
   final List<String> bookingPhotos;
   final HistoryPartnerModel? partner;
   final HistoryReviewModel? review;
+  final OrderVoucherSummaryModel? voucher;
 
   HistoryOrderModel({
     required this.id,
@@ -115,6 +118,7 @@ class HistoryOrderModel {
     this.bookingPhotos = const <String>[],
     this.partner,
     this.review,
+    this.voucher,
   });
 
   factory HistoryOrderModel.fromJson(Map<String, dynamic> json) {
@@ -142,6 +146,11 @@ class HistoryOrderModel {
           : null,
       review: json['review'] != null
           ? HistoryReviewModel.fromJson(json['review'] as Map<String, dynamic>)
+          : null,
+      voucher: json['voucher'] is Map<String, dynamic>
+          ? OrderVoucherSummaryModel.fromJson(
+              json['voucher'] as Map<String, dynamic>,
+            )
           : null,
     );
   }

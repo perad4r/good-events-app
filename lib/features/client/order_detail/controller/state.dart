@@ -35,6 +35,7 @@ mixin ClientOrderDetailState {
   // Voucher State
   final voucherController = TextEditingController();
   final isCheckingVoucher = false.obs;
+  final isRemovingVoucher = false.obs;
   static final savedVouchers = <int, VoucherModel>{}.obs;
 
   // Unified Getters
@@ -204,6 +205,27 @@ mixin ClientOrderDetailState {
       return _eventOrder.value!.categoryImage;
     }
     return null;
+  }
+
+  int? get usedVoucherId {
+    if (isHistory.value && _historyOrder.value != null) {
+      return _historyOrder.value!.voucher?.id;
+    }
+    if (!isHistory.value && _eventOrder.value != null) {
+      return _eventOrder.value!.voucher?.id;
+    }
+    return null;
+  }
+
+  String? get usedVoucherCode {
+    final String? code = isHistory.value
+        ? _historyOrder.value?.voucher?.code
+        : _eventOrder.value?.voucher?.code;
+
+    if (code == null || code.trim().isEmpty) {
+      return null;
+    }
+    return code.trim();
   }
 
   List<String> get bookingPhotos {

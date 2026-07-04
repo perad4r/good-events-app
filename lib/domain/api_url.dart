@@ -73,6 +73,7 @@ class AppUrl {
   static const String reportBill = '/report/bill';
   static const String submitReview = '/orders/submit-review';
   static const String validateVoucher = '/orders/validate-voucher';
+  static const String removeVoucher = '/orders/remove-voucher';
 
   // Chat / Threads
   static const String chats = '/chat';

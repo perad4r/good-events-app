@@ -233,6 +233,31 @@ class OrderProvider {
     }
   }
 
+  Future<dynamic> removeVoucher({
+    required int orderId,
+  }) async {
+    try {
+      final response = await _dio.post(
+        AppUrl.removeVoucher,
+        data: {
+          'bill_id': orderId,
+        },
+      );
+      return response.data;
+    } on DioException catch (e) {
+      if (e.response != null) {
+        return {
+          'success': false,
+          'message': e.response?.data['message'] ?? 'remove_voucher_failed'.tr,
+        };
+      }
+      return {
+        'success': false,
+        'message': 'network_error'.tr,
+      };
+    }
+  }
+
   Future<dynamic> checkVoucherDiscount({
     required int orderId,
     required int partnerId,

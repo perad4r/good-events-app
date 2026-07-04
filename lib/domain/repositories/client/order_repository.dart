@@ -37,6 +37,9 @@ abstract class OrderRepository {
     required int orderId,
     required String voucherInput,
   });
+  Future<Map<String, dynamic>> removeVoucher({
+    required int orderId,
+  });
   Future<Map<String, dynamic>> checkVoucherDiscount({
     required int orderId,
     required int partnerId,

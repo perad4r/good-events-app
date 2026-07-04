@@ -212,6 +212,21 @@ class OrderRepositoryImpl implements OrderRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> removeVoucher({
+    required int orderId,
+  }) async {
+    try {
+      final response = await _provider.removeVoucher(orderId: orderId);
+      return response as Map<String, dynamic>;
+    } catch (e) {
+      return {
+        'success': false,
+        'message': e.toString().replaceAll('Exception: ', ''),
+      };
+    }
+  }
+
+  @override
   Future<Map<String, dynamic>> checkVoucherDiscount({
     required int orderId,
     required int partnerId,

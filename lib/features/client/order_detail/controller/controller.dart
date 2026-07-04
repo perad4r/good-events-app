@@ -39,6 +39,11 @@ class ClientOrderDetailController extends GetxController
     } else {
       _assignOrder(args);
     }
+    _syncVoucherController(
+      isHistory.value
+          ? _historyOrder.value?.voucher?.code
+          : _eventOrder.value?.voucher?.code,
+    );
 
     // Auto-fetch if this is a current order (where applicant/bill details lie)
     if (!isHistory.value && orderId != 0) {
@@ -77,6 +82,19 @@ class ClientOrderDetailController extends GetxController
       isHistory.value = false;
       _eventOrder.value = order;
     }
+  }
+
+  void _syncVoucherController(String? voucherCode) {
+    final String code = voucherCode?.trim() ?? '';
+    if (code.isEmpty) {
+      if (ClientOrderDetailState.savedVouchers[orderId] == null &&
+          voucherController.text.isNotEmpty) {
+        voucherController.clear();
+      }
+      return;
+    }
+    if (voucherController.text.trim() == code) return;
+    voucherController.text = code;
   }
 
   @override
