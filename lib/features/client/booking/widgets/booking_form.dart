@@ -1,6 +1,7 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/client/booking/controller.dart';
 import 'booking_stage_navigation.dart';
+import 'booking_submit_notice_dialog.dart';
 import 'stage_content.dart';
 
 class BookingForm extends GetView<ClientBookingController> {
@@ -46,11 +47,24 @@ class BookingForm extends GetView<ClientBookingController> {
               onBack: () => Get.back(),
               onPrevious: controller.previousStage,
               onNext: controller.nextStage,
-              onSubmit: controller.submitBooking,
+              onSubmit: () => _showSubmitNotice(),
             ),
           ),
         ],
       );
     });
+  }
+
+  Future<void> _showSubmitNotice() async {
+    if (!controller.validateSubmitReadiness()) return;
+
+    final bool? confirmed = await Get.dialog<bool>(
+      const BookingSubmitNoticeDialog(),
+      barrierDismissible: true,
+    );
+
+    if (confirmed == true) {
+      await controller.submitBooking();
+    }
   }
 }
