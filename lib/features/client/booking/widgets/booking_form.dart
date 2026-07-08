@@ -46,7 +46,6 @@ class BookingForm extends GetView<ClientBookingController> {
               onBack: () => Get.back(),
               onPrevious: controller.previousStage,
               onNext: controller.nextStage,
-              onStartOver: controller.startOver,
               onSubmit: controller.submitBooking,
             ),
           ),
