@@ -13,10 +13,19 @@ class BookingForm extends GetView<ClientBookingController> {
         return const Center(child: CircularProgressIndicator());
       }
 
+      final double keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+      final bool shouldLiftNavigation =
+          defaultTargetPlatform == TargetPlatform.iOS && keyboardInset > 0;
+      final double navigationBottom = shouldLiftNavigation ? keyboardInset : 0;
+      final double scrollBottomPadding = shouldLiftNavigation
+          ? keyboardInset + 140
+          : 140;
+
       return Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 140),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(16, 16, 16, scrollBottomPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -24,10 +33,12 @@ class BookingForm extends GetView<ClientBookingController> {
               ],
             ),
           ),
-          Positioned(
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: navigationBottom,
             child: BookingStageNavigation(
               isFirstStage: controller.isFirstStage,
               isLastStage: controller.isLastStage,
