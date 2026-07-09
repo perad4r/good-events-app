@@ -108,13 +108,6 @@ jobs:
       - name: Build Flutter IPA
         run: flutter build ipa --release --export-method=app-store
         
-      - name: Verify Push Notification Entitlement
-        run: |
-          unzip -o "build/ios/ipa/Sự kiện tốt.ipa" -d /tmp/ipa_extracted > /dev/null
-          APP_PATH=$(find /tmp/ipa_extracted/Payload -name "*.app" -maxdepth 1)
-          echo "=== Entitlements ==="
-          codesign -d --entitlements :- "$APP_PATH" 2>/dev/null | grep -A2 "aps-environment" || echo "❌ aps-environment NOT FOUND"
-          
       - name: Upload via iTMSTransporter
         env:
           API_KEY: ${{ secrets.AUTH_KEY }}
