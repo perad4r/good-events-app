@@ -105,8 +105,29 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
+
+      - name: Create ExportOptions.plist
+        run: |
+          cat <<EOF > ios/ExportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.sukientot.app</key>
+              <string>sukientot-app</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
       - name: Build Flutter IPA
-        run: flutter build ipa --release --export-method=app-store
+        run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
         
       - name: Upload via iTMSTransporter
         env:
