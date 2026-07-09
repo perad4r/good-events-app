@@ -21,6 +21,7 @@ class AccountScreen extends StatefulWidget {
 class _AccountScreenState extends State<AccountScreen> {
   late final AccountController controller;
   late final RefreshController refreshController;
+  bool isProfileMenuExpanded = false;
 
   @override
   void initState() {
@@ -235,29 +236,44 @@ class _AccountScreenState extends State<AccountScreen> {
                                   onConfirm: controller.switchRole,
                                 ),
                               ),
-                              _MenuItem(
-                                'my_profile'.tr,
+                              _MenuItem.dropdown(
+                                'profile'.tr,
                                 FIcons.user,
-                                () => Get.toNamed(Routes.myProfile),
+                                isProfileMenuExpanded,
+                                () {
+                                  setState(() {
+                                    isProfileMenuExpanded =
+                                        !isProfileMenuExpanded;
+                                  });
+                                },
+                                children: [
+                                  _MenuItem(
+                                    'introduce'.tr,
+                                    FIcons.user,
+                                    () => Get.toNamed(Routes.myProfile),
+                                  ),
+                                  if (controller.role.value == 'partner')
+                                    _MenuItem(
+                                      'my_services'.tr,
+                                      FIcons.briefcase,
+                                      () =>
+                                          Get.toNamed(Routes.partnerMyServices),
+                                    ),
+                                  if (controller.role.value == 'partner')
+                                    _MenuItem(
+                                      'service_areas'.tr,
+                                      FIcons.mapPinned,
+                                      () => Get.toNamed(
+                                        Routes.partnerServiceAreas,
+                                      ),
+                                    ),
+                                ],
                               ),
                               if (controller.role.value == 'partner')
                                 _MenuItem(
                                   'show_calendar'.tr,
                                   FIcons.calendar1,
                                   () => Get.toNamed(Routes.partnerShowCalendar),
-                                ),
-                              if (controller.role.value == 'partner')
-                                _MenuItem(
-                                  'my_services'.tr,
-                                  FIcons.briefcase,
-                                  () => Get.toNamed(Routes.partnerMyServices),
-                                ),
-                              if (controller.role.value == 'partner')
-                                _MenuItem(
-                                  'service_areas'.tr,
-                                  FIcons.mapPinned,
-                                  () =>
-                                      Get.toNamed(Routes.partnerServiceAreas),
                                 ),
                               if (controller.role.value == 'partner')
                                 _MenuItem(
@@ -543,6 +559,7 @@ class _AccountScreenState extends State<AccountScreen> {
         children: List.generate(items.length, (i) {
           final item = items[i];
           final isLast = i == items.length - 1;
+          final hasChildren = item.children.isNotEmpty;
           return Column(
             children: [
               GestureDetector(
@@ -584,15 +601,32 @@ class _AccountScreenState extends State<AccountScreen> {
                           ),
                         ),
                       ),
-                      Icon(
-                        FIcons.chevronRight,
-                        size: 16,
-                        color: context.fTheme.colors.mutedForeground,
+                      AnimatedRotation(
+                        turns: hasChildren && item.isExpanded ? 0.25 : 0,
+                        duration: const Duration(milliseconds: 180),
+                        curve: Curves.easeOut,
+                        child: Icon(
+                          FIcons.chevronRight,
+                          size: 16,
+                          color: context.fTheme.colors.mutedForeground,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
+              if (hasChildren)
+                AnimatedCrossFade(
+                  firstChild: const SizedBox(width: double.infinity),
+                  secondChild: _buildDropdownChildren(context, item.children),
+                  crossFadeState: item.isExpanded
+                      ? CrossFadeState.showSecond
+                      : CrossFadeState.showFirst,
+                  duration: const Duration(milliseconds: 180),
+                  firstCurve: Curves.easeOut,
+                  secondCurve: Curves.easeOut,
+                  sizeCurve: Curves.easeOut,
+                ),
               if (!isLast)
                 Divider(
                   height: 1,
@@ -606,6 +640,49 @@ class _AccountScreenState extends State<AccountScreen> {
       ),
     );
   }
+
+  Widget _buildDropdownChildren(BuildContext context, List<_MenuItem> items) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 62, right: 10, bottom: 8),
+      child: Column(
+        children: List.generate(items.length, (i) {
+          final item = items[i];
+          return GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: item.onTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
+              child: Row(
+                children: [
+                  Icon(
+                    item.icon,
+                    size: 16,
+                    color: item.color ?? AppColors.primary,
+                  ),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      item.title,
+                      style: TextStyle(
+                        color: item.color ?? context.fTheme.colors.foreground,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    FIcons.chevronRight,
+                    size: 15,
+                    color: context.fTheme.colors.mutedForeground,
+                  ),
+                ],
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
 }
 
 class _MenuItem {
@@ -613,6 +690,24 @@ class _MenuItem {
   final IconData icon;
   final VoidCallback onTap;
   final Color? color;
+  final bool isExpanded;
+  final List<_MenuItem> children;
 
-  const _MenuItem(this.title, this.icon, this.onTap, {this.color});
+  const _MenuItem(
+    this.title,
+    this.icon,
+    this.onTap, {
+    this.color,
+    this.isExpanded = false,
+    this.children = const [],
+  });
+
+  const _MenuItem.dropdown(
+    this.title,
+    this.icon,
+    this.isExpanded,
+    this.onTap, {
+    required this.children,
+    this.color,
+  });
 }

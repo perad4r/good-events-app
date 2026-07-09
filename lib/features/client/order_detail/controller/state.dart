@@ -4,6 +4,7 @@ mixin ClientOrderDetailState {
   final Rx<EventOrderModel?> _eventOrder = Rx<EventOrderModel?>(null);
   final Rx<HistoryOrderModel?> _historyOrder = Rx<HistoryOrderModel?>(null);
   final RxBool isHistory = false.obs;
+  bool shouldShowBookingSubmittedNotice = false;
 
   // Details State
   final Rx<OrderDetailModel?> orderDetail = Rx<OrderDetailModel?>(null);

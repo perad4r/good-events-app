@@ -1,6 +1,7 @@
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/partner/show/controller.dart';
+import 'package:sukientotapp/features/partner/new_show/controller.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 
 class PartnerBottomNavigationController extends GetxController {
@@ -62,7 +63,7 @@ class PartnerBottomNavigationController extends GetxController {
     Get.find<MessageController>().onUserChannelEvent(event);
   }
 
-  void setIndex(int index, {int? setTab}) {
+  void setIndex(int index, {int? setTab, int? billCount}) {
     isReverse.value = index < currentIndex.value;
     currentIndex.value = index;
 
@@ -70,7 +71,17 @@ class PartnerBottomNavigationController extends GetxController {
       if (Get.isRegistered<ShowController>()) {
         final showController = Get.find<ShowController>();
         showController.switchTab(setTab);
-      } else {}
+      }
+    }
+
+    if (index == 2 && billCount != null) {
+      if (Get.isRegistered<NewShowController>()) {
+        final newShowController = Get.find<NewShowController>();
+        final currentBill = newShowController.bills.length;
+        if (billCount > currentBill) {
+          newShowController.refreshBills();
+        }
+      }
     }
   }
 

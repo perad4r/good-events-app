@@ -27,7 +27,7 @@ class BillCountPanel extends StatelessWidget {
           'take_order',
           newShows,
           () {
-            navController.setIndex(2, setTab: 0);
+            navController.setIndex(2, billCount: int.parse(newShows.value));
           },
         ),
         _buildItem(
@@ -38,7 +38,7 @@ class BillCountPanel extends StatelessWidget {
           'waiting_show',
           waitingConfirmation,
           () {
-            navController.setIndex(1);
+            navController.setIndex(1, setTab: 0);
           },
         ),
       ],

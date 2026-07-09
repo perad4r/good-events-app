@@ -1,6 +1,7 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/client/booking/controller.dart';
 import 'booking_stage_navigation.dart';
+import 'booking_submit_notice_dialog.dart';
 import 'stage_content.dart';
 
 class BookingForm extends GetView<ClientBookingController> {
@@ -13,10 +14,19 @@ class BookingForm extends GetView<ClientBookingController> {
         return const Center(child: CircularProgressIndicator());
       }
 
+      final double keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+      final bool shouldLiftNavigation =
+          defaultTargetPlatform == TargetPlatform.iOS && keyboardInset > 0;
+      final double navigationBottom = shouldLiftNavigation ? keyboardInset : 0;
+      final double scrollBottomPadding = shouldLiftNavigation
+          ? keyboardInset + 140
+          : 140;
+
       return Stack(
         children: [
           SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 140),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(16, 16, 16, scrollBottomPadding),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -24,10 +34,12 @@ class BookingForm extends GetView<ClientBookingController> {
               ],
             ),
           ),
-          Positioned(
+          AnimatedPositioned(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: navigationBottom,
             child: BookingStageNavigation(
               isFirstStage: controller.isFirstStage,
               isLastStage: controller.isLastStage,
@@ -35,12 +47,24 @@ class BookingForm extends GetView<ClientBookingController> {
               onBack: () => Get.back(),
               onPrevious: controller.previousStage,
               onNext: controller.nextStage,
-              onStartOver: controller.startOver,
-              onSubmit: controller.submitBooking,
+              onSubmit: () => _showSubmitNotice(),
             ),
           ),
         ],
       );
     });
+  }
+
+  Future<void> _showSubmitNotice() async {
+    if (!controller.validateSubmitReadiness()) return;
+
+    final bool? confirmed = await Get.dialog<bool>(
+      const BookingSubmitNoticeDialog(),
+      barrierDismissible: true,
+    );
+
+    if (confirmed == true) {
+      await controller.submitBooking();
+    }
   }
 }

@@ -252,8 +252,37 @@ class AppTranslations extends Translations {
       'booking_select_ward': 'Chọn phường/xã',
       'booking_address_detail': 'Địa chỉ chi tiết',
       'booking_address_placeholder': 'Số nhà, đường...',
-      'booking_back': 'Làm lại từ đầu',
-      'booking_submit': 'Tìm đối tác',
+      'booking_back': 'Quay lại',
+      'booking_submit': 'Tìm nhân sự',
+      'booking_submit_notice_title_prefix': 'THÔNG TIN ',
+      'booking_submit_notice_title_primary': 'BẠN CẦN BIẾT',
+      'booking_submit_notice_platform_title':
+          'NỀN TẢNG KẾT NỐI NHÂN SỰ SỰ KIỆN',
+      'booking_submit_notice_platform_content':
+          'Sự Kiện Tốt là nền tảng công nghệ kết nối khách hàng với nhân sự sự kiện độc lập, không trực tiếp cung cấp dịch vụ.',
+      'booking_submit_notice_confirm_title':
+          'XÁC NHẬN NỘI DUNG & NHÂN SỰ',
+      'booking_submit_notice_confirm_content':
+          'Để đảm bảo quyền lợi, vui lòng xác nhận kỹ nội dung công việc, giá dịch vụ, hình ảnh/video nhân sự, thời gian, địa điểm và các yêu cầu trước - sau khi thực hiện.',
+      'booking_submit_notice_agreement_title':
+          'THỎA THUẬN TRỰC TIẾP TRÊN ỨNG DỤNG',
+      'booking_submit_notice_agreement_content':
+          'Mọi thỏa thuận về nội dung công việc, thời gian, chi phí, được trao đổi trực tiếp giữa bạn và nhân sự.',
+      'booking_submit_notice_support_title': 'HỖ TRỢ KHI CÓ SỰ CỐ',
+      'booking_submit_notice_support_content':
+          'Sự Kiện Tốt chỉ áp dụng chính sách hỗ trợ cho nội dung công việc và giá dịch vụ ghi nhận trên ứng dụng.',
+      'booking_submit_notice_note':
+          'Lưu ý: Nếu tiếp tục tìm nhân sự, đồng nghĩa người dùng đã đọc và đồng ý với nội dung trên.',
+      'booking_submit_notice_closing':
+          'Cảm ơn bạn đã tin tưởng lựa chọn Sự Kiện Tốt, chúc bạn có một chương trình thành công & trọn vẹn!',
+      'booking_submit_notice_confirm_button': 'ĐỒNG Ý & TÌM NHÂN SỰ',
+      'booking_submitted_notice_title':
+          'Sự Kiện Tốt đã gửi yêu cầu của bạn đến nhân sự phù hợp',
+      'booking_submitted_notice_content':
+          'Nhân sự trong khu vực sẽ kiểm tra lịch, địa điểm và nội dung chương trình để gửi báo giá phù hợp nhất.',
+      'booking_submitted_notice_subtitle':
+          'Quý khách vui lòng chờ phản hồi trong ít phút.',
+      'booking_submitted_notice_button': 'Đã hiểu',
       'booking_success': 'Đặt lịch thành công!',
       'please_wait': 'Vui lòng chờ...',
       'event_type_custom': 'Khác',
@@ -689,6 +718,7 @@ class AppTranslations extends Translations {
       'more_setting': 'Cài đặt khác',
 
       'my_profile': 'Hồ sơ của tôi',
+      'introduce': 'Giới thiệu',
       'show_calendar': 'Lịch show',
       'my_reviews': 'Đánh giá của tôi',
       'change_password': 'Đổi mật khẩu',
@@ -806,7 +836,7 @@ class AppTranslations extends Translations {
 
       ///my services
       'my_services': 'Dịch vụ của tôi',
-      'service_areas': 'Khu vực phục vụ',
+      'service_areas': 'Khu vực hoạt động',
       'select_service_area': 'Chọn khu vực phục vụ',
       'selected_service_areas': 'Khu vực đã chọn',
       'select_service_area_wards': 'Chọn phường/khu vực phục vụ',
@@ -827,7 +857,7 @@ class AppTranslations extends Translations {
       'edit_service_subtitle':
           'Danh mục của dịch vụ, hiện không trợ thay đổi giới thiệu',
       'no_services': 'Bạn chưa có dịch vụ nào',
-      'manage_media': 'Quản lý media',
+      'manage_media': 'Quản lý ảnh',
       'service_media_info': 'Giới thiệu dịch vụ cho admin',
       'select_category': 'Chọn danh mục',
       'service_created': 'Dịch vụ đã được tạo thành công!',
@@ -1199,8 +1229,35 @@ class AppTranslations extends Translations {
       'booking_select_ward': 'Select ward',
       'booking_address_detail': 'Detailed address',
       'booking_address_placeholder': 'Street, building...',
-      'booking_back': 'Start over',
-      'booking_submit': 'Find partners',
+      'booking_back': 'Back',
+      'booking_submit': 'Find staff',
+      'booking_submit_notice_title_prefix': 'INFORMATION ',
+      'booking_submit_notice_title_primary': 'YOU SHOULD KNOW',
+      'booking_submit_notice_platform_title':
+          'EVENT STAFF CONNECTION PLATFORM',
+      'booking_submit_notice_platform_content':
+          'Good Event is a technology platform connecting customers with independent event staff and does not directly provide services.',
+      'booking_submit_notice_confirm_title': 'CONFIRM SERVICE & STAFF DETAILS',
+      'booking_submit_notice_confirm_content':
+          'To protect your rights, please carefully confirm the work scope, service price, staff photos/videos, time, location, and requirements before and after the service.',
+      'booking_submit_notice_agreement_title': 'AGREE DIRECTLY IN THE APP',
+      'booking_submit_notice_agreement_content':
+          'All agreements about work scope, time, and cost are exchanged directly between you and the staff.',
+      'booking_submit_notice_support_title': 'SUPPORT WHEN ISSUES OCCUR',
+      'booking_submit_notice_support_content':
+          'Good Event only applies support policies to work scope and service prices recorded in the app.',
+      'booking_submit_notice_note':
+          'Note: By continuing to find staff, you confirm that you have read and agreed to the information above.',
+      'booking_submit_notice_closing':
+          'Thank you for trusting and choosing Good Event. We wish you a successful and complete program!',
+      'booking_submit_notice_confirm_button': 'AGREE & FIND STAFF',
+      'booking_submitted_notice_title':
+          'Good Event has sent your request to suitable staff',
+      'booking_submitted_notice_content':
+          'Staff in your area will check the schedule, location, and program details to send the most suitable quote.',
+      'booking_submitted_notice_subtitle':
+          'Please wait a few minutes for a response.',
+      'booking_submitted_notice_button': 'Got it',
       'booking_success': 'Booking successful!',
       'please_wait': 'Please wait...',
       'event_type_custom': 'Others',
@@ -1612,6 +1669,7 @@ class AppTranslations extends Translations {
       'more_setting': 'More Setting',
 
       'my_profile': 'My Profile',
+      'introduce': 'Giới thiệu',
       'show_calendar': 'Show Calendar',
       'my_reviews': 'My Reviews',
       'change_password': 'Change Password',

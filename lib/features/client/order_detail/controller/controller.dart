@@ -10,6 +10,7 @@ import 'package:sukientotapp/domain/repositories/client/order_repository.dart';
 import 'package:sukientotapp/features/client/home/controller.dart';
 import 'package:sukientotapp/features/client/order/controller.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
+import '../widgets/booking_submitted_notice_dialog.dart';
 import '../widgets/profile_preview.dart';
 import '../widgets/voucher_details_bottom_sheet.dart';
 
@@ -35,6 +36,8 @@ class ClientOrderDetailController extends GetxController
     if (args != null && args is Map<String, dynamic>) {
       final order = args['order'];
       isHistory.value = args['isHistory'] ?? false;
+      shouldShowBookingSubmittedNotice =
+          args['showBookingSubmittedNotice'] == true;
       _assignOrder(order);
     } else {
       _assignOrder(args);
@@ -64,6 +67,18 @@ class ClientOrderDetailController extends GetxController
         ClientOrderDetailState.savedVouchers.remove(orderId);
       }
     });
+  }
+
+  @override
+  void onReady() {
+    super.onReady();
+    if (!shouldShowBookingSubmittedNotice) return;
+
+    shouldShowBookingSubmittedNotice = false;
+    Get.dialog<void>(
+      const BookingSubmittedNoticeDialog(),
+      barrierDismissible: true,
+    );
   }
 
   void _startPeriodicRefresh() {

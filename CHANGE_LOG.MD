@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.5+75]
+
+- Fix keyboard bug in IOS
+- Add check for newbill
+- Add new UI in account at partner side
+- Add new button UI in my service screen
+- Add new model in booking & after stage
+
 ## [2.7.4+74]
 
 - Fix realtime bill overload error

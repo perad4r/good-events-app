@@ -10,7 +10,6 @@ class BookingStageNavigation extends StatelessWidget {
     required this.onBack,
     required this.onPrevious,
     required this.onNext,
-    required this.onStartOver,
     required this.onSubmit,
   });
 
@@ -20,7 +19,6 @@ class BookingStageNavigation extends StatelessWidget {
   final VoidCallback onBack;
   final VoidCallback onPrevious;
   final VoidCallback onNext;
-  final VoidCallback onStartOver;
   final VoidCallback onSubmit;
 
   @override
@@ -73,8 +71,7 @@ class BookingStageNavigation extends StatelessWidget {
   }
 
   String get _leftLabel {
-    if (isLastStage) return 'start_over'.tr;
-    if (isFirstStage) return 'booking_back'.tr;
+    if (isFirstStage) return 'cancel'.tr;
     return 'previous'.tr;
   }
 
@@ -84,10 +81,6 @@ class BookingStageNavigation extends StatelessWidget {
   }
 
   void _handleLeftTap() {
-    if (isLastStage) {
-      onStartOver();
-      return;
-    }
     if (isFirstStage) {
       onBack();
       return;

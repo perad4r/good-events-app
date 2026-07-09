@@ -9,79 +9,88 @@ class MessageDetailScreen extends GetView<MessageController> {
 
   @override
   Widget build(BuildContext context) {
+    final double keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xFFF0F2F5),
       appBar: const ChatAppBar(),
-      body: Column(
-        children: [
-          Expanded(
-            child: Obx(() {
-              if (controller.isLoadingMessages.value &&
-                  controller.messagesDetail.isEmpty) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                    strokeWidth: 2,
-                  ),
-                );
-              }
-              return Column(
-                children: [
-                  Obx(() {
-                    if (!controller.isLoadingOlderMessages.value) {
-                      return const SizedBox.shrink();
-                    }
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          color: AppColors.primary,
-                          strokeWidth: 2,
+      body: AnimatedPadding(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        padding: EdgeInsets.only(bottom: keyboardInset),
+        child: Column(
+          children: [
+            Expanded(
+              child: Obx(() {
+                if (controller.isLoadingMessages.value &&
+                    controller.messagesDetail.isEmpty) {
+                  return Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                      strokeWidth: 2,
+                    ),
+                  );
+                }
+                return Column(
+                  children: [
+                    Obx(() {
+                      if (!controller.isLoadingOlderMessages.value) {
+                        return const SizedBox.shrink();
+                      }
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                            strokeWidth: 2,
+                          ),
                         ),
-                      ),
-                    );
-                  }),
-                  Expanded(
-                    child: ListView.builder(
-                      controller: controller.scrollController,
-                      reverse: true,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: controller.messagesDetail.length + 1,
-                      itemBuilder: (context, index) {
-                        // Last item (visually at top) = security notice
-                        if (index == controller.messagesDetail.length) {
-                          return const _SecurityNotice()
-                              .animate()
-                              .fadeIn(duration: 600.ms)
+                      );
+                    }),
+                    Expanded(
+                      child: ListView.builder(
+                        controller: controller.scrollController,
+                        reverse: true,
+                        padding: const EdgeInsets.symmetric(vertical: 8),
+                        itemCount: controller.messagesDetail.length + 1,
+                        itemBuilder: (context, index) {
+                          // Last item (visually at top) = security notice
+                          if (index == controller.messagesDetail.length) {
+                            return const _SecurityNotice()
+                                .animate()
+                                .fadeIn(duration: 600.ms)
+                                .slideY(
+                                  begin: -0.05,
+                                  end: 0,
+                                  duration: 500.ms,
+                                  curve: Curves.easeOut,
+                                );
+                          }
+                          final message = controller.messagesDetail[index];
+                          return ChatBubble(
+                                message: message,
+                                isFirst:
+                                    index ==
+                                    controller.messagesDetail.length - 1,
+                              )
+                              .animate(delay: (50 * index).ms)
+                              .fadeIn(duration: 500.ms)
                               .slideY(
-                                begin: -0.05,
+                                begin: -0.02,
                                 end: 0,
-                                duration: 500.ms,
                                 curve: Curves.easeOut,
                               );
-                        }
-                        final message = controller.messagesDetail[index];
-                        return ChatBubble(
-                              message: message,
-                              isFirst:
-                                  index == controller.messagesDetail.length - 1,
-                            )
-                            .animate(delay: (50 * index).ms)
-                            .fadeIn(duration: 500.ms)
-                            .slideY(
-                              begin: -0.02,
-                              end: 0,
-                              curve: Curves.easeOut,
-                            );
-                      },
+                        },
+                      ),
                     ),
-                  ),
-                ],
-              );
-            }),
-          ),
-          ChatInput(controller: controller),
-        ],
+                  ],
+                );
+              }),
+            ),
+            ChatInput(controller: controller),
+          ],
+        ),
       ),
     );
   }

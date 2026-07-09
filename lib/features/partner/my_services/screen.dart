@@ -179,26 +179,14 @@ class _ServiceCardSkeleton extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 12),
-          Column(
-            children: [
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(10),
-                ),
+          Expanded(
+            child: Container(
+              height: 34,
+              decoration: BoxDecoration(
+                color: color,
+                borderRadius: BorderRadius.circular(10),
               ),
-              const SizedBox(height: 8),
-              Container(
-                width: 34,
-                height: 34,
-                decoration: BoxDecoration(
-                  color: color,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-            ],
+            ),
           ),
         ],
       ),
@@ -254,63 +242,82 @@ class ServiceCard extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(14, 14, 14, 14),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Category icon
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: accent.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(FIcons.briefcase, size: 22, color: accent),
-                    ),
-                    const SizedBox(width: 12),
-                    // Title & badge
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            service.category,
-                            style: context.typography.base.copyWith(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 15,
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 6),
-                          StatusBadge(status: service.status),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    // Action buttons (stacked)
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        _ActionIconButton(
-                          onPressed: onManageMedia,
-                          icon: FIcons.image,
-                          tooltip: 'manage_media'.tr,
-                          iconColor: context.fTheme.colors.foreground,
-                          borderColor: context.fTheme.colors.border,
+                        // Category icon
+                        Container(
+                          width: 44,
+                          height: 44,
+                          decoration: BoxDecoration(
+                            color: accent.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            FIcons.briefcase,
+                            size: 22,
+                            color: accent,
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        _ActionIconButton(
-                          onPressed: service.isEditable ? onEdit : null,
-                          icon: FIcons.pencil,
-                          tooltip: 'edit'.tr,
-                          iconColor: service.isEditable
-                              ? context.fTheme.colors.primary
-                              : context.fTheme.colors.mutedForeground,
-                          borderColor: service.isEditable
-                              ? context.fTheme.colors.primary
-                              : context.fTheme.colors.mutedForeground,
+                        const SizedBox(width: 12),
+                        // Title & badge
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                service.category,
+                                style: context.typography.base.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 15,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 6),
+                              StatusBadge(status: service.status),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _ServiceActionButton(
+                            onPressed: onManageMedia,
+                            icon: FIcons.image,
+                            label: 'manage_media'.tr,
+                            foregroundColor: context.fTheme.colors.primary,
+                            backgroundColor: context.fTheme.colors.primary
+                                .withValues(alpha: 0.1),
+                            borderColor: context.fTheme.colors.primary
+                                .withValues(alpha: 0.45),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _ServiceActionButton(
+                            onPressed: service.isEditable ? onEdit : null,
+                            icon: FIcons.pencil,
+                            label: 'edit'.tr,
+                            foregroundColor: context.fTheme.colors.foreground,
+                            backgroundColor: Colors.white,
+                            borderColor: service.isEditable
+                                ? context.fTheme.colors.border
+                                : context.fTheme.colors.border.withValues(
+                                    alpha: 0.5,
+                                  ),
+                            disabledForegroundColor:
+                                context.fTheme.colors.mutedForeground,
+                            disabledBackgroundColor:
+                                context.fTheme.colors.secondary,
+                          ),
                         ),
                       ],
                     ),
@@ -325,35 +332,68 @@ class ServiceCard extends StatelessWidget {
   }
 }
 
-class _ActionIconButton extends StatelessWidget {
+class _ServiceActionButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final IconData icon;
-  final String tooltip;
-  final Color iconColor;
+  final String label;
+  final Color foregroundColor;
+  final Color backgroundColor;
   final Color borderColor;
+  final Color? disabledForegroundColor;
+  final Color? disabledBackgroundColor;
 
-  const _ActionIconButton({
+  const _ServiceActionButton({
     this.onPressed,
     required this.icon,
-    required this.tooltip,
-    required this.iconColor,
+    required this.label,
+    required this.foregroundColor,
+    required this.backgroundColor,
     required this.borderColor,
+    this.disabledForegroundColor,
+    this.disabledBackgroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: IconButton.outlined(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 17, color: iconColor),
-        style: IconButton.styleFrom(
-          minimumSize: const Size(34, 34),
-          maximumSize: const Size(34, 34),
-          padding: EdgeInsets.zero,
-          side: BorderSide(color: borderColor),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+    final isDisabled = onPressed == null;
+    final effectiveForeground = isDisabled
+        ? disabledForegroundColor ?? context.fTheme.colors.mutedForeground
+        : foregroundColor;
+    final effectiveBackground = isDisabled
+        ? disabledBackgroundColor ?? context.fTheme.colors.secondary
+        : backgroundColor;
+
+    return Material(
+      color: effectiveBackground,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          height: 34,
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, size: 14, color: effectiveForeground),
+              const SizedBox(width: 5),
+              Flexible(
+                child: Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: context.typography.xs.copyWith(
+                    color: effectiveForeground,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),

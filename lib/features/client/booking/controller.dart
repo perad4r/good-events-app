@@ -131,6 +131,10 @@ class ClientBookingController extends GetxController {
     currentStage.value = 0;
   }
 
+  bool validateSubmitReadiness() {
+    return _validateCurrentStage();
+  }
+
   void selectStartTime(String value) {
     selectedStartTime.value = value;
     fieldErrors.remove('startTime');
@@ -474,7 +478,11 @@ class ClientBookingController extends GetxController {
       // Then push order details on top of the Orders tab
       Get.toNamed(
         Routes.clientOrderDetail,
-        arguments: {'order': order, 'isHistory': false},
+        arguments: {
+          'order': order,
+          'isHistory': false,
+          'showBookingSubmittedNotice': true,
+        },
       );
 
       // Trigger a refresh of the current orders tab if the controller is alive
