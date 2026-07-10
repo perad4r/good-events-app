@@ -452,6 +452,14 @@ class AppTranslations extends Translations {
       'confirm_yes_btn': 'Chốt đơn!',
       'choose_partner_success': 'Chốt đơn thành công!',
       'choose_partner_failed': 'Chốt đơn thất bại.',
+      'partner_selected_notice_title': 'Chúc mừng bạn',
+      'partner_selected_notice_subtitle': 'đã tìm được nhân sự',
+      'partner_selected_notice_content':
+          'Hãy cùng nhân sự xác nhận và trao đổi nội dung ',
+      'partner_selected_notice_content_emphasis': 'thật kỹ',
+      'partner_selected_notice_wish': 'Chúc bạn có một sự kiện ',
+      'partner_selected_notice_wish_emphasis': 'thật vui và trọn vẹn!',
+      'partner_selected_notice_button': 'Đã hiểu',
 
       // Cancel Order Dialog
       'confirm_cancel_order_title': 'Bạn có chắc chắn muốn hủy đơn không?',
@@ -1428,6 +1436,14 @@ class AppTranslations extends Translations {
       'confirm_yes_btn': 'Finalize now!',
       'choose_partner_success': 'Partner chosen successfully!',
       'choose_partner_failed': 'Failed to choose partner.',
+      'partner_selected_notice_title': 'Congratulations',
+      'partner_selected_notice_subtitle': 'you found the right staff',
+      'partner_selected_notice_content':
+          'Please confirm and discuss every detail with your staff ',
+      'partner_selected_notice_content_emphasis': 'carefully',
+      'partner_selected_notice_wish': 'Wishing you an event that is ',
+      'partner_selected_notice_wish_emphasis': 'joyful and memorable!',
+      'partner_selected_notice_button': 'Got it',
 
       // Cancel Order Dialog
       'confirm_cancel_order_title':

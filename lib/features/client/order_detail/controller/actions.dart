@@ -260,6 +260,10 @@ extension ClientOrderDetailActions on ClientOrderDetailController {
         if (Get.isRegistered<MessageController>()) {
           await Get.find<MessageController>().refreshThreads();
         }
+        await Get.dialog<void>(
+          const PartnerSelectedNoticeDialog(),
+          barrierDismissible: true,
+        );
       } else {
         Get.snackbar(
           'error'.tr,
