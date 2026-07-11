@@ -67,7 +67,7 @@ class _AcceptState extends State<Accept> {
     if (success) {
       Get.back();
       AppSnackbar.showSuccess(
-        message: 'accepted_show'.trParams({'code': widget.code}),
+        message: 'price_quoted'.trParams({'code': widget.code}),
         title: 'success'.tr,
       );
     }
