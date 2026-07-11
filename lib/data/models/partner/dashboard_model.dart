@@ -5,8 +5,6 @@ class DashboardModel {
   final String avatarUrl;
   final int balance;
   final int revenue;
-  final int recentReviewsCount;
-  final Map<String, String> recentReviewsAvatars;
   final List<int> quarterlyRevenue;
   final PartnerAppNotification? appNotification;
 
@@ -14,8 +12,6 @@ class DashboardModel {
     required this.avatarUrl,
     required this.balance,
     required this.revenue,
-    required this.recentReviewsCount,
-    required this.recentReviewsAvatars,
     required this.quarterlyRevenue,
     this.appNotification,
   });
@@ -25,8 +21,6 @@ class DashboardModel {
       'avatar_url': avatarUrl,
       'balance': balance,
       'revenue': revenue,
-      'recent_reviews_count': recentReviewsCount,
-      'recent_reviews_avatars': recentReviewsAvatars,
       'quarterly_revenue': quarterlyRevenue,
       'app_notification': appNotification?.toMap(),
     };
@@ -37,8 +31,6 @@ class DashboardModel {
       avatarUrl: map['avatar_url'] ?? '',
       balance: map['wallet_balance'],
       revenue: map['revenue'],
-      recentReviewsCount: map['recent_reviews_count'],
-      recentReviewsAvatars: _parseAvatars(map['recent_reviews_avatars']),
       quarterlyRevenue:
           (map['quarterly_revenue'] as List<dynamic>?)
               ?.map((e) => _parseInt(e))

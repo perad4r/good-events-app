@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/cupertino.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'controller.dart';
@@ -193,27 +195,101 @@ class NewShowScreen extends GetView<NewShowController> {
               );
             }
             final bill = bills[index];
-            return Show(
-              billId: bill.id,
-              code: bill.code,
-              timestamp: bill.createdAt,
-              price: bill.finalTotal != null
-                  ? '${bill.finalTotal!.toStringAsFixed(0)} VND'
-                  : 'Chưa có',
-              clientName: bill.clientName,
-              category: bill.categoryName,
-              categoryImage: bill.categoryImage,
-              event: bill.eventName,
-              date: bill.date,
-              startTime: bill.startTime,
-              endTime: bill.endTime,
-              address: bill.address,
-              note: bill.note ?? 'unknown',
-              bookingPhotos: bill.bookingPhotos,
+            return _AnimatedBillItem(
+              key: ValueKey<int>(bill.id),
+              index: index,
+              child: Show(
+                billId: bill.id,
+                code: bill.code,
+                timestamp: bill.createdAt,
+                price: bill.finalTotal != null
+                    ? '${bill.finalTotal!.toStringAsFixed(0)} VND'
+                    : 'Chưa có',
+                clientName: bill.clientName,
+                category: bill.categoryName,
+                categoryImage: bill.categoryImage,
+                event: bill.eventName,
+                date: bill.date,
+                startTime: bill.startTime,
+                endTime: bill.endTime,
+                address: bill.address,
+                note: bill.note ?? 'unknown',
+                bookingPhotos: bill.bookingPhotos,
+              ),
             );
           },
         );
       }),
+    );
+  }
+}
+
+class _AnimatedBillItem extends StatefulWidget {
+  const _AnimatedBillItem({
+    super.key,
+    required this.index,
+    required this.child,
+  });
+
+  final int index;
+  final Widget child;
+
+  @override
+  State<_AnimatedBillItem> createState() => _AnimatedBillItemState();
+}
+
+class _AnimatedBillItemState extends State<_AnimatedBillItem>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
+  late final Animation<double> _animation;
+  Timer? _startTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 420),
+    );
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    );
+
+    final int staggeredIndex = widget.index > 6 ? 6 : widget.index;
+    _startTimer = Timer(Duration(milliseconds: staggeredIndex * 55), () {
+      if (mounted) {
+        _animationController.forward();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _startTimer?.cancel();
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animation,
+      child: widget.child,
+      builder: (context, child) {
+        final value = _animation.value;
+        return Opacity(
+          opacity: value,
+          child: Transform.translate(
+            offset: Offset(0, 18 * (1 - value)),
+            child: Transform.scale(
+              scale: 0.98 + (0.02 * value),
+              alignment: Alignment.topCenter,
+              child: child,
+            ),
+          ),
+        );
+      },
     );
   }
 }

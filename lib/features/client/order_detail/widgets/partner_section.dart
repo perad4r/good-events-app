@@ -1,6 +1,7 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import '../controller/controller.dart';
 import 'applicant_card.dart';
+import 'partner_selected_notice.dart';
 
 class PartnerSection extends GetView<ClientOrderDetailController> {
   const PartnerSection({super.key});
@@ -28,6 +29,16 @@ class PartnerSection extends GetView<ClientOrderDetailController> {
         children: [
           Obx(() {
             if (!controller.isHistory.value) {
+              final bool hasSelectedPartner =
+                  controller.orderDetail.value?.items.any(
+                    (item) => item.status == 'closed',
+                  ) ??
+                  false;
+
+              if (hasSelectedPartner) {
+                return const PartnerSelectedNotice();
+              }
+
               return _buildNoticeBanner(context);
             }
 

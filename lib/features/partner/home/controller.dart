@@ -159,8 +159,6 @@ class PartnerHomeController extends GetxController {
       avatarUrl: current.avatarUrl,
       balance: current.balance,
       revenue: current.revenue,
-      recentReviewsCount: current.recentReviewsCount,
-      recentReviewsAvatars: current.recentReviewsAvatars,
       quarterlyRevenue: current.quarterlyRevenue,
       appNotification: current.appNotification,
     );

@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.7.6+76]
+
+- Fix translate key when accept new bill
+- Remove some unused key in dashboard model
+- Add UI after select partner
+- Improve UI modal in booking stage
+
 ## [2.7.5+75]
 
 - Fix keyboard bug in IOS

@@ -10,15 +10,45 @@ class BookingSubmitNoticeDialog extends StatelessWidget {
       insetPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 24),
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.86,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: SingleChildScrollView(
+      clipBehavior: Clip.antiAlias,
+      child: Stack(
+        children: [
+          Positioned(
+            top: 18,
+            left: 18,
+            child: Icon(
+              Icons.auto_awesome_rounded,
+              size: 19,
+              color: AppColors.primary.withValues(alpha: 0.28),
+            ),
+          ),
+          Positioned(
+            top: 70,
+            right: 22,
+            child: Icon(
+              Icons.star_rounded,
+              size: 14,
+              color: const Color(0xFFF4B740).withValues(alpha: 0.65),
+            ),
+          ),
+          Positioned(
+            bottom: 82,
+            left: 13,
+            child: Icon(
+              Icons.circle,
+              size: 7,
+              color: const Color(0xFFF4B740).withValues(alpha: 0.5),
+            ),
+          ),
+          ConstrainedBox(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.sizeOf(context).height * 0.86,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: SingleChildScrollView(
                 padding: const EdgeInsets.fromLTRB(18, 16, 18, 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,10 +161,10 @@ class BookingSubmitNoticeDialog extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(18, 6, 18, 16),
-              child: CustomButtonPlus(
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(18, 6, 18, 16),
+                  child: CustomButtonPlus(
                 onTap: () => Get.back(result: true),
                 btnText: 'booking_submit_notice_confirm_button'.tr,
                 icon: Icons.search_rounded,
@@ -146,10 +176,12 @@ class BookingSubmitNoticeDialog extends StatelessWidget {
                 color: AppColors.primary,
                 borderColor: Colors.transparent,
                 shrinkText: true,
-              ),
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
