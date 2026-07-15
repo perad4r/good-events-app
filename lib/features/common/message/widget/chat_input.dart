@@ -142,6 +142,7 @@ class ChatInput extends StatelessWidget {
                       ),
                       child: TextField(
                         controller: controller.messageController,
+                        focusNode: controller.messageFocusNode,
                         maxLines: 4,
                         minLines: 1,
                         decoration: InputDecoration(
@@ -189,7 +190,9 @@ class ChatInput extends StatelessWidget {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.35),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.35,
+                                ),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -285,11 +288,7 @@ class _AttachmentButtonState extends State<_AttachmentButton>
           shape: BoxShape.circle,
           border: Border.all(color: const Color(0xFFE5E7EB)),
         ),
-        child: Icon(
-          Icons.add_rounded,
-          size: 24,
-          color: AppColors.primary,
-        ),
+        child: Icon(Icons.add_rounded, size: 24, color: AppColors.primary),
       ),
     );
   }

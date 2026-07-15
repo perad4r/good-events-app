@@ -39,6 +39,7 @@ class MessageController extends GetxController {
   static const _pusherEventName = 'SendMessage';
 
   final TextEditingController messageController = TextEditingController();
+  final FocusNode messageFocusNode = FocusNode();
   final ScrollController scrollController = ScrollController();
   final ScrollController listScrollController = ScrollController();
 
@@ -73,6 +74,7 @@ class MessageController extends GetxController {
   void onClose() {
     _unsubscribeThread();
     messageController.dispose();
+    messageFocusNode.dispose();
     scrollController.dispose();
     listScrollController.dispose();
     super.onClose();
@@ -466,36 +468,48 @@ class MessageController extends GetxController {
       return;
     }
 
-    final picked = await _imagePicker.pickMultiImage(imageQuality: 85);
-    if (picked.isEmpty) return;
+    final bool shouldRestoreFocus = messageFocusNode.hasFocus;
+    messageFocusNode.unfocus();
 
-    final remainingSlots = 20 - selectedImages.length;
-    final candidates = picked.take(remainingSlots).toList();
-    if (picked.length > remainingSlots) {
-      AppSnackbar.showInfo(
-        message: 'Chỉ lấy thêm $remainingSlots ảnh để đủ giới hạn 20 ảnh.',
-      );
-    }
+    try {
+      final picked = await _imagePicker.pickMultiImage(imageQuality: 85);
+      if (picked.isEmpty) return;
 
-    final validImages = <XFile>[];
-    for (final image in candidates) {
-      final ext = image.name.split('.').last.toLowerCase();
-      if (!_allowedImageExtensions.contains(ext)) {
-        AppSnackbar.showError(message: 'Định dạng ảnh không được hỗ trợ.');
-        continue;
+      final remainingSlots = 20 - selectedImages.length;
+      final candidates = picked.take(remainingSlots).toList();
+      if (picked.length > remainingSlots) {
+        AppSnackbar.showInfo(
+          message: 'Chỉ lấy thêm $remainingSlots ảnh để đủ giới hạn 20 ảnh.',
+        );
       }
 
-      final size = await image.length();
-      if (size > _maxImageSizeBytes) {
-        AppSnackbar.showError(message: 'Mỗi ảnh không được vượt quá 20MB.');
-        continue;
+      final validImages = <XFile>[];
+      for (final image in candidates) {
+        final ext = image.name.split('.').last.toLowerCase();
+        if (!_allowedImageExtensions.contains(ext)) {
+          AppSnackbar.showError(message: 'Định dạng ảnh không được hỗ trợ.');
+          continue;
+        }
+
+        final size = await image.length();
+        if (size > _maxImageSizeBytes) {
+          AppSnackbar.showError(message: 'Mỗi ảnh không được vượt quá 20MB.');
+          continue;
+        }
+
+        validImages.add(image);
       }
 
-      validImages.add(image);
-    }
-
-    if (validImages.isNotEmpty) {
-      selectedImages.addAll(validImages);
+      if (validImages.isNotEmpty) {
+        selectedImages.addAll(validImages);
+      }
+    } finally {
+      if (shouldRestoreFocus && !isClosed) {
+        await WidgetsBinding.instance.endOfFrame;
+        if (!isClosed) {
+          messageFocusNode.requestFocus();
+        }
+      }
     }
   }
 
@@ -580,7 +594,9 @@ class MessageController extends GetxController {
 
   Future<void> sendCurrentLocation() async {
     final threadId = selectedThreadId;
-    if (threadId.isEmpty || isResolvingLocation.value || isSendingMessage.value) {
+    if (threadId.isEmpty ||
+        isResolvingLocation.value ||
+        isSendingMessage.value) {
       return;
     }
 
