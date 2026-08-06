@@ -18,38 +18,40 @@ import CallKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
-    let registrar = self.registrar(forPlugin: "CallAudioPlugin")
-    let channel = FlutterMethodChannel(
-      name: callAudioChannel,
-      binaryMessenger: registrar.messenger()
-    )
-    channel.setMethodCallHandler { [weak self] call, result in
-      switch call.method {
-      case "playIncoming":
-        self?.startSystemSound(id: 1005, interval: 2.2)
-        result(nil)
-      case "playOutgoing":
-        self?.startSystemSound(id: 1151, interval: 2.5)
-        result(nil)
-      case "stop":
-        self?.stopCallAudio()
-        result(nil)
-      default:
-        result(FlutterMethodNotImplemented)
+    if let registrar = self.registrar(forPlugin: "CallAudioPlugin") {
+      let channel = FlutterMethodChannel(
+        name: callAudioChannel,
+        binaryMessenger: registrar.messenger()
+      )
+      channel.setMethodCallHandler { [weak self] (call: FlutterMethodCall, result: FlutterResult) in
+        switch call.method {
+        case "playIncoming":
+          self?.startSystemSound(id: 1005, interval: 2.2)
+          result(nil)
+        case "playOutgoing":
+          self?.startSystemSound(id: 1151, interval: 2.5)
+          result(nil)
+        case "stop":
+          self?.stopCallAudio()
+          result(nil)
+        default:
+          result(FlutterMethodNotImplemented)
+        }
       }
     }
-    let pushKitRegistrar = self.registrar(forPlugin: "PushKitBridge")
-    let pushKitChannel = FlutterMethodChannel(
-      name: "com.sukientot.app/pushkit",
-      binaryMessenger: pushKitRegistrar.messenger()
-    )
-    self.pushKitChannel = pushKitChannel
-    pushKitChannel.setMethodCallHandler { call, result in
-      switch call.method {
-      case "getVoipToken":
-        result(UserDefaults.standard.string(forKey: "pushkit_voip_token"))
-      default:
-        result(FlutterMethodNotImplemented)
+    if let pushKitRegistrar = self.registrar(forPlugin: "PushKitBridge") {
+      let localPushKitChannel = FlutterMethodChannel(
+        name: "com.sukientot.app/pushkit",
+        binaryMessenger: pushKitRegistrar.messenger()
+      )
+      self.pushKitChannel = localPushKitChannel
+      localPushKitChannel.setMethodCallHandler { (call: FlutterMethodCall, result: FlutterResult) in
+        switch call.method {
+        case "getVoipToken":
+          result(UserDefaults.standard.string(forKey: "pushkit_voip_token"))
+        default:
+          result(FlutterMethodNotImplemented)
+        }
       }
     }
     let registry = PKPushRegistry(queue: .main)

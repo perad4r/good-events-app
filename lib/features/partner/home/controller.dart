@@ -1,3 +1,4 @@
+import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/domain/repositories/partner/dashboard_repository.dart';
 import 'package:sukientotapp/data/models/partner/dashboard_model.dart';
@@ -221,6 +222,10 @@ class PartnerHomeController extends GetxController {
   }
 
   void _showVerifyBanner() {
+    final hasActiveCall = Get.isRegistered<CallCoordinator>() &&
+        Get.find<CallCoordinator>().activeCall.value != null;
+    if (hasActiveCall) return;
+
     Get.dialog(
       Dialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),

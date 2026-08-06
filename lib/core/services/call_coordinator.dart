@@ -29,6 +29,9 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   CallCoordinator(this._repository);
 
   static const Duration unansweredCallTimeout = Duration(seconds: 60);
+  static const Duration declinedCallUiDelay = Duration(seconds: 2);
+  static Future<void>? _activeAgoraConnection;
+  static String? _activeAgoraCallId;
 
   final CallRepository _repository;
   final Rx<CallModel?> activeCall = Rx<CallModel?>(null);
@@ -39,6 +42,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   final RxString errorMessage = ''.obs;
   final RxString audioDebugState = ''.obs;
   final RxString threadTitle = ''.obs;
+  final RxString endedStateMessage = 'Cuộc gọi đã kết thúc'.obs;
 
   RtcEngine? _engine;
   String? _currentThreadId;
@@ -81,6 +85,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     if (_actionInProgress || invitedUserIds.isEmpty) return null;
     _actionInProgress = true;
     _currentThreadId = threadId;
+    endedStateMessage.value = 'Cuộc gọi đã kết thúc';
     localState.value = LocalCallState.creating;
     errorMessage.value = '';
     try {
@@ -93,6 +98,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       _startUnansweredCallTimer(session.call);
       await CallRingtoneService.playOutgoing();
       await _connect(session);
+      unawaited(NotificationService.markIncomingCallConnected(session.call.id));
       return session;
     } on CallApiException catch (error) {
       await CallRingtoneService.stop();
@@ -134,18 +140,21 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       }
       if (!_isInChannel) {
         localState.value = LocalCallState.ringing;
-        final currentUserId = StorageService.readMapData(
-          key: LocalStorageKeys.user,
-          mapKey: 'id',
-        ) as int?;
+        final currentUserId =
+            StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+                as int?;
         final hasPendingInvite = call.invitedUsers.any(
-          (user) => user.id == currentUserId && user.status == CallInviteStatus.pending,
+          (user) =>
+              user.id == currentUserId &&
+              user.status == CallInviteStatus.pending,
         );
         if (hasPendingInvite) await CallRingtoneService.playIncoming();
       }
     } on CallApiException catch (error) {
       if (error.statusCode == 404) activeCall.value = null;
-      logger.w('[CallCoordinator] Active call reconcile failed: ${error.message}');
+      logger.w(
+        '[CallCoordinator] Active call reconcile failed: ${error.message}',
+      );
     }
   }
 
@@ -155,14 +164,24 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     _actionInProgress = true;
     errorMessage.value = '';
     try {
-      await NotificationService.cancelIncomingCall(call.id);
+      await NotificationService.cancelIncomingCall(call.id, accepted: true);
       await CallRingtoneService.stop();
       final session = await _repository.join(call.id);
       activeCall.value = session.call;
       await _connect(session);
+      unawaited(NotificationService.markIncomingCallConnected(call.id));
       return session;
     } on CallApiException catch (error) {
-      _handleApiFailure(error);
+      if (error.statusCode == 403 ||
+          error.statusCode == 404 ||
+          error.statusCode == 409) {
+        await NotificationService.cancelIncomingCall(call.id);
+        await CallRingtoneService.stop();
+        activeCall.value = null;
+        localState.value = LocalCallState.ended;
+      } else {
+        _handleApiFailure(error);
+      }
       return null;
     } catch (error, stackTrace) {
       await CallRingtoneService.stop();
@@ -184,10 +203,9 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     localState.value = LocalCallState.leaving;
     final callId = activeCall.value?.id;
     final threadId = _currentThreadId;
-    final currentUserId = StorageService.readMapData(
-      key: LocalStorageKeys.user,
-      mapKey: 'id',
-    ) as int?;
+    final currentUserId =
+        StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+            as int?;
     final isInitiator = activeCall.value?.initiator?.id == currentUserId;
     bool endedCall = false;
     try {
@@ -267,9 +285,27 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     final current = activeCall.value;
     if (current != null && current.id != incoming.id) return;
     if (incoming.status == CallStatus.ended) {
-      activeCall.value = null;
+      final currentUserId =
+          StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+              as int?;
+      final wasDeclinedByAllInvitees =
+          incoming.initiator?.id == currentUserId &&
+          incoming.invitedUsers.isNotEmpty &&
+          incoming.invitedUsers.every(
+            (user) => user.status == CallInviteStatus.declined,
+          ) &&
+          !incoming.participants.any((user) => user.id != currentUserId);
+
+      endedStateMessage.value = wasDeclinedByAllInvitees
+          ? 'Cuộc gọi đã bị từ chối'
+          : 'Cuộc gọi đã kết thúc';
+      activeCall.value = incoming;
       await disposeCall(notifyServer: false);
       localState.value = LocalCallState.ended;
+      if (wasDeclinedByAllInvitees) {
+        await Future<void>.delayed(declinedCallUiDelay);
+      }
+      if (activeCall.value?.id == incoming.id) activeCall.value = null;
       return;
     }
     await reconcile(incoming.threadId.toString());
@@ -278,30 +314,75 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   /// FCM is only a ringing signal. Credentials are fetched only after accept.
   Future<void> handleIncomingNotification(Map<String, dynamic> data) async {
     if (data['type']?.toString() != 'incoming_call') return;
+    final callId = data['call_id']?.toString();
     final threadId = int.tryParse(data['thread_id']?.toString() ?? '');
     if (threadId == null) return;
     await reconcile(threadId.toString());
+    if (activeCall.value?.id != callId && callId != null) {
+      await NotificationService.cancelIncomingCall(callId);
+      await CallRingtoneService.stop();
+      localState.value = LocalCallState.ended;
+    }
+  }
+
+  Future<void> handleCallEndedSignal(String callId) async {
+    if (activeCall.value?.id == callId) {
+      await disposeCall(notifyServer: false);
+      activeCall.value = null;
+      localState.value = LocalCallState.ended;
+    } else {
+      await CallRingtoneService.stop();
+    }
   }
 
   Future<void> _connect(CallSession session) async {
+    final activeConnection = _activeAgoraConnection;
+    if (activeConnection != null && _activeAgoraCallId == session.call.id) {
+      logger.w(
+        '[CallCoordinator] Duplicate Agora connect ignored for ${session.call.id}',
+      );
+      await activeConnection;
+      return;
+    }
+
+    final connection = _connectOnce(session);
+    _activeAgoraCallId = session.call.id;
+    _activeAgoraConnection = connection;
+    try {
+      await connection;
+    } finally {
+      if (identical(_activeAgoraConnection, connection)) {
+        _activeAgoraConnection = null;
+        _activeAgoraCallId = null;
+      }
+    }
+  }
+
+  Future<void> _connectOnce(CallSession session) async {
     if (session.call.type != CallType.audio) {
-      throw const CallApiException(message: 'Ứng dụng hiện chỉ hỗ trợ cuộc gọi âm thanh.');
+      throw const CallApiException(
+        message: 'Ứng dụng hiện chỉ hỗ trợ cuộc gọi âm thanh.',
+      );
     }
     localState.value = LocalCallState.joining;
     final permission = await Permission.microphone.request();
     if (!permission.isGranted) {
-      throw const CallApiException(message: 'Bạn cần cấp quyền microphone để gọi.');
+      throw const CallApiException(
+        message: 'Bạn cần cấp quyền microphone để gọi.',
+      );
     }
 
     await _releaseEngine();
     final engine = createAgoraRtcEngine();
     _engine = engine;
     await engine.initialize(RtcEngineContext(appId: session.credentials.appId));
+    final joinedChannel = Completer<void>();
     engine.registerEventHandler(
       RtcEngineEventHandler(
         onJoinChannelSuccess: (connection, elapsed) {
           _isInChannel = true;
           localState.value = LocalCallState.connected;
+          if (!joinedChannel.isCompleted) joinedChannel.complete();
           unawaited(_applySpeakerRoute(isSpeakerEnabled.value));
           logger.i(
             '[CallCoordinator] Joined Agora channel uid=${connection.localUid}',
@@ -318,7 +399,9 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
         },
         onUserOffline: (connection, remoteUid, reason) {
           remoteUids.remove(remoteUid);
-          logger.i('[CallCoordinator] Remote user offline uid=$remoteUid reason=$reason');
+          logger.i(
+            '[CallCoordinator] Remote user offline uid=$remoteUid reason=$reason',
+          );
           if (reason == UserOfflineReasonType.userOfflineQuit &&
               remoteUids.isEmpty) {
             unawaited(_endIfInitiatorIsLastUser(session.call.id));
@@ -379,6 +462,12 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
         publishMicrophoneTrack: true,
       ),
     );
+    await joinedChannel.future.timeout(
+      const Duration(seconds: 15),
+      onTimeout: () => throw const CallApiException(
+        message: 'Quá thời gian kết nối tới kênh âm thanh.',
+      ),
+    );
   }
 
   Future<void> _applySpeakerRoute(bool enabled) async {
@@ -402,7 +491,9 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       activeCall.value = session.call;
       await _engine?.renewToken(session.credentials.token);
     } on CallApiException catch (error) {
-      logger.w('[CallCoordinator] Agora token renewal failed: ${error.message}');
+      logger.w(
+        '[CallCoordinator] Agora token renewal failed: ${error.message}',
+      );
     }
   }
 
@@ -458,10 +549,9 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       // the app was backgrounded or reconnecting.
       await reconcile(call.threadId.toString());
       final currentCall = activeCall.value;
-      final currentUserId = StorageService.readMapData(
-        key: LocalStorageKeys.user,
-        mapKey: 'id',
-      ) as int?;
+      final currentUserId =
+          StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+              as int?;
       final isSameCall = currentCall?.id == call.id;
       final isInitiator = currentCall?.initiator?.id == currentUserId;
       if (!isSameCall ||
@@ -486,10 +576,9 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
 
   Future<void> _endIfInitiatorIsLastUser(String callId) async {
     final call = activeCall.value;
-    final currentUserId = StorageService.readMapData(
-      key: LocalStorageKeys.user,
-      mapKey: 'id',
-    ) as int?;
+    final currentUserId =
+        StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+            as int?;
     if (call?.id != callId ||
         call?.initiator?.id != currentUserId ||
         remoteUids.isNotEmpty ||

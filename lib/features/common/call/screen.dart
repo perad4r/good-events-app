@@ -48,11 +48,23 @@ class AudioCallScreen extends GetView<CallCoordinator> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    _stateLabel(state, call),
-                    style: const TextStyle(color: Color(0xFF9CA3AF), fontSize: 15),
+                    _stateLabel(
+                      state,
+                      call,
+                      controller.endedStateMessage.value,
+                    ),
+                    style: const TextStyle(
+                      color: Color(0xFF9CA3AF),
+                      fontSize: 15,
+                    ),
                   ),
                   const SizedBox(height: 24),
-                  Expanded(child: _ParticipantsPanel(call: call, controller: controller)),
+                  Expanded(
+                    child: _ParticipantsPanel(
+                      call: call,
+                      controller: controller,
+                    ),
+                  ),
                   const SizedBox(height: 20),
                   if (state == LocalCallState.failed) ...[
                     Text(
@@ -72,16 +84,21 @@ class AudioCallScreen extends GetView<CallCoordinator> {
     );
   }
 
-  String _stateLabel(LocalCallState state, CallModel? call) => switch (state) {
+  String _stateLabel(
+    LocalCallState state,
+    CallModel? call,
+    String endedStateMessage,
+  ) => switch (state) {
     LocalCallState.creating => 'Đang tạo cuộc gọi…',
     LocalCallState.ringing => 'Đang đổ chuông…',
     LocalCallState.joining => 'Đang kết nối…',
     LocalCallState.connected => 'Đã kết nối',
     LocalCallState.reconnecting => 'Đang kết nối lại…',
     LocalCallState.leaving => 'Đang rời cuộc gọi…',
-    LocalCallState.ended => 'Cuộc gọi đã kết thúc',
+    LocalCallState.ended => endedStateMessage,
     LocalCallState.failed => 'Không thể kết nối',
-    LocalCallState.idle => call == null ? 'Cuộc gọi đã kết thúc' : 'Sẵn sàng tham gia',
+    LocalCallState.idle =>
+      call == null ? 'Cuộc gọi đã kết thúc' : 'Sẵn sàng tham gia',
   };
 }
 
@@ -106,7 +123,11 @@ class _ParticipantsPanel extends StatelessWidget {
             children: [
               const Text(
                 'Người tham gia',
-                style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 15),
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
               ),
               const Spacer(),
               Text(
@@ -126,10 +147,11 @@ class _ParticipantsPanel extends StatelessWidget {
                   )
                 : ListView.separated(
                     itemCount: participants.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final participant = participants[index];
-                      final isCurrentUser = participant.id ==
+                      final isCurrentUser =
+                          participant.id ==
                           StorageService.readMapData(
                             key: LocalStorageKeys.user,
                             mapKey: 'id',
@@ -137,33 +159,41 @@ class _ParticipantsPanel extends StatelessWidget {
                       final isRtcOnline =
                           isCurrentUser || onlineUids.contains(participant.id);
                       return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF1F2937),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              isCurrentUser ? '${participant.name} (Bạn)' : participant.name,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 9,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1F2937),
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                isCurrentUser
+                                    ? '${participant.name} (Bạn)'
+                                    : participant.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
                             ),
-                          ),
-                          Container(
-                            width: 8,
-                            height: 8,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: isRtcOnline
-                                  ? const Color(0xFF22C55E)
-                                  : const Color(0xFF6B7280),
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isRtcOnline
+                                    ? const Color(0xFF22C55E)
+                                    : const Color(0xFF6B7280),
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
+                          ],
+                        ),
                       );
                     },
                   ),
@@ -182,10 +212,9 @@ class _CallControls extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       final call = controller.activeCall.value;
-      final currentUserId = StorageService.readMapData(
-        key: LocalStorageKeys.user,
-        mapKey: 'id',
-      ) as int?;
+      final currentUserId =
+          StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+              as int?;
       final isInitiator = call?.initiator?.id == currentUserId;
       final connected =
           controller.localState.value == LocalCallState.connected ||
@@ -202,9 +231,7 @@ class _CallControls extends StatelessWidget {
                 icon: isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
                 label: isMuted ? 'Bật mic' : 'Tắt mic',
                 selected: isMuted,
-                onTap: connected
-                    ? () => controller.setMuted(!isMuted)
-                    : null,
+                onTap: connected ? () => controller.setMuted(!isMuted) : null,
               ),
               const SizedBox(width: 26),
               _RoundControl(
@@ -271,8 +298,8 @@ class _RoundControl extends StatelessWidget {
     final color = destructive
         ? const Color(0xFFDC2626)
         : selected
-            ? Colors.white
-            : const Color(0xFF374151);
+        ? Colors.white
+        : const Color(0xFF374151);
     return SizedBox(
       width: 82,
       child: Column(
@@ -292,7 +319,11 @@ class _RoundControl extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 9),
-          Text(label, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white70, fontSize: 11)),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(color: Colors.white70, fontSize: 11),
+          ),
         ],
       ),
     );

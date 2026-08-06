@@ -24,7 +24,15 @@ class AuthActionsGroup extends StatelessWidget {
 
       final api = Get.find<ApiService>();
 
-      final response = await api.dio.get(AppUrl.logout);
+      final deviceId =
+          StorageService.readData(key: LocalStorageKeys.pushDeviceId)
+              as String?;
+      final response = await api.dio.get(
+        AppUrl.logout,
+        queryParameters: {
+          if (deviceId != null && deviceId.isNotEmpty) 'device_id': deviceId,
+        },
+      );
 
       if (response.statusCode == 200) {
         StorageService.clearAllData();
