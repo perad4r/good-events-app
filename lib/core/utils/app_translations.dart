@@ -989,6 +989,9 @@ class AppTranslations extends Translations {
       'camera_access_required': 'Yêu cầu quyền truy cập Camera',
       'camera_permission_denied_desc':
           'Bạn đã từ chối quyền truy cập máy ảnh trước đó. Để chụp ảnh, vui lòng vào Cài đặt và cấp quyền cho ứng dụng.',
+      'microphone_access_required': 'Yêu cầu quyền truy cập Micro',
+      'microphone_permission_denied_desc':
+          'Bạn đã từ chối quyền truy cập micro trước đó. Để thực hiện và nhận cuộc gọi, vui lòng vào Cài đặt và cấp quyền cho ứng dụng.',
       'open_settings': 'Mở Cài đặt',
     },
     'en_US': {
@@ -1974,6 +1977,9 @@ class AppTranslations extends Translations {
       'camera_access_required': 'Camera Access Required',
       'camera_permission_denied_desc':
           'You previously denied camera access. To take a photo, please go to Settings and enable camera permission for this app.',
+      'microphone_access_required': 'Microphone Access Required',
+      'microphone_permission_denied_desc':
+          'You previously denied microphone access. To make and receive calls, please go to Settings and enable microphone permission for this app.',
       'open_settings': 'Open Settings',
     },
   };

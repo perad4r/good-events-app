@@ -105,16 +105,30 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" $KEYCHAIN_PATH
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp $PP_PATH ~/Library/MobileDevice/Provisioning\ Profiles
-      - name: Build Flutter IPA
-        run: flutter build ipa --release --export-method=app-store
-        
-      - name: Verify Push Notification Entitlement
+
+      - name: Create ExportOptions.plist
         run: |
-          unzip -o "build/ios/ipa/Sự kiện tốt.ipa" -d /tmp/ipa_extracted > /dev/null
-          APP_PATH=$(find /tmp/ipa_extracted/Payload -name "*.app" -maxdepth 1)
-          echo "=== Entitlements ==="
-          codesign -d --entitlements :- "$APP_PATH" 2>/dev/null | grep -A2 "aps-environment" || echo "❌ aps-environment NOT FOUND"
-          
+          cat <<EOF > ios/ExportOptions.plist
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>app-store</string>
+            <key>signingStyle</key>
+            <string>manual</string>
+            <key>provisioningProfiles</key>
+            <dict>
+              <key>com.sukientot.app</key>
+              <string>sukientot-app</string>
+            </dict>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Build Flutter IPA
+        run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+        
       - name: Upload via iTMSTransporter
         env:
           API_KEY: ${{ secrets.AUTH_KEY }}

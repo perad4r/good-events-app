@@ -6,6 +6,8 @@ import 'package:sukientotapp/core/utils/app_videos.dart';
 import 'package:sukientotapp/domain/repositories/auth_repository.dart';
 import 'package:sukientotapp/domain/repositories/settings_repository.dart';
 import 'package:video_player/video_player.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:sukientotapp/features/components/widget/confirm_dialog.dart';
 
 class SplashController extends GetxController {
   final AuthRepository _authRepository;
@@ -181,6 +183,8 @@ class SplashController extends GetxController {
           },
         );
 
+        await _requestMicrophonePermission();
+
         var role = StorageService.readMapData(
           key: LocalStorageKeys.user,
           mapKey: 'role',
@@ -232,6 +236,40 @@ class SplashController extends GetxController {
         title: 'error'.tr,
         message: 'Đã xảy ra lỗi khi kiểm tra đăng nhập. Vui lòng thử lại.',
       );
+    }
+  }
+
+  Future<void> _requestMicrophonePermission() async {
+    var status = await Permission.microphone.status;
+    
+    if (status.isPermanentlyDenied) {
+      await ConfirmDialog.show(
+        title: 'microphone_access_required'.tr,
+        message: 'microphone_permission_denied_desc'.tr,
+        confirmText: 'open_settings'.tr,
+        cancelText: 'cancel'.tr,
+        onConfirm: () {
+          openAppSettings();
+        },
+        confirmColor: Get.context?.fTheme.colors.primary ?? AppColors.red600,
+      );
+      return;
+    }
+
+    if (!status.isGranted) {
+      status = await Permission.microphone.request();
+      if (status.isPermanentlyDenied) {
+        await ConfirmDialog.show(
+          title: 'microphone_access_required'.tr,
+          message: 'microphone_permission_denied_desc'.tr,
+          confirmText: 'open_settings'.tr,
+          cancelText: 'cancel'.tr,
+          onConfirm: () {
+            openAppSettings();
+          },
+          confirmColor: Get.context?.fTheme.colors.primary ?? AppColors.red600,
+        );
+      }
     }
   }
 }

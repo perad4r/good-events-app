@@ -10,6 +10,7 @@ import 'package:sukientotapp/core/services/localstorage_service.dart';
 import 'package:sukientotapp/core/services/notification_service.dart';
 import 'package:sukientotapp/data/models/common/call_model.dart';
 import 'package:sukientotapp/domain/repositories/common/call_repository.dart';
+import 'package:sukientotapp/features/components/widget/confirm_dialog.dart';
 
 enum LocalCallState {
   idle,
@@ -365,11 +366,39 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       );
     }
     localState.value = LocalCallState.joining;
-    final permission = await Permission.microphone.request();
-    if (!permission.isGranted) {
-      throw const CallApiException(
-        message: 'Bạn cần cấp quyền microphone để gọi.',
+    var permissionStatus = await Permission.microphone.status;
+    
+    if (permissionStatus.isPermanentlyDenied) {
+      await ConfirmDialog.show(
+        title: 'microphone_access_required'.tr,
+        message: 'microphone_permission_denied_desc'.tr,
+        confirmText: 'open_settings'.tr,
+        cancelText: 'cancel'.tr,
+        onConfirm: () {
+          openAppSettings();
+        },
+        confirmColor: Get.theme.colorScheme.primary,
       );
+      throw const CallApiException(message: 'Bạn cần cấp quyền microphone để gọi.');
+    }
+
+    if (!permissionStatus.isGranted) {
+      permissionStatus = await Permission.microphone.request();
+      if (permissionStatus.isPermanentlyDenied) {
+        await ConfirmDialog.show(
+          title: 'microphone_access_required'.tr,
+          message: 'microphone_permission_denied_desc'.tr,
+          confirmText: 'open_settings'.tr,
+          cancelText: 'cancel'.tr,
+          onConfirm: () {
+            openAppSettings();
+          },
+          confirmColor: Get.theme.colorScheme.primary,
+        );
+      }
+      if (!permissionStatus.isGranted) {
+        throw const CallApiException(message: 'Bạn cần cấp quyền microphone để gọi.');
+      }
     }
 
     await _releaseEngine();
