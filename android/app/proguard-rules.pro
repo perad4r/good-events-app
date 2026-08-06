@@ -56,3 +56,4 @@
 
 # ── Nếu vẫn báo thiếu class, bật dòng này để debug ─────────────────────────
 -ignorewarnings
+-keep class com.hiennv.flutter_callkit_incoming.** { *; }

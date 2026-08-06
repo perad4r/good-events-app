@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:sukientotapp/core/services/api_service.dart';
+import 'package:sukientotapp/core/services/localstorage_service.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
 import 'package:sukientotapp/domain/api_url.dart';
 
@@ -89,7 +90,15 @@ class AccountProvider {
 
   Future<void> logout() async {
     try {
-      final response = await _apiService.dio.get(AppUrl.logout);
+      final deviceId =
+          StorageService.readData(key: LocalStorageKeys.pushDeviceId)
+              as String?;
+      final response = await _apiService.dio.get(
+        AppUrl.logout,
+        queryParameters: {
+          if (deviceId != null && deviceId.isNotEmpty) 'device_id': deviceId,
+        },
+      );
       if (response.statusCode != 200) {
         throw Exception('Logout failed: ${response.statusCode}');
       }

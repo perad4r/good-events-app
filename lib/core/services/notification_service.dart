@@ -1,5 +1,5 @@
+import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 import 'dart:math';
 
 import './handle_notification_code.dart';
@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:sukientotapp/core/services/api_service.dart';
+import 'package:sukientotapp/core/services/android_callkit_service.dart';
 import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/core/services/localstorage_service.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
@@ -40,9 +41,11 @@ int _incomingCallNotificationId(String callId) {
   return hash;
 }
 
-Future<void> _showIncomingCallNotification(
-  Map<String, dynamic> data,
-) async {
+Future<void> _showIncomingCallNotification(Map<String, dynamic> data) async {
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+    await AndroidCallkitService.showIncomingCall(data);
+    return;
+  }
   final callId = data['call_id']?.toString();
   if (callId == null || callId.isEmpty) return;
 
@@ -101,8 +104,14 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     );
   }
   logger.i('[FCM] Background message received: ${message.messageId}');
-  if (message.data['type']?.toString() == 'incoming_call') {
+  final type = message.data['type']?.toString();
+  if (type == 'incoming_call') {
     await _showIncomingCallNotification(message.data);
+  } else if (type == 'call_ended') {
+    final callId = message.data['call_id']?.toString();
+    if (callId != null && callId.isNotEmpty) {
+      await AndroidCallkitService.endCall(callId);
+    }
   }
 }
 
@@ -145,9 +154,7 @@ class NotificationService {
             HandleNotificationTap.handleTap(decoded);
           } else if (decoded is Map) {
             HandleNotificationTap.handleTap(
-              decoded.map(
-                (key, value) => MapEntry(key.toString(), value),
-              ),
+              decoded.map((key, value) => MapEntry(key.toString(), value)),
             );
           }
         } catch (e) {
@@ -176,14 +183,12 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >();
     await androidNotifications?.createNotificationChannel(_incomingCallChannel);
-    final fullScreenGranted =
-        await androidNotifications?.requestFullScreenIntentPermission();
-    logger.i(
-      '[FCM] Full-screen intent permission granted: $fullScreenGranted',
-    );
+    final fullScreenGranted = await androidNotifications
+        ?.requestFullScreenIntentPermission();
+    logger.i('[FCM] Full-screen intent permission granted: $fullScreenGranted');
 
-    final launchDetails =
-        await _localNotifications.getNotificationAppLaunchDetails();
+    final launchDetails = await _localNotifications
+        .getNotificationAppLaunchDetails();
     final launchPayload = launchDetails?.notificationResponse?.payload;
     if (launchDetails?.didNotificationLaunchApp == true &&
         launchPayload != null &&
@@ -236,6 +241,7 @@ class NotificationService {
     _initialized = true;
 
     await _initializePushKitBridge();
+    await AndroidCallkitService.initialize();
 
     final settings = await _messaging.requestPermission(
       alert: true,
@@ -288,10 +294,20 @@ class NotificationService {
         '[FCM] Foreground message — title: $title | body: $body | data: $data',
       );
 
-      NotificationHandler.handleMessage(data);
-
-      if (!kIsWeb) {
+      final type = data['type']?.toString();
+      final isAndroidIncomingCall =
+          type == 'incoming_call' &&
+          !kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.android;
+      if (isAndroidIncomingCall) {
+        unawaited(AndroidCallkitService.showIncomingCall(data));
+      } else if (type == 'call_ended' && !kIsWeb) {
+        unawaited(AndroidCallkitService.handleCallEnded(data));
+      } else if (!kIsWeb) {
+        NotificationHandler.handleMessage(data);
         _showLocalNotification(message);
+      } else {
+        NotificationHandler.handleMessage(data);
       }
     });
 
@@ -345,7 +361,8 @@ class NotificationService {
 
     try {
       final deviceId = _getOrCreateDeviceId();
-      final resolvedFcmToken = fcmToken ??
+      final resolvedFcmToken =
+          fcmToken ??
           StorageService.readData(key: LocalStorageKeys.fcmToken) as String?;
       if (resolvedFcmToken == null || resolvedFcmToken.isEmpty) return;
       final isIos = !kIsWeb && defaultTargetPlatform == TargetPlatform.iOS;
@@ -391,10 +408,23 @@ class NotificationService {
     return StorageService.readData(key: LocalStorageKeys.fcmToken) as String?;
   }
 
-  static Future<void> cancelIncomingCall(String callId) async {
-    await _localNotifications.cancel(
-      id: _incomingCallNotificationId(callId),
-    );
+  static Future<void> cancelIncomingCall(
+    String callId, {
+    bool accepted = false,
+  }) async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      if (accepted) {
+        await AndroidCallkitService.hideIncomingNotification(callId);
+        return;
+      }
+      await AndroidCallkitService.endCall(callId);
+      return;
+    }
+    await _localNotifications.cancel(id: _incomingCallNotificationId(callId));
+  }
+
+  static Future<void> markIncomingCallConnected(String callId) async {
+    await AndroidCallkitService.markConnected(callId);
   }
 
   static Future<void> unregisterDeviceBeforeLogout() async {
@@ -456,9 +486,7 @@ class NotificationService {
 
   static Map<String, dynamic>? _stringKeyedMap(Object? value) {
     if (value is! Map) return null;
-    return value.map(
-      (key, item) => MapEntry(key.toString(), item),
-    );
+    return value.map((key, item) => MapEntry(key.toString(), item));
   }
 
   static String _getOrCreateDeviceId() {

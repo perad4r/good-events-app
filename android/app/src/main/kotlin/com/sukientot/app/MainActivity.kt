@@ -5,6 +5,8 @@ import android.media.Ringtone
 import android.media.RingtoneManager
 import android.media.ToneGenerator
 import android.os.Build
+import android.content.Intent
+import android.os.Bundle
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -13,11 +15,30 @@ class MainActivity : FlutterActivity() {
     private val channelName = "com.sukientot.app/call_audio"
     private var ringtone: Ringtone? = null
     private var toneGenerator: ToneGenerator? = null
+    private var callAudioMethodChannel: MethodChannel? = null
+    private var pendingCallAction: Map<String, Any?>? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        captureCallAction(intent)
+        super.onCreate(savedInstanceState)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        captureCallAction(intent)
+        pendingCallAction?.let {
+            callAudioMethodChannel?.invokeMethod("nativeCallAction", it)
+        }
+    }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
-        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, channelName)
-            .setMethodCallHandler { call, result ->
+        callAudioMethodChannel = MethodChannel(
+            flutterEngine.dartExecutor.binaryMessenger,
+            channelName,
+        ).apply {
+            setMethodCallHandler { call, result ->
                 when (call.method) {
                     "playIncoming" -> {
                         playIncomingRingtone()
@@ -31,9 +52,27 @@ class MainActivity : FlutterActivity() {
                         stopCallAudio()
                         result.success(null)
                     }
+                    "startOngoingCall" -> {
+                        val callId = call.argument<String>("call_id").orEmpty()
+                        CallAudioForegroundService.start(applicationContext, callId)
+                        result.success(null)
+                    }
+                    "stopOngoingCall" -> {
+                        stopService(Intent(applicationContext, CallAudioForegroundService::class.java))
+                        result.success(null)
+                    }
+                    "consumePendingCallAction" -> {
+                        result.success(pendingCallAction)
+                        pendingCallAction = null
+                    }
+                    "clearPendingCallAction" -> {
+                        pendingCallAction = null
+                        result.success(null)
+                    }
                     else -> result.notImplemented()
                 }
             }
+        }
     }
 
     private fun playIncomingRingtone() {
@@ -58,6 +97,24 @@ class MainActivity : FlutterActivity() {
         toneGenerator?.stopTone()
         toneGenerator?.release()
         toneGenerator = null
+    }
+
+    @Suppress("DEPRECATION", "UNCHECKED_CAST")
+    private fun captureCallAction(intent: Intent?) {
+        val action = intent?.action ?: return
+        val normalizedAction = when {
+            action.endsWith("ACTION_CALL_ACCEPT") -> "accept"
+            action.endsWith("ACTION_CALL_DECLINE") -> "decline"
+            action.endsWith("ACTION_CALL_ENDED") -> "end"
+            else -> return
+        }
+        val callBundle = intent.getBundleExtra("EXTRA_CALLKIT_CALL_DATA") ?: return
+        val extra = callBundle.getSerializable("EXTRA_CALLKIT_EXTRA") as? Map<String, Any?>
+            ?: return
+        pendingCallAction = mapOf(
+            "action" to normalizedAction,
+            "data" to extra,
+        )
     }
 
     override fun onDestroy() {

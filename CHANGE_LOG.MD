@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.8.2+82]
+
+- Add voip call for android
+- Add decline call flow
+- Fix some small bug
+
 ## [2.8.1+81]
 
 - Remove FOREGROUND_SERVICE_MEDIA_PROJECTION permission
