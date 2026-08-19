@@ -22,6 +22,116 @@ Future<void> openAudioCallScreen() async {
   }
 }
 
+class CallRecoveryBanner extends StatelessWidget {
+  const CallRecoveryBanner({required this.child, super.key});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!Get.isRegistered<CallCoordinator>()) return child;
+    final coordinator = Get.find<CallCoordinator>();
+    return Stack(
+      children: [
+        child,
+        Obx(() {
+          if (!coordinator.hasPendingCallRecovery.value) {
+            return const SizedBox.shrink();
+          }
+          final isLoading = coordinator.isCallRecoveryInProgress.value;
+          return Positioned(
+            top: MediaQuery.paddingOf(context).top + 12,
+            left: 12,
+            right: 12,
+            child: Material(
+              elevation: 14,
+              color: const Color(0xFF111827),
+              borderRadius: BorderRadius.circular(18),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Cuộc gọi trước đó vẫn đang diễn ra',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Bạn muốn kết nối lại hay rời khỏi cuộc gọi?',
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: 12,
+                      ),
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: isLoading
+                                ? null
+                                : () async {
+                                    final left = await coordinator
+                                        .leavePersistedCall();
+                                    if (!left && context.mounted) {
+                                      AppSnackbar.showError(
+                                        message: coordinator.errorMessage.value,
+                                      );
+                                    }
+                                  },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFFFCA5A5),
+                              side: const BorderSide(color: Color(0xFF7F1D1D)),
+                            ),
+                            child: const Text('Rời cuộc gọi'),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: FilledButton(
+                            onPressed: isLoading
+                                ? null
+                                : () async {
+                                    final restored = await coordinator
+                                        .restorePersistedCall();
+                                    if (restored) {
+                                      await openAudioCallScreen();
+                                    } else if (context.mounted &&
+                                        coordinator
+                                            .errorMessage
+                                            .value
+                                            .isNotEmpty) {
+                                      AppSnackbar.showError(
+                                        message: coordinator.errorMessage.value,
+                                      );
+                                    }
+                                  },
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF16A34A),
+                            ),
+                            child: Text(
+                              isLoading ? 'Đang xử lý…' : 'Kết nối lại',
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+}
+
 /// Reopens the in-call UI when iOS brings the app to the foreground after the
 /// user taps the system CallKit status indicator.
 class CallResumeNavigator extends StatefulWidget {

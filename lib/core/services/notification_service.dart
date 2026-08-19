@@ -15,6 +15,7 @@ import 'package:get/get.dart';
 import 'package:sukientotapp/core/services/api_service.dart';
 import 'package:sukientotapp/core/services/android_callkit_service.dart';
 import 'package:sukientotapp/core/services/call_coordinator.dart';
+import 'package:sukientotapp/core/services/call_ringtone_service.dart';
 import 'package:sukientotapp/core/services/localstorage_service.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
 import 'package:sukientotapp/domain/api_url.dart';
@@ -69,7 +70,7 @@ Future<void> _showIncomingCallNotification(Map<String, dynamic> data) async {
       importance: Importance.max,
       priority: Priority.max,
       category: AndroidNotificationCategory.call,
-      fullScreenIntent: true,
+      fullScreenIntent: false,
       ongoing: true,
       autoCancel: false,
       visibility: NotificationVisibility.public,
@@ -183,10 +184,6 @@ class NotificationService {
           AndroidFlutterLocalNotificationsPlugin
         >();
     await androidNotifications?.createNotificationChannel(_incomingCallChannel);
-    final fullScreenGranted = await androidNotifications
-        ?.requestFullScreenIntentPermission();
-    logger.i('[FCM] Full-screen intent permission granted: $fullScreenGranted');
-
     final launchDetails = await _localNotifications
         .getNotificationAppLaunchDetails();
     final launchPayload = launchDetails?.notificationResponse?.payload;
@@ -300,7 +297,7 @@ class NotificationService {
           !kIsWeb &&
           defaultTargetPlatform == TargetPlatform.android;
       if (isAndroidIncomingCall) {
-        unawaited(AndroidCallkitService.showIncomingCall(data));
+        unawaited(_handleForegroundIncomingCall(data));
       } else if (type == 'call_ended' && !kIsWeb) {
         unawaited(AndroidCallkitService.handleCallEnded(data));
       } else if (!kIsWeb) {
@@ -333,6 +330,42 @@ class NotificationService {
       );
       HandleNotificationTerminatedTap.handleTap(data);
     }
+  }
+
+  static Future<void> _handleForegroundIncomingCall(
+    Map<String, dynamic> data,
+  ) async {
+    final callId = data['call_id']?.toString();
+    if (callId == null || callId.isEmpty) return;
+
+    if (Get.isRegistered<CallCoordinator>()) {
+      final coordinator = Get.find<CallCoordinator>();
+      await coordinator.handleIncomingNotification(data);
+      final call = coordinator.activeCall.value;
+      final state = coordinator.localState.value;
+      final isAlreadyJoiningOrConnected =
+          state == LocalCallState.joining ||
+          state == LocalCallState.connected ||
+          state == LocalCallState.reconnecting;
+
+      if (call?.id != callId || isAlreadyJoiningOrConnected) {
+        await CallRingtoneService.stop();
+        await cancelIncomingCall(
+          callId,
+          accepted: isAlreadyJoiningOrConnected,
+        );
+        logger.i(
+          '[FCM] Suppressed stale incoming call notification for $callId.',
+        );
+        return;
+      }
+    }
+
+    // Android CallKit owns the incoming ringtone. Stop the in-app ringtone
+    // started by reconcile so two independent looping audio sources cannot
+    // outlive each other.
+    await CallRingtoneService.stop();
+    await AndroidCallkitService.showIncomingCall(data);
   }
 
   static Future<void> _fetchAndSaveToken() async {

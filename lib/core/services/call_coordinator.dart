@@ -28,7 +28,7 @@ enum LocalCallState {
 class CallCoordinator extends GetxService with WidgetsBindingObserver {
   CallCoordinator(this._repository);
 
-  static const Duration unansweredCallTimeout = Duration(seconds: 60);
+  static const Duration loneParticipantTimeout = Duration(minutes: 2);
   static const Duration declinedCallUiDelay = Duration(seconds: 2);
   static Future<void>? _activeAgoraConnection;
   static String? _activeAgoraCallId;
@@ -43,12 +43,17 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   final RxString audioDebugState = ''.obs;
   final RxString threadTitle = ''.obs;
   final RxString endedStateMessage = 'Cuộc gọi đã kết thúc'.obs;
+  final RxInt callDurationSeconds = 0.obs;
+  final RxBool hasPendingCallRecovery = false.obs;
+  final RxBool isCallRecoveryInProgress = false.obs;
 
   RtcEngine? _engine;
   String? _currentThreadId;
   bool _actionInProgress = false;
   bool _isInChannel = false;
-  Timer? _unansweredCallTimer;
+  bool _recoveryCheckInProgress = false;
+  Timer? _loneParticipantTimer;
+  Timer? _callDurationTimer;
 
   void setThreadContext({required String threadId, required String title}) {
     if (_currentThreadId != null && _currentThreadId != threadId) {
@@ -73,8 +78,214 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && _currentThreadId != null) {
+    if (state != AppLifecycleState.resumed) return;
+    if (!_isInChannel && _hasPersistedCall) {
+      unawaited(preparePersistedCallRecovery());
+    } else if (_currentThreadId != null) {
       unawaited(reconcile(_currentThreadId!));
+    }
+  }
+
+  bool get _hasPersistedCall => StorageService.checkData(
+    key: LocalStorageKeys.activeCallRecovery,
+  );
+
+  Future<void> preparePersistedCallRecovery() async {
+    if (_recoveryCheckInProgress || _isInChannel) return;
+    final recovery = StorageService.readMapData(
+      key: LocalStorageKeys.activeCallRecovery,
+    );
+    final callId = recovery is Map<String, dynamic>
+        ? recovery['call_id']?.toString()
+        : null;
+    final threadId = recovery is Map<String, dynamic>
+        ? recovery['thread_id']?.toString()
+        : null;
+    final savedUserId = recovery is Map<String, dynamic>
+        ? int.tryParse(recovery['user_id']?.toString() ?? '')
+        : null;
+    final currentUserId =
+        StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+            as int?;
+    if (callId == null ||
+        callId.isEmpty ||
+        threadId == null ||
+        threadId.isEmpty ||
+        savedUserId == null ||
+        savedUserId != currentUserId) {
+      _clearPersistedCall();
+      return;
+    }
+
+    // Keep the banner hidden until the backend confirms that this exact call
+    // is still active. A local marker can outlive a call when the app was
+    // terminated before receiving the call-ended event.
+    hasPendingCallRecovery.value = false;
+    _recoveryCheckInProgress = true;
+    try {
+      final call = await _repository.active(threadId);
+      if (call == null ||
+          call.id != callId ||
+          call.status == CallStatus.ended) {
+        _clearPersistedCall(callId);
+        return;
+      }
+      hasPendingCallRecovery.value = true;
+    } on CallApiException catch (error) {
+      if (error.statusCode == 403 ||
+          error.statusCode == 404 ||
+          error.statusCode == 409) {
+        _clearPersistedCall(callId);
+      } else {
+        logger.w(
+          '[CallCoordinator] Unable to validate call recovery yet: '
+          '${error.message}',
+        );
+      }
+    } catch (error, stackTrace) {
+      logger.e(
+        '[CallCoordinator] Failed to validate persisted call recovery',
+        error: error,
+        stackTrace: stackTrace,
+      );
+    } finally {
+      _recoveryCheckInProgress = false;
+    }
+  }
+
+  /// Restores a call after process termination using fresh server state and
+  /// fresh Agora credentials. Tokens are deliberately never stored locally.
+  Future<bool> restorePersistedCall() async {
+    if (_actionInProgress || _isInChannel) return false;
+    final recovery = StorageService.readMapData(
+      key: LocalStorageKeys.activeCallRecovery,
+    );
+    if (recovery is! Map<String, dynamic>) return false;
+
+    final callId = recovery['call_id']?.toString();
+    final threadId = recovery['thread_id']?.toString();
+    final savedUserId = int.tryParse(recovery['user_id']?.toString() ?? '');
+    final currentUserId =
+        StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+            as int?;
+    if (callId == null ||
+        callId.isEmpty ||
+        threadId == null ||
+        threadId.isEmpty ||
+        savedUserId == null ||
+        savedUserId != currentUserId) {
+      _clearPersistedCall();
+      return false;
+    }
+
+    _actionInProgress = true;
+    isCallRecoveryInProgress.value = true;
+    _currentThreadId = threadId;
+    errorMessage.value = '';
+    try {
+      final call = await _repository.active(threadId);
+      if (call == null ||
+          call.id != callId ||
+          call.status == CallStatus.ended) {
+        _clearPersistedCall(callId);
+        activeCall.value = null;
+        localState.value = LocalCallState.ended;
+        return false;
+      }
+
+      activeCall.value = call;
+      final session = await _repository.join(callId);
+      activeCall.value = session.call;
+      await _connect(session);
+      hasPendingCallRecovery.value = false;
+      unawaited(NotificationService.markIncomingCallConnected(callId));
+      logger.i('[CallCoordinator] Restored active call $callId.');
+      return true;
+    } on CallApiException catch (error) {
+      if (error.statusCode == 403 ||
+          error.statusCode == 404 ||
+          error.statusCode == 409) {
+        _clearPersistedCall(callId);
+        activeCall.value = null;
+        localState.value = LocalCallState.ended;
+      } else {
+        errorMessage.value = error.message;
+        activeCall.value = null;
+        localState.value = LocalCallState.idle;
+        logger.w(
+          '[CallCoordinator] Call recovery deferred: ${error.message}',
+        );
+      }
+      return false;
+    } catch (error, stackTrace) {
+      await disposeCall(notifyServer: false);
+      activeCall.value = null;
+      localState.value = LocalCallState.idle;
+      errorMessage.value = 'Không thể kết nối lại cuộc gọi.';
+      logger.e(
+        '[CallCoordinator] Failed to restore active call',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      return false;
+    } finally {
+      _actionInProgress = false;
+      isCallRecoveryInProgress.value = false;
+    }
+  }
+
+  Future<bool> leavePersistedCall() async {
+    if (_actionInProgress || _isInChannel) return false;
+    final recovery = StorageService.readMapData(
+      key: LocalStorageKeys.activeCallRecovery,
+    );
+    if (recovery is! Map<String, dynamic>) {
+      _clearPersistedCall();
+      return true;
+    }
+    final callId = recovery['call_id']?.toString();
+    final threadId = recovery['thread_id']?.toString();
+    if (callId == null || threadId == null) {
+      _clearPersistedCall();
+      return true;
+    }
+
+    _actionInProgress = true;
+    isCallRecoveryInProgress.value = true;
+    try {
+      final call = await _repository.active(threadId);
+      if (call != null && call.id == callId) {
+        final currentUserId =
+            StorageService.readMapData(
+                  key: LocalStorageKeys.user,
+                  mapKey: 'id',
+                )
+                as int?;
+        final shouldEnd =
+            call.initiator?.id == currentUserId &&
+            call.participants.length <= 1;
+        if (shouldEnd) {
+          await _repository.end(callId);
+        } else {
+          await _repository.leave(callId);
+        }
+      }
+      _clearPersistedCall(callId);
+      activeCall.value = null;
+      localState.value = LocalCallState.idle;
+      return true;
+    } on CallApiException catch (error) {
+      if (error.statusCode == 403 ||
+          error.statusCode == 404 ||
+          error.statusCode == 409) {
+        _clearPersistedCall(callId);
+        return true;
+      }
+      errorMessage.value = error.message;
+      return false;
+    } finally {
+      _actionInProgress = false;
+      isCallRecoveryInProgress.value = false;
     }
   }
 
@@ -95,7 +306,6 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
         invitedUserIds: invitedUserIds,
       );
       activeCall.value = session.call;
-      _startUnansweredCallTimer(session.call);
       await CallRingtoneService.playOutgoing();
       await _connect(session);
       unawaited(NotificationService.markIncomingCallConnected(session.call.id));
@@ -130,14 +340,12 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     try {
       final call = await _repository.active(threadId);
       if (call == null || call.status == CallStatus.ended) {
+        _clearPersistedCallForThread(threadId);
         activeCall.value = null;
         if (_isInChannel) await disposeCall(notifyServer: false);
         return;
       }
       activeCall.value = call;
-      if (call.participants.length > 1) {
-        _cancelUnansweredCallTimer();
-      }
       if (!_isInChannel) {
         localState.value = LocalCallState.ringing;
         final currentUserId =
@@ -169,12 +377,17 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       final session = await _repository.join(call.id);
       activeCall.value = session.call;
       await _connect(session);
+      // Repeat cleanup after connecting. A delayed FCM/CallKit event may have
+      // recreated the incoming alert while the join request was in flight.
+      await NotificationService.cancelIncomingCall(call.id, accepted: true);
+      await CallRingtoneService.stop();
       unawaited(NotificationService.markIncomingCallConnected(call.id));
       return session;
     } on CallApiException catch (error) {
       if (error.statusCode == 403 ||
           error.statusCode == 404 ||
           error.statusCode == 409) {
+        _clearPersistedCall(call.id);
         await NotificationService.cancelIncomingCall(call.id);
         await CallRingtoneService.stop();
         activeCall.value = null;
@@ -219,6 +432,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       errorMessage.value = error.message;
     } finally {
       await disposeCall(notifyServer: false);
+      _clearPersistedCall(callId);
       activeCall.value = null;
       _actionInProgress = false;
       if (endedCall) {
@@ -237,10 +451,12 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       await NotificationService.cancelIncomingCall(call.id);
       await CallRingtoneService.stop();
       await _repository.decline(call.id);
+      _clearPersistedCall(call.id);
       activeCall.value = null;
       localState.value = LocalCallState.idle;
     } on CallApiException catch (error) {
       if (error.statusCode == 409) {
+        _clearPersistedCall(call.id);
         activeCall.value = null;
         localState.value = LocalCallState.idle;
         await reconcile(call.threadId.toString());
@@ -260,6 +476,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       await CallRingtoneService.stop();
       await _repository.end(call.id);
       await disposeCall(notifyServer: false);
+      _clearPersistedCall(call.id);
       activeCall.value = null;
       localState.value = LocalCallState.ended;
     } on CallApiException catch (error) {
@@ -301,6 +518,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
           : 'Cuộc gọi đã kết thúc';
       activeCall.value = incoming;
       await disposeCall(notifyServer: false);
+      _clearPersistedCall(incoming.id);
       localState.value = LocalCallState.ended;
       if (wasDeclinedByAllInvitees) {
         await Future<void>.delayed(declinedCallUiDelay);
@@ -326,6 +544,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> handleCallEndedSignal(String callId) async {
+    _clearPersistedCall(callId);
     if (activeCall.value?.id == callId) {
       await disposeCall(notifyServer: false);
       activeCall.value = null;
@@ -373,6 +592,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     }
 
     await _releaseEngine();
+    remoteUids.clear();
     final engine = createAgoraRtcEngine();
     _engine = engine;
     await engine.initialize(RtcEngineContext(appId: session.credentials.appId));
@@ -387,12 +607,14 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
           logger.i(
             '[CallCoordinator] Joined Agora channel uid=${connection.localUid}',
           );
+          _startCallDurationTimer(session.call.startedAt);
+          _startLoneParticipantTimer(session.call.id);
           if (session.call.initiator?.id != session.credentials.uid) {
             unawaited(CallRingtoneService.stop());
           }
         },
         onUserJoined: (connection, remoteUid, elapsed) {
-          _cancelUnansweredCallTimer();
+          _cancelLoneParticipantTimer();
           remoteUids.add(remoteUid);
           logger.i('[CallCoordinator] Remote user joined uid=$remoteUid');
           unawaited(CallRingtoneService.stop());
@@ -402,9 +624,8 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
           logger.i(
             '[CallCoordinator] Remote user offline uid=$remoteUid reason=$reason',
           );
-          if (reason == UserOfflineReasonType.userOfflineQuit &&
-              remoteUids.isEmpty) {
-            unawaited(_endIfInitiatorIsLastUser(session.call.id));
+          if (remoteUids.isEmpty) {
+            _startLoneParticipantTimer(session.call.id);
           }
         },
         onConnectionStateChanged: (connection, state, reason) {
@@ -468,6 +689,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
         message: 'Quá thời gian kết nối tới kênh âm thanh.',
       ),
     );
+    _persistActiveCall(session.call);
   }
 
   Future<void> _applySpeakerRoute(bool enabled) async {
@@ -498,7 +720,8 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   }
 
   Future<void> disposeCall({required bool notifyServer}) async {
-    _cancelUnansweredCallTimer();
+    _cancelLoneParticipantTimer();
+    _stopCallDurationTimer();
     final callId = activeCall.value?.id;
     if (callId != null) {
       await NotificationService.cancelIncomingCall(callId);
@@ -542,51 +765,109 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     localState.value = LocalCallState.failed;
   }
 
-  void _startUnansweredCallTimer(CallModel call) {
-    _cancelUnansweredCallTimer();
-    _unansweredCallTimer = Timer(unansweredCallTimeout, () async {
-      // Reconcile once before ending in case the RTC callback was missed while
-      // the app was backgrounded or reconnecting.
-      await reconcile(call.threadId.toString());
-      final currentCall = activeCall.value;
-      final currentUserId =
-          StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
-              as int?;
-      final isSameCall = currentCall?.id == call.id;
-      final isInitiator = currentCall?.initiator?.id == currentUserId;
-      if (!isSameCall ||
-          !isInitiator ||
-          remoteUids.isNotEmpty ||
-          (currentCall?.participants.length ?? 0) > 1) {
+  void _startLoneParticipantTimer(String callId) {
+    _cancelLoneParticipantTimer();
+    if (!_isInChannel ||
+        activeCall.value?.id != callId ||
+        remoteUids.isNotEmpty) {
+      return;
+    }
+    _loneParticipantTimer = Timer(loneParticipantTimeout, () async {
+      await _handleLoneParticipantTimeout(callId);
+    });
+    logger.i(
+      '[CallCoordinator] Lone participant timer started for '
+      '${loneParticipantTimeout.inMinutes} minutes.',
+    );
+  }
+
+  void _cancelLoneParticipantTimer() {
+    _loneParticipantTimer?.cancel();
+    _loneParticipantTimer = null;
+  }
+
+  void _startCallDurationTimer(DateTime? startedAt) {
+    _callDurationTimer?.cancel();
+    final effectiveStartedAt = startedAt?.toLocal() ?? DateTime.now();
+
+    void updateElapsedTime() {
+      final elapsed = DateTime.now().difference(effectiveStartedAt).inSeconds;
+      callDurationSeconds.value = elapsed < 0 ? 0 : elapsed;
+    }
+
+    updateElapsedTime();
+    _callDurationTimer = Timer.periodic(
+      const Duration(seconds: 1),
+      (_) => updateElapsedTime(),
+    );
+  }
+
+  void _stopCallDurationTimer() {
+    _callDurationTimer?.cancel();
+    _callDurationTimer = null;
+    callDurationSeconds.value = 0;
+  }
+
+  void _persistActiveCall(CallModel call) {
+    final currentUserId =
+        StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+            as int?;
+    if (currentUserId == null) return;
+    StorageService.writeMapData(
+      key: LocalStorageKeys.activeCallRecovery,
+      value: <String, dynamic>{
+        'call_id': call.id,
+        'thread_id': call.threadId.toString(),
+        'user_id': currentUserId,
+      },
+    );
+    hasPendingCallRecovery.value = false;
+  }
+
+  void _clearPersistedCall([String? callId]) {
+    if (callId != null) {
+      final recovery = StorageService.readMapData(
+        key: LocalStorageKeys.activeCallRecovery,
+      );
+      if (recovery is Map<String, dynamic> &&
+          recovery['call_id']?.toString() != callId) {
         return;
       }
-
-      logger.i(
-        '[CallCoordinator] Ending unanswered call after '
-        '${unansweredCallTimeout.inSeconds}s',
-      );
-      await end();
-    });
+    }
+    StorageService.removeData(key: LocalStorageKeys.activeCallRecovery);
+    hasPendingCallRecovery.value = false;
   }
 
-  void _cancelUnansweredCallTimer() {
-    _unansweredCallTimer?.cancel();
-    _unansweredCallTimer = null;
+  void _clearPersistedCallForThread(String threadId) {
+    final recovery = StorageService.readMapData(
+      key: LocalStorageKeys.activeCallRecovery,
+    );
+    if (recovery is Map<String, dynamic> &&
+        recovery['thread_id']?.toString() == threadId) {
+      StorageService.removeData(key: LocalStorageKeys.activeCallRecovery);
+      hasPendingCallRecovery.value = false;
+    }
   }
 
-  Future<void> _endIfInitiatorIsLastUser(String callId) async {
+  Future<void> _handleLoneParticipantTimeout(String callId) async {
     final call = activeCall.value;
     final currentUserId =
         StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
             as int?;
     if (call?.id != callId ||
-        call?.initiator?.id != currentUserId ||
+        !_isInChannel ||
         remoteUids.isNotEmpty ||
         _actionInProgress) {
       return;
     }
 
-    logger.i('[CallCoordinator] Last remote user left; ending call.');
-    await end();
+    logger.i(
+      '[CallCoordinator] Lone participant timeout reached; closing call.',
+    );
+    if (call?.initiator?.id == currentUserId) {
+      await end();
+    } else {
+      await leave();
+    }
   }
 }

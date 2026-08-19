@@ -106,6 +106,9 @@ class LocalStorageKeys {
   static const String pendingClientTabIndex = "pending_client_tab_index";
   static const String invitedChatMemberships = "invited_chat_memberships";
 
+  // Active audio call recovery marker. Agora credentials are never persisted.
+  static const String activeCallRecovery = "active_call_recovery";
+
   // App settings
   static const String locale = "locale";
   static const String settings = "settings";

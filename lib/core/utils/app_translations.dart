@@ -204,6 +204,8 @@ class AppTranslations extends Translations {
       'news_and_blogs': 'Địa điểm sự kiện',
       'see_more': 'Xem thêm',
       'partner_search': 'Tìm kiếm nhân sự đối tác',
+      'popular_services': 'Dịch vụ phổ biến',
+      'view_all': 'Xem tất cả',
 
       // client partner detail
       'contact': 'Liên hệ',
@@ -1189,6 +1191,8 @@ class AppTranslations extends Translations {
       'news_and_blogs': 'Event locations',
       'see_more': 'See More',
       'partner_search': 'Partner Search',
+      'popular_services': 'Popular services',
+      'view_all': 'View all',
 
       // client partner detail
       'contact': 'Contact',
