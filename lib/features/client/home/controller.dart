@@ -244,12 +244,16 @@ class ClientHomeController extends GetxController {
     }
   }
 
-  void openCategoryListBottomSheet(BuildContext context) {
+  void openCategoryListBottomSheet(
+    BuildContext context, {
+    PartnerCategoryModel? selectedCategory,
+  }) {
     showModalBottomSheet(
       context: context,
       builder: (context) => PopupPartnerSearchSheet(
         partnerCategories: partnerList,
         isLoadingPartners: isLoadingPartners,
+        selectedCategory: selectedCategory,
       ),
       isScrollControlled: true,
     );

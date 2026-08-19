@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:sukientotapp/core/utils/app_exceptions.dart';
+import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/core/utils/app_videos.dart';
 import 'package:sukientotapp/domain/repositories/auth_repository.dart';
@@ -182,6 +183,12 @@ class SplashController extends GetxController {
             );
           },
         );
+
+        if (Get.isRegistered<CallCoordinator>()) {
+          unawaited(
+            Get.find<CallCoordinator>().preparePersistedCallRecovery(),
+          );
+        }
 
         await _requestMicrophonePermission();
 

@@ -7,10 +7,12 @@ class PopupPartnerSearchSheet extends StatefulWidget {
     super.key,
     required this.partnerCategories,
     required this.isLoadingPartners,
+    this.selectedCategory,
   });
 
   final RxList<PartnerCategoryModel> partnerCategories;
   final RxBool isLoadingPartners;
+  final PartnerCategoryModel? selectedCategory;
 
   @override
   State<PopupPartnerSearchSheet> createState() =>
@@ -35,9 +37,13 @@ class _PopupPartnerSearchSheetState extends State<PopupPartnerSearchSheet> {
 
   List<PartnerCategoryModel> get _filteredCategories {
     final query = _removeDiacritics(_searchQuery.value.trim());
-    if (query.isEmpty) return widget.partnerCategories;
+    final List<PartnerCategoryModel> categories = widget.selectedCategory == null
+        ? widget.partnerCategories
+        : <PartnerCategoryModel>[widget.selectedCategory!];
 
-    return widget.partnerCategories
+    if (query.isEmpty) return categories;
+
+    return categories
         .map((category) {
           final filteredPartners = category.partnerList.where((partner) {
             return _removeDiacritics(partner.name).contains(query);
@@ -83,7 +89,7 @@ class _PopupPartnerSearchSheetState extends State<PopupPartnerSearchSheet> {
                     ),
                   ),
                   Text(
-                    'partner_search'.tr,
+                    widget.selectedCategory?.name ?? 'partner_search'.tr,
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ],

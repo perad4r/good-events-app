@@ -58,6 +58,21 @@ class AudioCallScreen extends GetView<CallCoordinator> {
                       fontSize: 15,
                     ),
                   ),
+                  if (state == LocalCallState.connected ||
+                      state == LocalCallState.reconnecting) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      _formatDuration(controller.callDurationSeconds.value),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        fontFeatures: <FontFeature>[
+                          FontFeature.tabularFigures(),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 24),
                   Expanded(
                     child: _ParticipantsPanel(
@@ -100,6 +115,16 @@ class AudioCallScreen extends GetView<CallCoordinator> {
     LocalCallState.idle =>
       call == null ? 'Cuộc gọi đã kết thúc' : 'Sẵn sàng tham gia',
   };
+
+  String _formatDuration(int totalSeconds) {
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
+    final seconds = totalSeconds % 60;
+    final minuteText = minutes.toString().padLeft(2, '0');
+    final secondText = seconds.toString().padLeft(2, '0');
+    if (hours == 0) return '$minuteText:$secondText';
+    return '${hours.toString().padLeft(2, '0')}:$minuteText:$secondText';
+  }
 }
 
 class _ParticipantsPanel extends StatelessWidget {
