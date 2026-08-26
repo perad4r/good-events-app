@@ -131,9 +131,9 @@ jobs:
 
       - name: Patch macOS Beta Signature
         run: |
-          # Overwrite the beta OS stamp with a stable macOS 14.6 stamp (23G93)
+          # Overwrite the beta OS stamp with a stable macOS 14.6 stamp (25G83)
           APP_PLIST="build/ios/archive/Runner.xcarchive/Products/Applications/Runner.app/Info.plist"
-          /usr/libexec/PlistBuddy -c "Set :BuildMachineOSBuild 23G93" "$APP_PLIST"
+          /usr/libexec/PlistBuddy -c "Set :BuildMachineOSBuild 25G83" "$APP_PLIST"
 
       - name: Export IPA
         run: |
