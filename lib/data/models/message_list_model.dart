@@ -63,6 +63,7 @@ class MessageListModel {
   final String code;
   final String? newestMessage;
   final String? newestMessageSender;
+  final String? newestMessageSenderAvatar;
   final String time;
   final bool isRead;
   final int unreadMessages;
@@ -77,6 +78,7 @@ class MessageListModel {
     required this.code,
     required this.newestMessage,
     required this.newestMessageSender,
+    this.newestMessageSenderAvatar,
     required this.time,
     required this.isRead,
     required this.unreadMessages,
@@ -120,6 +122,7 @@ class MessageListModel {
       code: json['code'] as String? ?? '',
       newestMessage: latestPreviewText,
       newestMessageSender: latestMessage?['sender_name'] as String?,
+      newestMessageSenderAvatar: latestMessage?['sender_avatar']?.toString(),
       time: latestMessage?['created_at'] as String? ?? '',
       isRead: !isUnread,
       unreadMessages: isUnread ? 1 : 0,
@@ -149,6 +152,7 @@ class MessageListModel {
     String? code,
     String? newestMessage,
     String? newestMessageSender,
+    String? newestMessageSenderAvatar,
     String? time,
     bool? isRead,
     int? unreadMessages,
@@ -163,6 +167,8 @@ class MessageListModel {
       code: code ?? this.code,
       newestMessage: newestMessage ?? this.newestMessage,
       newestMessageSender: newestMessageSender ?? this.newestMessageSender,
+      newestMessageSenderAvatar:
+          newestMessageSenderAvatar ?? this.newestMessageSenderAvatar,
       time: time ?? this.time,
       isRead: isRead ?? this.isRead,
       unreadMessages: unreadMessages ?? this.unreadMessages,
@@ -181,6 +187,7 @@ class MessageListModel {
           .toList(),
       'newestMessage': newestMessage,
       'newestMessageSender': newestMessageSender,
+      'newestMessageSenderAvatar': newestMessageSenderAvatar,
       'time': time,
       'isRead': isRead,
       'unreadMessages': unreadMessages,

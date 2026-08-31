@@ -141,6 +141,7 @@ class MessageModel {
   final int? threadId;
   final int? userId;
   final String sender;
+  final String? senderAvatar;
   final String text;
   final String type;
   final String previewText;
@@ -155,6 +156,7 @@ class MessageModel {
   MessageModel({
     this.id,
     this.sender = '',
+    this.senderAvatar,
     this.threadId,
     this.userId,
     required this.text,
@@ -231,6 +233,8 @@ class MessageModel {
       userId: _asInt(message['user_id']) ?? senderId,
       sender:
           (user['name'] as String?) ?? (json['sender_name'] as String?) ?? '',
+      senderAvatar:
+          user['avatar']?.toString() ?? json['sender_avatar']?.toString(),
       text: body,
       type: type,
       previewText: previewText,
@@ -248,6 +252,7 @@ class MessageModel {
     return MessageModel(
       threadId: json['threadId'] as int?,
       userId: _asInt(json['userId']),
+      senderAvatar: json['senderAvatar'] as String?,
       text: json['text'] ?? '',
       type: json['type'] as String? ?? 'text',
       previewText: json['previewText'] as String?,
@@ -265,6 +270,7 @@ class MessageModel {
     return {
       'threadId': threadId,
       'userId': userId,
+      'senderAvatar': senderAvatar,
       'text': text,
       'type': type,
       'previewText': previewText,

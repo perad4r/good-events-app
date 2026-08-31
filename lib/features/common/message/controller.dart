@@ -367,6 +367,15 @@ class MessageController extends GetxController {
 
   // ─── User Channel event handler (called by BottomNavController) ─────────────
   void onUserChannelEvent(PusherEvent event) {
+    loggerNoStack.i(
+      '[MessageController] [ThreadList] [IncomingEvent]\n'
+      'channelName: ${event.channelName}\n'
+      'eventName: ${event.eventName}\n'
+      'userId: ${event.userId}\n'
+      'dataType: ${event.data.runtimeType}\n'
+      'data: ${event.data}',
+    );
+
     final eventName = _normalizedPusherEventName(event.eventName);
     if (eventName != _pusherEventName) return;
     if (event.data == null) return;
@@ -388,6 +397,7 @@ class MessageController extends GetxController {
         final updated = filteredMessages[idx].copyWith(
           newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
+          newestMessageSenderAvatar: incoming.senderAvatar,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: incoming.isSender,
           unreadMessages: incoming.isSender
@@ -434,6 +444,7 @@ class MessageController extends GetxController {
       filteredMessages[idx] = filteredMessages[idx].copyWith(
         newestMessage: lastMessage.previewText,
         newestMessageSender: lastMessage.sender,
+        newestMessageSenderAvatar: lastMessage.senderAvatar,
         time: lastMessage.time,
         isRead: true,
         unreadMessages: 0,
@@ -544,6 +555,7 @@ class MessageController extends GetxController {
         final updated = filteredMessages[idx].copyWith(
           newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
+          newestMessageSenderAvatar: incoming.senderAvatar,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: true,
           unreadMessages: 0,
@@ -770,6 +782,10 @@ class MessageController extends GetxController {
         StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
             as String? ??
         '';
+    final currentUserAvatar = StorageService.readMapData(
+      key: LocalStorageKeys.user,
+      mapKey: 'avatar_url',
+    )?.toString();
     final optimisticAttachments = isImageMessage
         ? images
               .map(
@@ -784,6 +800,7 @@ class MessageController extends GetxController {
 
     final optimistic = MessageModel(
       sender: currentUserName,
+      senderAvatar: currentUserAvatar,
       text: isImageMessage ? censoredText : previewText,
       type: isImageMessage ? 'image' : 'text',
       previewText: previewText,
@@ -842,9 +859,14 @@ class MessageController extends GetxController {
           StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
               as String? ??
           '';
+      final currentUserAvatar = StorageService.readMapData(
+        key: LocalStorageKeys.user,
+        mapKey: 'avatar_url',
+      )?.toString();
       const previewText = '[Vị trí]';
       optimistic = MessageModel(
         sender: currentUserName,
+        senderAvatar: currentUserAvatar,
         text: previewText,
         type: 'location',
         previewText: previewText,
@@ -978,6 +1000,7 @@ class MessageController extends GetxController {
 
     messagesDetail[idx] = MessageModel(
       sender: optimistic.sender,
+      senderAvatar: optimistic.senderAvatar,
       text: optimistic.text,
       type: optimistic.type,
       previewText: optimistic.previewText,
@@ -995,12 +1018,17 @@ class MessageController extends GetxController {
         StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
             as String? ??
         '';
+    final currentUserAvatar = StorageService.readMapData(
+      key: LocalStorageKeys.user,
+      mapKey: 'avatar_url',
+    )?.toString();
     final threadIdx = filteredMessages.indexWhere((t) => t.id == threadId);
     if (threadIdx == -1) return;
 
     final updated = filteredMessages[threadIdx].copyWith(
       newestMessage: text,
       newestMessageSender: currentUserName,
+      newestMessageSenderAvatar: currentUserAvatar,
       time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
       isRead: true,
       unreadMessages: 0,

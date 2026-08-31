@@ -167,6 +167,8 @@ class _HeaderActionButton extends StatelessWidget {
     required this.icon,
     required this.foregroundColor,
     required this.backgroundColor,
+    this.borderColor,
+    this.circular = false,
   });
 
   final String tooltip;
@@ -174,6 +176,8 @@ class _HeaderActionButton extends StatelessWidget {
   final IconData icon;
   final Color foregroundColor;
   final Color backgroundColor;
+  final Color? borderColor;
+  final bool circular;
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +189,10 @@ class _HeaderActionButton extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: backgroundColor,
         foregroundColor: foregroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: borderColor == null ? null : BorderSide(color: borderColor!),
+        shape: circular
+            ? const CircleBorder()
+            : RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       icon: Icon(icon, size: 19),
     );
@@ -208,12 +215,10 @@ class _CallActionButton extends StatelessWidget {
 
     return _HeaderActionButton(
       tooltip: hasCall ? 'Mở cuộc gọi' : 'Gọi âm thanh',
-      foregroundColor: hasCall
-          ? const Color(0xFF059669)
-          : colors.foreground,
-      backgroundColor: hasCall
-          ? const Color(0xFFECFDF5)
-          : colors.secondary,
+      foregroundColor: colors.primary,
+      backgroundColor: colors.primary.withValues(alpha: 0.06),
+      borderColor: colors.primary,
+      circular: true,
       icon: hasCall ? Icons.call_rounded : Icons.add_call,
       onPressed: () async {
         if (call != null) {
@@ -313,17 +318,15 @@ class _ChatOptionsButton extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: colors.secondary,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: colors.border.withValues(alpha: 0.65),
-            ),
+            color: colors.primary.withValues(alpha: 0.06),
+            shape: BoxShape.circle,
+            border: Border.all(color: colors.primary),
           ),
           alignment: Alignment.center,
           child: Icon(
             Icons.more_horiz_rounded,
             size: 22,
-            color: colors.foreground,
+            color: colors.primary,
           ),
         ),
       ),

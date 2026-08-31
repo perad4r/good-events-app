@@ -3,6 +3,7 @@ import 'package:sukientotapp/core/utils/phone_number_censor.dart';
 
 import 'controller.dart';
 import 'widget/header.dart';
+import 'widget/cached_message_avatar.dart';
 import 'detail_screen.dart';
 
 class MessageScreen extends StatefulWidget {
@@ -155,25 +156,12 @@ class _MessageScreenState extends State<MessageScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Avatar
-                      Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: hasUnread
-                              ? context.fTheme.colors.primary.withValues(
-                                  alpha: 0.12,
-                                )
-                              : context.fTheme.colors.muted,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Icon(
-                          FIcons.messageSquareText,
-                          size: 18,
-                          color: hasUnread
-                              ? context.fTheme.colors.primary
-                              : context.fTheme.colors.mutedForeground,
-                        ),
+                      CachedMessageAvatar(
+                        imageUrl: message.newestMessageSenderAvatar,
+                        size: 42,
+                        borderRadius: 12,
+                        fallbackIcon: FIcons.messageSquareText,
+                        highlighted: hasUnread,
                       ),
                       const SizedBox(width: 12),
 
