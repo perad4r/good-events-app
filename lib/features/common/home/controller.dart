@@ -66,4 +66,17 @@ class GuestHomeController extends GetxController {
       fetchPartners();
     }
   }
+
+  Future<void> openCategoryListScreen({
+    PartnerCategoryModel? selectedCategory,
+  }) async {
+    await Get.toNamed(
+      Routes.clientCategoryList,
+      arguments: <String, Object>{
+        'categories': partnerList,
+        'isLoading': isLoadingPartners,
+        if (selectedCategory != null) 'selectedCategory': selectedCategory,
+      },
+    );
+  }
 }

@@ -25,6 +25,7 @@ export 'package:sukientotapp/features/partner/reviews/binding.dart';
 
 //Client
 export 'package:sukientotapp/features/client/bottom_navigation/binding.dart';
+export 'package:sukientotapp/features/client/category_list/binding.dart';
 export 'package:sukientotapp/features/client/partner_detail/binding.dart';
 export 'package:sukientotapp/features/client/booking/binding.dart';
 export 'package:sukientotapp/features/client/order/binding.dart';

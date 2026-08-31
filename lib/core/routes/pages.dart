@@ -108,6 +108,14 @@ class Pages {
     ),
 
     GetPage(
+      name: Routes.clientCategoryList,
+      page: () => const CategoryListScreen(),
+      binding: CategoryListBinding(),
+      transition: Transition.rightToLeft,
+      transitionDuration: const Duration(milliseconds: 300),
+    ),
+
+    GetPage(
       name: Routes.partnerShowCalendar,
       page: () => const ShowCalendarScreen(),
       binding: ShowCalendarBinding(),

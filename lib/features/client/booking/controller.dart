@@ -126,6 +126,14 @@ class ClientBookingController extends GetxController {
     }
   }
 
+  void goBackOneStep() {
+    if (currentStage.value > 0) {
+      previousStage();
+      return;
+    }
+    Get.back<void>();
+  }
+
   void startOver() {
     currentStage.value = 0;
   }

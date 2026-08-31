@@ -5,7 +5,6 @@ import 'package:sukientotapp/data/models/client/home_summary_model.dart';
 import 'package:sukientotapp/data/models/client/blog_home_model.dart';
 import 'package:sukientotapp/data/models/client/partner_category_model.dart';
 
-import 'package:sukientotapp/features/client/home/widgets/popup_search_sheet.dart';
 import 'package:sukientotapp/features/client/home/widgets/app_notification_card.dart';
 
 class ClientHomeController extends GetxController {
@@ -222,6 +221,19 @@ class ClientHomeController extends GetxController {
     }
   }
 
+  Future<void> openCategoryListScreen({
+    PartnerCategoryModel? selectedCategory,
+  }) async {
+    await Get.toNamed(
+      Routes.clientCategoryList,
+      arguments: selectedCategory == null
+          ? null
+          : <String, PartnerCategoryModel>{
+              'selectedCategory': selectedCategory,
+            },
+    );
+  }
+
   void openBrowser(String url) async {
     /// will implement later (url_launcher lib)
     // if (await canLaunchUrl(Uri.parse(url))) {
@@ -231,31 +243,10 @@ class ClientHomeController extends GetxController {
     // }
   }
 
-  void openDetailScreen(String slug) async {
-    var result = await Get.toNamed(
+  Future<void> openDetailScreen(String slug) async {
+    await Get.toNamed(
       Routes.partnerDetail,
       arguments: {'slug': slug},
-    );
-
-    if (result == "show_category_bottom_sheet") {
-      Future.delayed(const Duration(milliseconds: 400), () {
-        openCategoryListBottomSheet(Get.context!);
-      });
-    }
-  }
-
-  void openCategoryListBottomSheet(
-    BuildContext context, {
-    PartnerCategoryModel? selectedCategory,
-  }) {
-    showModalBottomSheet(
-      context: context,
-      builder: (context) => PopupPartnerSearchSheet(
-        partnerCategories: partnerList,
-        isLoadingPartners: isLoadingPartners,
-        selectedCategory: selectedCategory,
-      ),
-      isScrollControlled: true,
     );
   }
 }
