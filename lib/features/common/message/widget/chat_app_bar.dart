@@ -203,7 +203,8 @@ class _CallActionButton extends StatelessWidget {
     final colors = buildContext.fTheme.colors;
     final thread = controller.selectedThread.value!;
     final coordinator = controller.callCoordinator;
-    final hasCall = coordinator.activeCall.value != null;
+    final call = coordinator.callForThread(thread.id);
+    final hasCall = call != null;
 
     return _HeaderActionButton(
       tooltip: hasCall ? 'Mở cuộc gọi' : 'Gọi âm thanh',
@@ -215,15 +216,20 @@ class _CallActionButton extends StatelessWidget {
           : colors.secondary,
       icon: hasCall ? Icons.call_rounded : Icons.add_call,
       onPressed: () async {
-        if (hasCall) {
+        if (call != null) {
           final connected =
-              coordinator.localState.value == LocalCallState.connected ||
-              coordinator.localState.value == LocalCallState.reconnecting;
-          if (!connected) {
-            final session = await coordinator.joinActiveCall();
-            if (session == null) return;
+              coordinator.activeCall.value?.id == call.id &&
+              (coordinator.localState.value == LocalCallState.connected ||
+                  coordinator.localState.value == LocalCallState.reconnecting);
+          if (connected) {
+            await openAudioCallScreen();
+          } else {
+            await joinCallFromUi(
+              context: context,
+              coordinator: coordinator,
+              call: call,
+            );
           }
-          await openAudioCallScreen();
           return;
         }
         if (context.mounted) {

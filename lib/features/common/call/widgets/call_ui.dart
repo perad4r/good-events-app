@@ -22,6 +22,53 @@ Future<void> openAudioCallScreen() async {
   }
 }
 
+Future<void> joinCallFromUi({
+  required BuildContext context,
+  required CallCoordinator coordinator,
+  required CallModel call,
+}) async {
+  CallSession? session;
+  if (coordinator.requiresCallSwitch(call)) {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Bạn đang trong một cuộc gọi khác'),
+        content: const Text(
+          'Để tham gia cuộc gọi mới, bạn cần rời cuộc gọi hiện tại. '
+          'Bạn có muốn tiếp tục không?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Từ chối, ở lại cuộc cũ'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Rời và tham gia mới'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == false) {
+      await coordinator.declineCall(call);
+      return;
+    }
+    if (confirmed != true) return;
+    session = await coordinator.switchToCall(call);
+  } else {
+    if (coordinator.activeCall.value?.id != call.id) {
+      coordinator.activeCall.value = call;
+    }
+    session = await coordinator.joinActiveCall();
+  }
+
+  if (session != null) {
+    await openAudioCallScreen();
+  } else if (context.mounted && coordinator.errorMessage.value.isNotEmpty) {
+    AppSnackbar.showError(message: coordinator.errorMessage.value);
+  }
+}
+
 class CallRecoveryBanner extends StatelessWidget {
   const CallRecoveryBanner({required this.child, super.key});
 
@@ -373,24 +420,29 @@ class ActiveCallBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      final call = coordinator.activeCall.value;
+      final call = coordinator.callForThread(threadId);
       if (call == null ||
           call.threadId.toString() != threadId ||
           call.status == CallStatus.ended) {
         return const SizedBox.shrink();
       }
       final connected =
-          coordinator.localState.value == LocalCallState.connected ||
-          coordinator.localState.value == LocalCallState.reconnecting;
+          coordinator.activeCall.value?.id == call.id &&
+          (coordinator.localState.value == LocalCallState.connected ||
+              coordinator.localState.value == LocalCallState.reconnecting);
       return Material(
         color: const Color(0xFFECFDF5),
         child: InkWell(
           onTap: () async {
-            if (!connected) {
-              final session = await coordinator.joinActiveCall();
-              if (session == null) return;
+            if (connected) {
+              await openAudioCallScreen();
+            } else {
+              await joinCallFromUi(
+                context: context,
+                coordinator: coordinator,
+                call: call,
+              );
             }
-            await openAudioCallScreen();
           },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 11),
@@ -439,7 +491,9 @@ class GlobalIncomingCallOverlay extends StatelessWidget {
       children: [
         child,
         Obx(() {
-          final call = coordinator.activeCall.value;
+          final call =
+              coordinator.pendingSwitchCall.value ?? coordinator.activeCall.value;
+          if (call == null) return const SizedBox.shrink();
           final currentUserId =
               StorageService.readMapData(
                     key: LocalStorageKeys.user,
@@ -454,9 +508,9 @@ class GlobalIncomingCallOverlay extends StatelessWidget {
               ) ??
               false;
           final shouldShow =
-              call != null &&
               isPendingInvite &&
-              coordinator.localState.value == LocalCallState.ringing;
+              (coordinator.pendingSwitchCall.value?.id == call.id ||
+                  coordinator.localState.value == LocalCallState.ringing);
           if (!shouldShow) return const SizedBox.shrink();
           return Positioned(
             top: MediaQuery.paddingOf(context).top + 12,
@@ -495,7 +549,7 @@ class GlobalIncomingCallOverlay extends StatelessWidget {
                       ),
                     ),
                     IconButton.filled(
-                      onPressed: coordinator.decline,
+                      onPressed: () => coordinator.declineCall(call),
                       style: IconButton.styleFrom(
                         backgroundColor: const Color(0xFFDC2626),
                       ),
@@ -504,8 +558,11 @@ class GlobalIncomingCallOverlay extends StatelessWidget {
                     const SizedBox(width: 8),
                     IconButton.filled(
                       onPressed: () async {
-                        final session = await coordinator.joinActiveCall();
-                        if (session != null) await openAudioCallScreen();
+                        await joinCallFromUi(
+                          context: context,
+                          coordinator: coordinator,
+                          call: call,
+                        );
                       },
                       style: IconButton.styleFrom(
                         backgroundColor: const Color(0xFF16A34A),

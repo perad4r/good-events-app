@@ -28,13 +28,14 @@ enum LocalCallState {
 class CallCoordinator extends GetxService with WidgetsBindingObserver {
   CallCoordinator(this._repository);
 
-  static const Duration loneParticipantTimeout = Duration(minutes: 2);
+  static const Duration loneParticipantTimeout = Duration(seconds: 30);
   static const Duration declinedCallUiDelay = Duration(seconds: 2);
   static Future<void>? _activeAgoraConnection;
   static String? _activeAgoraCallId;
 
   final CallRepository _repository;
   final Rx<CallModel?> activeCall = Rx<CallModel?>(null);
+  final Rx<CallModel?> pendingSwitchCall = Rx<CallModel?>(null);
   final Rx<LocalCallState> localState = LocalCallState.idle.obs;
   final RxBool isMuted = false.obs;
   final RxBool isSpeakerEnabled = true.obs;
@@ -51,6 +52,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   String? _currentThreadId;
   bool _actionInProgress = false;
   bool _isInChannel = false;
+  bool _hadRemoteParticipant = false;
   bool _recoveryCheckInProgress = false;
   Timer? _loneParticipantTimer;
   Timer? _callDurationTimer;
@@ -89,6 +91,18 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   bool get _hasPersistedCall => StorageService.checkData(
     key: LocalStorageKeys.activeCallRecovery,
   );
+
+  CallModel? callForThread(String threadId) {
+    final current = activeCall.value;
+    if (current?.threadId.toString() == threadId) return current;
+    final pending = pendingSwitchCall.value;
+    return pending?.threadId.toString() == threadId ? pending : null;
+  }
+
+  bool requiresCallSwitch(CallModel call) =>
+      _isInChannel &&
+      activeCall.value != null &&
+      activeCall.value!.id != call.id;
 
   Future<void> preparePersistedCallRecovery() async {
     if (_recoveryCheckInProgress || _isInChannel) return;
@@ -293,6 +307,11 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     required String threadId,
     required List<int> invitedUserIds,
   }) async {
+    if (_isInChannel) {
+      errorMessage.value =
+          'Bạn đang trong một cuộc gọi khác. Hãy rời cuộc gọi đó trước.';
+      return null;
+    }
     if (_actionInProgress || invitedUserIds.isEmpty) return null;
     _actionInProgress = true;
     _currentThreadId = threadId;
@@ -341,8 +360,28 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       final call = await _repository.active(threadId);
       if (call == null || call.status == CallStatus.ended) {
         _clearPersistedCallForThread(threadId);
-        activeCall.value = null;
-        if (_isInChannel) await disposeCall(notifyServer: false);
+        if (pendingSwitchCall.value?.threadId.toString() == threadId) {
+          pendingSwitchCall.value = null;
+        }
+        final current = activeCall.value;
+        if (current?.threadId.toString() == threadId) {
+          activeCall.value = null;
+          if (_isInChannel) await disposeCall(notifyServer: false);
+        }
+        return;
+      }
+      final current = activeCall.value;
+      if (_isInChannel && current != null && current.id != call.id) {
+        pendingSwitchCall.value = call;
+        final currentUserId =
+            StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+                as int?;
+        final hasPendingInvite = call.invitedUsers.any(
+          (user) =>
+              user.id == currentUserId &&
+              user.status == CallInviteStatus.pending,
+        );
+        if (hasPendingInvite) await CallRingtoneService.playIncoming();
         return;
       }
       activeCall.value = call;
@@ -359,7 +398,15 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
         if (hasPendingInvite) await CallRingtoneService.playIncoming();
       }
     } on CallApiException catch (error) {
-      if (error.statusCode == 404) activeCall.value = null;
+      if (error.statusCode == 404) {
+        if (pendingSwitchCall.value?.threadId.toString() == threadId) {
+          pendingSwitchCall.value = null;
+        }
+        if (activeCall.value?.threadId.toString() == threadId) {
+          activeCall.value = null;
+          if (_isInChannel) await disposeCall(notifyServer: false);
+        }
+      }
       logger.w(
         '[CallCoordinator] Active call reconcile failed: ${error.message}',
       );
@@ -405,6 +452,90 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       );
       _fail('Không thể kết nối âm thanh cuộc gọi.');
       return null;
+    } finally {
+      _actionInProgress = false;
+    }
+  }
+
+  Future<CallSession?> switchToCall(CallModel nextCall) async {
+    final currentCall = activeCall.value;
+    if (!_isInChannel || currentCall == null || currentCall.id == nextCall.id) {
+      if (activeCall.value?.id != nextCall.id) activeCall.value = nextCall;
+      return joinActiveCall();
+    }
+    if (_actionInProgress) return null;
+
+    _actionInProgress = true;
+    errorMessage.value = '';
+    try {
+      final currentUserId =
+          StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+              as int?;
+      final shouldEndCurrent =
+          currentCall.initiator?.id == currentUserId && remoteUids.isEmpty;
+      if (shouldEndCurrent) {
+        await _repository.end(currentCall.id);
+      } else {
+        await _repository.leave(currentCall.id);
+      }
+      await disposeCall(notifyServer: false);
+      _clearPersistedCall(currentCall.id);
+
+      activeCall.value = nextCall;
+      pendingSwitchCall.value = null;
+      await NotificationService.cancelIncomingCall(
+        nextCall.id,
+        accepted: true,
+      );
+      await CallRingtoneService.stop();
+      final session = await _repository.join(nextCall.id);
+      activeCall.value = session.call;
+      await _connect(session);
+      await NotificationService.cancelIncomingCall(
+        nextCall.id,
+        accepted: true,
+      );
+      await CallRingtoneService.stop();
+      unawaited(NotificationService.markIncomingCallConnected(nextCall.id));
+      return session;
+    } on CallApiException catch (error) {
+      _handleApiFailure(error);
+      return null;
+    } catch (error, stackTrace) {
+      logger.e(
+        '[CallCoordinator] Failed to switch active call',
+        error: error,
+        stackTrace: stackTrace,
+      );
+      _fail('Không thể chuyển sang cuộc gọi mới.');
+      return null;
+    } finally {
+      _actionInProgress = false;
+    }
+  }
+
+  Future<void> declineCall(CallModel call) async {
+    if (activeCall.value?.id == call.id) {
+      await decline();
+      return;
+    }
+    if (_actionInProgress) return;
+    _actionInProgress = true;
+    try {
+      await NotificationService.cancelIncomingCall(call.id);
+      await CallRingtoneService.stop();
+      await _repository.decline(call.id);
+      if (pendingSwitchCall.value?.id == call.id) {
+        pendingSwitchCall.value = null;
+      }
+    } on CallApiException catch (error) {
+      if (error.statusCode == 403 ||
+          error.statusCode == 404 ||
+          error.statusCode == 409) {
+        pendingSwitchCall.value = null;
+      } else {
+        errorMessage.value = error.message;
+      }
     } finally {
       _actionInProgress = false;
     }
@@ -500,7 +631,18 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     if (raw is! Map<String, dynamic>) return;
     final incoming = CallModel.fromJson(raw);
     final current = activeCall.value;
-    if (current != null && current.id != incoming.id) return;
+    if (current != null && current.id != incoming.id) {
+      if (incoming.status == CallStatus.ended) {
+        if (pendingSwitchCall.value?.id == incoming.id) {
+          pendingSwitchCall.value = null;
+        }
+        await NotificationService.cancelIncomingCall(incoming.id);
+        await CallRingtoneService.stop();
+      } else if (_isInChannel) {
+        pendingSwitchCall.value = incoming;
+      }
+      return;
+    }
     if (incoming.status == CallStatus.ended) {
       final currentUserId =
           StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
@@ -536,15 +678,19 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     final threadId = int.tryParse(data['thread_id']?.toString() ?? '');
     if (threadId == null) return;
     await reconcile(threadId.toString());
-    if (activeCall.value?.id != callId && callId != null) {
+    final isKnownCall = activeCall.value?.id == callId ||
+        pendingSwitchCall.value?.id == callId;
+    if (!isKnownCall && callId != null) {
       await NotificationService.cancelIncomingCall(callId);
       await CallRingtoneService.stop();
-      localState.value = LocalCallState.ended;
     }
   }
 
   Future<void> handleCallEndedSignal(String callId) async {
     _clearPersistedCall(callId);
+    if (pendingSwitchCall.value?.id == callId) {
+      pendingSwitchCall.value = null;
+    }
     if (activeCall.value?.id == callId) {
       await disposeCall(notifyServer: false);
       activeCall.value = null;
@@ -593,6 +739,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
 
     await _releaseEngine();
     remoteUids.clear();
+    _hadRemoteParticipant = false;
     final engine = createAgoraRtcEngine();
     _engine = engine;
     await engine.initialize(RtcEngineContext(appId: session.credentials.appId));
@@ -616,6 +763,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
         onUserJoined: (connection, remoteUid, elapsed) {
           _cancelLoneParticipantTimer();
           remoteUids.add(remoteUid);
+          _hadRemoteParticipant = true;
           logger.i('[CallCoordinator] Remote user joined uid=$remoteUid');
           unawaited(CallRingtoneService.stop());
         },
@@ -625,7 +773,11 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
             '[CallCoordinator] Remote user offline uid=$remoteUid reason=$reason',
           );
           if (remoteUids.isEmpty) {
-            _startLoneParticipantTimer(session.call.id);
+            if (_hadRemoteParticipant) {
+              unawaited(_closeCallAfterLastRemoteLeft(session.call.id));
+            } else {
+              _startLoneParticipantTimer(session.call.id);
+            }
           }
         },
         onConnectionStateChanged: (connection, state, reason) {
@@ -734,6 +886,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     }
     await _releaseEngine();
     remoteUids.clear();
+    _hadRemoteParticipant = false;
     isMuted.value = false;
     isSpeakerEnabled.value = true;
     audioDebugState.value = '';
@@ -777,7 +930,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
     });
     logger.i(
       '[CallCoordinator] Lone participant timer started for '
-      '${loneParticipantTimeout.inMinutes} minutes.',
+      '${loneParticipantTimeout.inSeconds} seconds.',
     );
   }
 
@@ -868,6 +1021,40 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       await end();
     } else {
       await leave();
+    }
+  }
+
+  Future<void> _closeCallAfterLastRemoteLeft(String callId) async {
+    final call = activeCall.value;
+    if (call?.id != callId ||
+        !_isInChannel ||
+        remoteUids.isNotEmpty ||
+        _actionInProgress) {
+      return;
+    }
+    _cancelLoneParticipantTimer();
+    _actionInProgress = true;
+    try {
+      final currentUserId =
+          StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
+              as int?;
+      if (call?.initiator?.id == currentUserId) {
+        await _repository.end(callId);
+      } else {
+        await _repository.leave(callId);
+      }
+    } on CallApiException catch (error) {
+      if (error.statusCode != 403 &&
+          error.statusCode != 404 &&
+          error.statusCode != 409) {
+        errorMessage.value = error.message;
+      }
+    } finally {
+      await disposeCall(notifyServer: false);
+      _clearPersistedCall(callId);
+      activeCall.value = null;
+      localState.value = LocalCallState.ended;
+      _actionInProgress = false;
     }
   }
 }

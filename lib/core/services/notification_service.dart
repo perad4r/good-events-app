@@ -341,12 +341,15 @@ class NotificationService {
     if (Get.isRegistered<CallCoordinator>()) {
       final coordinator = Get.find<CallCoordinator>();
       await coordinator.handleIncomingNotification(data);
-      final call = coordinator.activeCall.value;
+      final activeCall = coordinator.activeCall.value;
+      final pendingCall = coordinator.pendingSwitchCall.value;
+      final call = activeCall?.id == callId ? activeCall : pendingCall;
       final state = coordinator.localState.value;
       final isAlreadyJoiningOrConnected =
-          state == LocalCallState.joining ||
-          state == LocalCallState.connected ||
-          state == LocalCallState.reconnecting;
+          activeCall?.id == callId &&
+          (state == LocalCallState.joining ||
+              state == LocalCallState.connected ||
+              state == LocalCallState.reconnecting);
 
       if (call?.id != callId || isAlreadyJoiningOrConnected) {
         await CallRingtoneService.stop();
@@ -493,7 +496,18 @@ class NotificationService {
           if (data == null || !Get.isRegistered<CallCoordinator>()) return;
           final coordinator = Get.find<CallCoordinator>();
           await coordinator.handleIncomingNotification(data);
-          await coordinator.joinActiveCall();
+          final callId = data['call_id']?.toString();
+          final activeCall = coordinator.activeCall.value;
+          final pendingCall = coordinator.pendingSwitchCall.value;
+          final targetCall = pendingCall?.id == callId
+              ? pendingCall
+              : activeCall;
+          if (targetCall == null) return;
+          if (coordinator.requiresCallSwitch(targetCall)) {
+            await coordinator.switchToCall(targetCall);
+          } else {
+            await coordinator.joinActiveCall();
+          }
           return;
         case 'voipCallEnded':
           final data = _stringKeyedMap(call.arguments);
