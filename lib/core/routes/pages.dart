@@ -1,6 +1,7 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/core/utils/import/screens.dart';
 import 'package:sukientotapp/core/utils/import/binding.dart';
+import 'package:sukientotapp/features/components/app_upgrade_alert.dart';
 
 part 'routes.dart';
 
@@ -87,21 +88,22 @@ class Pages {
     //Guest
     GetPage(
       name: Routes.guestHomeScreen,
-      page: () => const GuestHomeScreen(),
+      page: () => const AppUpgradeAlert(child: GuestHomeScreen()),
       binding: GuestHomeBinding(),
     ),
 
     //Partner
     GetPage(
       name: Routes.partnerHome,
-      page: () => const PartnerBottomNavigationView(),
+      page: () =>
+          const AppUpgradeAlert(child: PartnerBottomNavigationView()),
       binding: PartnerBottomNavigationBinding(),
     ),
 
     //Client
     GetPage(
       name: Routes.clientHome,
-      page: () => const ClientBottomNavigationView(),
+      page: () => const AppUpgradeAlert(child: ClientBottomNavigationView()),
       binding: ClientBottomNavigationBinding(),
     ),
 
