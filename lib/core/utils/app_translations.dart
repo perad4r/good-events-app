@@ -367,7 +367,7 @@ class AppTranslations extends Translations {
           'Vui lòng đợi một lúc, chúng tôi đang gửi thông báo đến cho các đối tác gần đó và sẽ tải lại trang cho bạn',
       'proposed_partner_price': 'Giá đối tác đề xuất',
       'time_warning':
-          'Lưu ý: Sau khi đặt đơn, bạn có 48 giờ để chốt nhân sự. Sau 48 giờ nếu không có nhân sự nào được chốt thì đơn hàng sẽ tự động hủy',
+          'Lưu ý: Sau khi đặt đơn, bạn có 24 giờ để chốt nhân sự. Sau 24 giờ nếu không có nhân sự nào được chốt thì đơn hàng sẽ tự động hủy',
       'completion_rate': 'Tỷ lệ hoàn thành',
       'profile': 'Hồ sơ',
       'choose_partner': 'Chọn đối tác',
@@ -1361,7 +1361,7 @@ class AppTranslations extends Translations {
           'Please wait a moment, we are sending notifications to nearby partners and will reload the page for you.',
       'proposed_partner_price': 'Partner Proposed Price',
       'time_warning':
-          'Note: After placing your order, you have 48 hours to finalize your staffing. After 48 hours, if no staff is finalized, the order will be automatically canceled.',
+          'Note: After placing your order, you have 24 hours to finalize your staffing. After 24 hours, if no staff is finalized, the order will be automatically canceled.',
       'completion_rate': 'Completion Rate',
       'profile': 'Profile',
       'choose_partner': 'Choose Partner',
