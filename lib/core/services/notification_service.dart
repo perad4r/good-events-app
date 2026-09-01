@@ -12,11 +12,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:sukientotapp/core/services/api_service.dart';
 import 'package:sukientotapp/core/services/android_callkit_service.dart';
 import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/core/services/call_ringtone_service.dart';
 import 'package:sukientotapp/core/services/localstorage_service.dart';
+import 'package:sukientotapp/core/services/system_calendar_service.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
 import 'package:sukientotapp/domain/api_url.dart';
 import 'package:sukientotapp/firebase_options.dart';
@@ -105,6 +107,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     );
   }
   logger.i('[FCM] Background message received: ${message.messageId}');
+  if (message.data['code']?.toString() == 'BILL_CONFIRMED') {
+    await GetStorage.init();
+    await SystemCalendarService.syncNotificationData(message.data);
+  }
   final type = message.data['type']?.toString();
   if (type == 'incoming_call') {
     await _showIncomingCallNotification(message.data);

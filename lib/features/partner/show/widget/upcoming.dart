@@ -207,6 +207,17 @@ class UpcomingWidget extends GetView<ShowController> {
                       );
                     }),
                     const Spacer(),
+                    Obx(
+                      () => _buildToolbarBtn(
+                        context,
+                        icon: FIcons.calendarPlus,
+                        onTap: controller.isSyncingCalendar.value
+                            ? () {}
+                            : controller.syncUpcomingBillsToCalendar,
+                        color: const Color(0xFF3B82F6),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
                     _buildToolbarBtn(
                       context,
                       icon: FIcons.refreshCw,

@@ -6,6 +6,7 @@ import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/features/partner/home/controller.dart';
 import 'package:sukientotapp/features/partner/reviews/controller.dart';
+import 'package:sukientotapp/core/services/system_calendar_service.dart';
 
 class NotificationHandler {
   static void handleMessage(Map<String, dynamic> data) {
@@ -70,6 +71,7 @@ class NotificationHandler {
 
   void handleBillConfirmedCode(Map<String, dynamic> data) {
     logger.i('[NotificationHandler] Handling bill confirmed');
+    SystemCalendarService.syncNotificationData(data);
 
     if (Get.isRegistered<ShowController>()) {
       Get.find<ShowController>().refreshUpcomingBills();
