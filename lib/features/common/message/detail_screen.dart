@@ -55,11 +55,35 @@ class MessageDetailScreen extends StatelessWidget {
                       reverse: true,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: controller.messagesDetail.length + 1,
+                      findChildIndexCallback: (Key key) {
+                        if (key == const ValueKey<String>('security-notice')) {
+                          return controller.messagesDetail.length;
+                        }
+
+                        for (
+                          int messageIndex = 0;
+                          messageIndex < controller.messagesDetail.length;
+                          messageIndex++
+                        ) {
+                          final message = controller.messagesDetail[messageIndex];
+                          final messageKey = message.id?.toString() ??
+                              'pending-${identityHashCode(message)}';
+                          if (key ==
+                              ValueKey<String>(
+                                'message-animation-$messageKey',
+                              )) {
+                            return messageIndex;
+                          }
+                        }
+                        return null;
+                      },
                       itemBuilder: (context, index) {
                         // Last item (visually at top) = security notice
                         if (index == controller.messagesDetail.length) {
                           return const _SecurityNotice()
-                              .animate()
+                              .animate(
+                                key: const ValueKey<String>('security-notice'),
+                              )
                               .fadeIn(duration: 600.ms)
                               .slideY(
                                 begin: -0.05,
@@ -69,16 +93,22 @@ class MessageDetailScreen extends StatelessWidget {
                               );
                         }
                         final message = controller.messagesDetail[index];
+                        final String messageKey = message.id?.toString() ??
+                            'pending-${identityHashCode(message)}';
                         return ChatBubble(
+                              key: ValueKey<String>('message-$messageKey'),
                               message: message,
                               isFirst:
                                   index == controller.messagesDetail.length - 1,
                             )
-                            .animate(delay: (50 * index).ms)
-                            .fadeIn(duration: 500.ms)
+                            .animate(
+                              key: ValueKey<String>('message-animation-$messageKey'),
+                            )
+                            .fadeIn(duration: 280.ms)
                             .slideY(
                               begin: -0.02,
                               end: 0,
+                              duration: 280.ms,
                               curve: Curves.easeOut,
                             );
                       },
