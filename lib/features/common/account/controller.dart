@@ -1,5 +1,6 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/core/services/call_coordinator.dart';
+import 'package:sukientotapp/features/common/message/controller.dart';
 
 import 'package:sukientotapp/data/models/partner/wallet_transaction_model.dart';
 import 'package:sukientotapp/domain/repositories/partner/account_repository.dart';
@@ -267,19 +268,23 @@ class AccountController extends GetxController {
       );
 
       if (newRole == 'client') {
-        Get.offAllNamed(Routes.clientHome);
-
         StorageService.writeStringData(
           key: LocalStorageKeys.currentUIView,
           value: 'client',
         );
+        if (Get.isRegistered<MessageController>()) {
+          await Get.find<MessageController>().refreshThreads();
+        }
+        Get.offAllNamed(Routes.clientHome);
       } else {
-        Get.offAllNamed(Routes.partnerHome);
-
         StorageService.writeStringData(
           key: LocalStorageKeys.currentUIView,
           value: 'partner',
         );
+        if (Get.isRegistered<MessageController>()) {
+          await Get.find<MessageController>().refreshThreads();
+        }
+        Get.offAllNamed(Routes.partnerHome);
       }
     } catch (e) {
       logger.e('[AccountController] [switchRole] error: $e');
@@ -308,6 +313,7 @@ class AccountController extends GetxController {
       if (Get.isRegistered<CallCoordinator>()) {
         await Get.find<CallCoordinator>().disposeCall(notifyServer: true);
       }
+      await _disposeSessionMessageController();
       deletePasswordController.clear();
       StorageService.clearAllData();
       Get.offAllNamed(Routes.loginScreen);
@@ -327,17 +333,20 @@ class AccountController extends GetxController {
         await Get.find<CallCoordinator>().disposeCall(notifyServer: true);
       }
       if (StorageService.readData(key: LocalStorageKeys.token) == null) {
+        await _disposeSessionMessageController();
         StorageService.clearAllData();
         Get.offAllNamed(Routes.loginScreen);
         return;
       }
 
       await _repository.logout();
+      await _disposeSessionMessageController();
       StorageService.clearAllData();
       Get.offAllNamed(Routes.loginScreen);
     } catch (e) {
       logger.e('[AccountController] [logout] error: $e');
       if (e.toString().contains('unauthorized')) {
+        await _disposeSessionMessageController();
         StorageService.clearAllData();
         Get.offAllNamed(Routes.loginScreen);
         return;
@@ -345,6 +354,12 @@ class AccountController extends GetxController {
       AppSnackbar.showError(title: 'error'.tr, message: 'cannot_logout'.tr);
     } finally {
       isLoading.value = false;
+    }
+  }
+
+  Future<void> _disposeSessionMessageController() async {
+    if (Get.isRegistered<MessageController>()) {
+      await Get.delete<MessageController>(force: true);
     }
   }
 }

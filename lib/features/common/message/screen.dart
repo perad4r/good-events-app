@@ -125,7 +125,9 @@ class _MessageScreenState extends State<MessageScreen> {
               return GestureDetector(
                 onTap: () async {
                   await controller.openThread(message);
-                  await Get.to<void>(() => const MessageDetailScreen());
+                  await Get.to<void>(
+                    () => MessageDetailScreen(controller: controller),
+                  );
                   controller.closeThread();
                 },
                 child: Container(

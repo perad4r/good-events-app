@@ -5,15 +5,17 @@ import 'widget/chat_bubble.dart';
 import 'widget/chat_input.dart';
 import 'package:sukientotapp/features/common/call/widgets/call_ui.dart';
 
-class MessageDetailScreen extends GetView<MessageController> {
-  const MessageDetailScreen({super.key});
+class MessageDetailScreen extends StatelessWidget {
+  const MessageDetailScreen({super.key, required this.controller});
+
+  final MessageController controller;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFF0F2F5),
-      appBar: const ChatAppBar(),
+      appBar: ChatAppBar(controller: controller),
       body: Column(
         children: [
           ActiveCallBanner(

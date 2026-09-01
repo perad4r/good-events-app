@@ -4,9 +4,12 @@ import 'package:sukientotapp/features/common/call/widgets/call_ui.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/common/message/widget/member_invitation_sheet.dart';
 import 'package:sukientotapp/features/common/report/report_bottom_sheet.dart';
+import 'package:sukientotapp/features/common/message/price_increase_history_screen.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ChatAppBar({super.key});
+  const ChatAppBar({super.key, required this.controller});
+
+  final MessageController controller;
 
   @override
   Size get preferredSize => const Size.fromHeight(84);
@@ -14,8 +17,6 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.fTheme.colors;
-    final controller = Get.find<MessageController>();
-
     return AppBar(
       backgroundColor: colors.background,
       automaticallyImplyLeading: false,
@@ -285,9 +286,18 @@ class _ChatOptionsButton extends StatelessWidget {
               reportedBillId: thread.bill.id,
               billCode: thread.code,
             );
+          } else if (value == 'price_history') {
+            await Get.to<void>(() => PriceIncreaseHistoryScreen(billId: thread.bill.id));
           }
         },
         itemBuilder: (_) => [
+          const PopupMenuItem<String>(
+            value: 'price_history',
+            child: _MenuAction(
+              icon: Icons.price_change_outlined,
+              label: 'Lịch sử tăng giá',
+            ),
+          ),
           const PopupMenuItem<String>(
             value: 'invite',
             child: _MenuAction(

@@ -4,6 +4,7 @@ import 'package:sukientotapp/features/components/widget/badge.dart';
 import 'package:sukientotapp/features/components/widget/show_detail.dart';
 
 import 'package:sukientotapp/features/common/message/controller.dart';
+import 'package:sukientotapp/features/common/message/price_increase_history_screen.dart';
 
 import 'upload_arrived_photo.dart';
 import 'upload_completion_photo.dart';
@@ -412,6 +413,22 @@ class Show extends StatelessWidget {
                                     ],
                                   ),
                                 ),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => Get.to<void>(
+                                () => PriceIncreaseHistoryScreen(billId: billId),
+                              ),
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: context.fTheme.colors.background.withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: context.fTheme.colors.border),
+                                ),
+                                child: Icon(Icons.price_change_outlined, size: 17, color: context.fTheme.colors.foreground),
                               ),
                             ),
                             const SizedBox(width: 8),

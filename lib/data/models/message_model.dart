@@ -136,6 +136,90 @@ class CallMessageSummary {
   }
 }
 
+class PriceIncreaseRequestModel {
+  const PriceIncreaseRequestModel({
+    required this.id,
+    required this.orderId,
+    required this.partnerId,
+    required this.originalTotal,
+    required this.requestedTotal,
+    required this.reason,
+    required this.status,
+    this.messageId,
+    this.respondedBy,
+    this.respondedAt,
+    this.createdAt,
+    this.updatedAt,
+  });
+
+  final int id;
+  final int orderId;
+  final int partnerId;
+  final int? messageId;
+  final int originalTotal;
+  final int requestedTotal;
+  final String reason;
+  final String status;
+  final int? respondedBy;
+  final DateTime? respondedAt;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+
+  bool get isPending => status == 'pending';
+
+  PriceIncreaseRequestModel copyWith({String? status}) {
+    return PriceIncreaseRequestModel(
+      id: id,
+      orderId: orderId,
+      partnerId: partnerId,
+      messageId: messageId,
+      originalTotal: originalTotal,
+      requestedTotal: requestedTotal,
+      reason: reason,
+      status: status ?? this.status,
+      respondedBy: respondedBy,
+      respondedAt: respondedAt,
+      createdAt: createdAt,
+      updatedAt: updatedAt,
+    );
+  }
+
+  factory PriceIncreaseRequestModel.fromJson(Map<String, dynamic> json) {
+    int asInt(dynamic value) => value is num
+        ? value.round()
+        : int.tryParse(value?.toString() ?? '') ?? 0;
+    return PriceIncreaseRequestModel(
+      id: asInt(json['id']),
+      orderId: asInt(json['order_id'] ?? json['partner_bill_id']),
+      partnerId: asInt(json['partner_id']),
+      messageId: json['message_id'] == null ? null : asInt(json['message_id']),
+      originalTotal: asInt(json['original_total']),
+      requestedTotal: asInt(json['requested_total']),
+      reason: json['reason']?.toString() ?? '',
+      status: json['status']?.toString() ?? '',
+      respondedBy: json['responded_by'] == null ? null : asInt(json['responded_by']),
+      respondedAt: DateTime.tryParse(json['responded_at']?.toString() ?? ''),
+      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
+      updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? ''),
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'order_id': orderId,
+    'partner_id': partnerId,
+    'message_id': messageId,
+    'original_total': originalTotal,
+    'requested_total': requestedTotal,
+    'reason': reason,
+    'status': status,
+    'responded_by': respondedBy,
+    'responded_at': respondedAt?.toIso8601String(),
+    'created_at': createdAt?.toIso8601String(),
+    'updated_at': updatedAt?.toIso8601String(),
+  };
+}
+
 class MessageModel {
   final int? id;
   final int? threadId;
@@ -148,6 +232,7 @@ class MessageModel {
   final List<MessageAttachmentModel> attachments;
   final MessageLocationModel? location;
   final CallMessageSummary? call;
+  final PriceIncreaseRequestModel? priceIncreaseRequest;
   final bool isSender;
   final bool sended;
   final String time;
@@ -165,11 +250,34 @@ class MessageModel {
     this.attachments = const [],
     this.location,
     this.call,
+    this.priceIncreaseRequest,
     required this.isSender,
     required this.sended,
     required this.time,
     required this.date,
   }) : previewText = previewText ?? text;
+
+  MessageModel copyWith({PriceIncreaseRequestModel? priceIncreaseRequest}) {
+    return MessageModel(
+      id: id,
+      threadId: threadId,
+      userId: userId,
+      sender: sender,
+      senderAvatar: senderAvatar,
+      text: text,
+      type: type,
+      previewText: previewText,
+      attachments: attachments,
+      location: location,
+      call: call,
+      priceIncreaseRequest:
+          priceIncreaseRequest ?? this.priceIncreaseRequest,
+      isSender: isSender,
+      sended: sended,
+      time: time,
+      date: date,
+    );
+  }
 
   /// Converts an ISO 8601 timestamp string to a human-readable relative time.
   static String diffForHumans(String isoString) {
@@ -220,6 +328,9 @@ class MessageModel {
     final locationRaw = message['location'] ?? json['location'];
     final location = _parseLocation(locationRaw);
     final call = _parseCall(message['call'] ?? json['call']);
+    final priceIncreaseRequest = _parsePriceIncreaseRequest(
+      message['price_increase_request'] ?? json['price_increase_request'],
+    );
     final body =
         (message['body'] as String?) ?? (json['body'] as String?) ?? '';
     final previewText =
@@ -241,6 +352,7 @@ class MessageModel {
       attachments: attachments,
       location: location,
       call: call,
+      priceIncreaseRequest: priceIncreaseRequest,
       isSender: currentUserId != null && senderId == currentUserId,
       sended: true,
       time: diffForHumans(createdAt),
@@ -259,6 +371,7 @@ class MessageModel {
       attachments: _parseAttachments(json['attachments']),
       location: _parseLocation(json['location']),
       call: _parseCall(json['call']),
+      priceIncreaseRequest: _parsePriceIncreaseRequest(json['priceIncreaseRequest']),
       isSender: json['isSender'] ?? false,
       sended: json['sended'] ?? false,
       time: json['time'] ?? '',
@@ -277,6 +390,7 @@ class MessageModel {
       'attachments': attachments.map((e) => e.toJson()).toList(),
       'location': location?.toJson(),
       'call': call?.toJson(),
+      'priceIncreaseRequest': priceIncreaseRequest?.toJson(),
       'isSender': isSender,
       'sended': sended,
       'time': time,
@@ -313,6 +427,13 @@ class MessageModel {
     return null;
   }
 
+  static PriceIncreaseRequestModel? _parsePriceIncreaseRequest(dynamic value) {
+    if (value is Map) {
+      return PriceIncreaseRequestModel.fromJson(Map<String, dynamic>.from(value));
+    }
+    return null;
+  }
+
   static List<MessageAttachmentModel> _parseAttachments(dynamic value) {
     if (value is! List) return <MessageAttachmentModel>[];
     return value
@@ -338,6 +459,7 @@ class MessageModel {
     if (type == 'image') return '[Ảnh]';
     if (type == 'location') return location?.label ?? 'Vị trí hiện tại';
     if (type == 'call') return '[Cuộc gọi]';
+    if (type == 'price_increase_request') return '[Yêu cầu tăng giá]';
     return '';
   }
 }

@@ -8,6 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/common/call/widgets/call_ui.dart';
 import 'cached_message_avatar.dart';
+import 'price_increase_request_card.dart';
 
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
@@ -17,6 +18,25 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (message.type == 'price_increase_request' &&
+        message.priceIncreaseRequest != null) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(12, isFirst ? 12 : 4, 12, 4),
+        child: Row(
+          mainAxisAlignment: message.isSender
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
+          children: [
+            PriceIncreaseRequestCard(
+              key: ValueKey<String>(
+                'price-${message.priceIncreaseRequest!.id}-${message.priceIncreaseRequest!.status}',
+              ),
+              request: message.priceIncreaseRequest!,
+            ),
+          ],
+        ),
+      );
+    }
     if (message.type == 'call') {
       return _CallMessageCard(message: message, isFirst: isFirst);
     }

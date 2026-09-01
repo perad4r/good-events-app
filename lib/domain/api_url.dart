@@ -84,6 +84,14 @@ class AppUrl {
   static const String chats = '/chat';
   static String chatMessages(String threadId) =>
       '/chat/threads/$threadId/messages';
+  static String clientPriceIncreaseRequests(int orderId) =>
+      '/orders/$orderId/price-increase-requests';
+  static String acceptPriceIncreaseRequest(int orderId, int requestId) =>
+      '/orders/$orderId/price-increase-requests/$requestId/accept';
+  static String rejectPriceIncreaseRequest(int orderId, int requestId) =>
+      '/orders/$orderId/price-increase-requests/$requestId/reject';
+  static String partnerPriceIncreaseRequests(int billId) =>
+      '/partner/bills/$billId/price-increase-requests';
   static const String chatUserSearch = '/chat/users/search';
   static String chatInvitations(String threadId) =>
       '/chat/threads/$threadId/invitations';

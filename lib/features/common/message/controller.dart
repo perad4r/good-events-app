@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -39,6 +40,21 @@ class MessageController extends GetxController {
   bool _messagesHasMore = true;
 
   String get selectedThreadId => selectedThread.value?.id ?? '';
+  bool get isPartner =>
+      (StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'role') ?? '')
+          .toString()
+          .toLowerCase() ==
+      'partner';
+  int? get currentUserId {
+    final Object? value = StorageService.readMapData(
+      key: LocalStorageKeys.user,
+      mapKey: 'id',
+    );
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '');
+  }
+  final RxBool canRequestPriceIncrease = false.obs;
 
   String? _subscribedChannel;
   static const _pusherEventName = 'SendMessage';
@@ -93,6 +109,7 @@ class MessageController extends GetxController {
       (_) => _searchMembers(),
       time: const Duration(milliseconds: 400),
     );
+    ever(selectedThread, (_) => _updateCanRequestPriceIncrease());
   }
 
   void _handlePendingChatInvitation() {
@@ -423,6 +440,7 @@ class MessageController extends GetxController {
     await _unsubscribeThread();
     pendingInvitationUserIds.clear();
     selectedThread.value = thread;
+    _updateCanRequestPriceIncrease();
     callCoordinator.setThreadContext(
       threadId: thread.id,
       title: thread.subject,
@@ -458,6 +476,16 @@ class MessageController extends GetxController {
     );
   }
 
+  void _updateCanRequestPriceIncrease() {
+    final bill = selectedThread.value?.bill;
+    final status = bill?.status;
+    canRequestPriceIncrease.value =
+        isPartner &&
+        currentUserId != null &&
+        bill?.partnerId == currentUserId &&
+        (status == 'confirmed' || status == 'in_job');
+  }
+
   /// Opens a thread by its ID — used when tapping a NEW_MESSAGE notification.
   Future<void> openThreadById(String threadId) async {
     MessageListModel? thread = filteredMessages.firstWhereOrNull(
@@ -475,7 +503,7 @@ class MessageController extends GetxController {
     }
 
     await openThread(thread);
-    await Get.to<void>(() => const MessageDetailScreen());
+    await Get.to<void>(() => MessageDetailScreen(controller: this));
     closeThread();
   }
 
@@ -495,7 +523,7 @@ class MessageController extends GetxController {
     }
 
     await openThread(thread);
-    await Get.to<void>(() => const MessageDetailScreen());
+    await Get.to<void>(() => MessageDetailScreen(controller: this));
     closeThread();
   }
 
@@ -545,6 +573,7 @@ class MessageController extends GetxController {
         return;
       }
 
+      _supersedePendingPriceRequests(incoming.priceIncreaseRequest);
       messagesDetail.insert(0, incoming);
       scrollToBottom();
 
@@ -837,6 +866,153 @@ class MessageController extends GetxController {
       );
     } finally {
       isSendingMessage.value = false;
+    }
+  }
+
+  Future<bool> sendPriceIncreaseRequest({
+    required int requestedPrice,
+    required String reason,
+  }) async {
+    final thread = selectedThread.value;
+    if (thread == null || isSendingMessage.value) return false;
+    if (!isPartner ||
+        currentUserId == null ||
+        thread.bill.partnerId != currentUserId) {
+      AppSnackbar.showError(
+        message: 'Chỉ đối tác đang phụ trách đơn mới có thể yêu cầu tăng giá.',
+      );
+      return false;
+    }
+    if (reason.trim().isEmpty || reason.trim().length > 1000) return false;
+    if (thread.bill.total != null && requestedPrice <= thread.bill.total!) {
+      AppSnackbar.showError(message: 'Giá đề nghị phải lớn hơn giá hiện tại.');
+      return false;
+    }
+
+    try {
+      isSendingMessage.value = true;
+      final userId = StorageService.readMapData(
+        key: LocalStorageKeys.user,
+        mapKey: 'id',
+      );
+      final response = await _repository.sendPriceIncreaseRequest(
+        threadId: thread.id,
+        requestedPrice: requestedPrice,
+        reason: reason.trim(),
+        clientMessageId: _generateUuidV4(),
+      );
+
+      try {
+        final MessageModel message = MessageModel.fromApiJson(
+          response,
+          currentUserId: userId is int ? userId : int.tryParse('$userId'),
+        );
+        if (message.priceIncreaseRequest != null &&
+            !messagesDetail.any((item) => item.id == message.id)) {
+          _supersedePendingPriceRequests(message.priceIncreaseRequest);
+          messagesDetail.insert(0, message);
+        } else {
+          await loadMessages();
+        }
+      } catch (error) {
+        logger.w(
+          '[MessageController] Could not parse price increase response: $error',
+        );
+        await loadMessages();
+      }
+
+      _updateThreadPreview(
+        threadId: thread.id,
+        text: '[Yêu cầu tăng giá]',
+      );
+      scrollToBottom();
+      return true;
+    } catch (error) {
+      AppSnackbar.showError(message: error.toString());
+      return false;
+    } finally {
+      isSendingMessage.value = false;
+    }
+  }
+
+  String _generateUuidV4() {
+    final Random random = Random.secure();
+    final List<int> bytes = List<int>.generate(
+      16,
+      (_) => random.nextInt(256),
+      growable: false,
+    );
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    final String hex = bytes
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join();
+    return '${hex.substring(0, 8)}-'
+        '${hex.substring(8, 12)}-'
+        '${hex.substring(12, 16)}-'
+        '${hex.substring(16, 20)}-'
+        '${hex.substring(20)}';
+  }
+
+  void _supersedePendingPriceRequests(
+    PriceIncreaseRequestModel? newestRequest,
+  ) {
+    if (newestRequest == null || newestRequest.status != 'pending') return;
+
+    for (int index = 0; index < messagesDetail.length; index++) {
+      final MessageModel message = messagesDetail[index];
+      final PriceIncreaseRequestModel? request = message.priceIncreaseRequest;
+      if (request == null ||
+          !request.isPending ||
+          request.id == newestRequest.id ||
+          request.orderId != newestRequest.orderId) {
+        continue;
+      }
+      messagesDetail[index] = message.copyWith(
+        priceIncreaseRequest: request.copyWith(status: 'superseded'),
+      );
+    }
+  }
+
+  Future<List<PriceIncreaseRequestModel>> getPriceIncreaseRequests({
+    required int billId,
+    int page = 1,
+  }) async {
+    final response = await _repository.getPriceIncreaseRequests(
+      billId: billId,
+      isPartner: isPartner,
+      page: page,
+    );
+    dynamic raw = response['data'] ?? response['price_increase_requests'];
+    if (raw is Map) raw = raw['data'];
+    if (raw is! List) return <PriceIncreaseRequestModel>[];
+    return raw
+        .whereType<Map>()
+        .map((item) => PriceIncreaseRequestModel.fromJson(
+              Map<String, dynamic>.from(item),
+            ))
+        .toList(growable: false);
+  }
+
+  Future<bool> respondToPriceIncreaseRequest({
+    required PriceIncreaseRequestModel request,
+    required bool accept,
+  }) async {
+    try {
+      await _repository.respondToPriceIncreaseRequest(
+        orderId: request.orderId,
+        requestId: request.id,
+        accept: accept,
+      );
+      await loadMessages();
+      AppSnackbar.showSuccess(
+        message: accept ? 'Đã đồng ý mức giá mới.' : 'Đã từ chối yêu cầu.',
+      );
+      return true;
+    } catch (error) {
+      AppSnackbar.showError(message: error.toString());
+      return false;
     }
   }
 

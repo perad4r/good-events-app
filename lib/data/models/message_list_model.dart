@@ -3,12 +3,18 @@ class MessageBillModel {
   final String eventName;
   final String datetime;
   final String address;
+  final String status;
+  final int? total;
+  final int? partnerId;
 
   const MessageBillModel({
     required this.id,
     required this.eventName,
     required this.datetime,
     required this.address,
+    this.status = '',
+    this.total,
+    this.partnerId,
   });
 
   factory MessageBillModel.fromJson(Map<String, dynamic> json) {
@@ -17,6 +23,9 @@ class MessageBillModel {
       eventName: json['event_name'] as String? ?? '',
       datetime: json['datetime'] as String? ?? '',
       address: json['address'] as String? ?? '',
+      status: json['status']?.toString() ?? '',
+      total: _asInt(json['total'] ?? json['final_total']),
+      partnerId: _asInt(json['partner_id']),
     );
   }
 
@@ -26,7 +35,15 @@ class MessageBillModel {
       'event_name': eventName,
       'datetime': datetime,
       'address': address,
+      'status': status,
+      'total': total,
+      'partner_id': partnerId,
     };
+  }
+
+  static int? _asInt(dynamic value) {
+    if (value is num) return value.round();
+    return int.tryParse(value?.toString() ?? '');
   }
 }
 
@@ -112,6 +129,8 @@ class MessageListModel {
                     ? 'Vị trí hiện tại'
                     : latestType == 'call'
                         ? '[Cuộc gọi]'
+                        : latestType == 'price_increase_request'
+                            ? '[Yêu cầu tăng giá]'
                     : null);
 
     return MessageListModel(
