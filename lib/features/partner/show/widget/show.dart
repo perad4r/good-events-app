@@ -28,6 +28,7 @@ class Show extends StatelessWidget {
     required this.currentStatus,
     this.bookingPhotos = const <String>[],
     this.accessoryNames = const <String>[],
+    this.requiresInvoice = false,
     this.reviewExists = false,
     this.isOverdue = false,
   });
@@ -47,6 +48,7 @@ class Show extends StatelessWidget {
   final String currentStatus;
   final List<String> bookingPhotos;
   final List<String> accessoryNames;
+  final bool requiresInvoice;
   final bool reviewExists;
   final bool isOverdue;
 
@@ -308,6 +310,13 @@ class Show extends StatelessWidget {
                       expand: true,
                     ),
                   ],
+                  const SizedBox(height: 6),
+                  _buildInfoChip(
+                    context,
+                    Icons.receipt_long_rounded,
+                    '${'requires_invoice'.tr}: ${requiresInvoice ? 'yes'.tr : 'no'.tr}',
+                    expand: true,
+                  ),
 
                   // Price highlight for active statuses
                   if (isActive) ...[
@@ -377,6 +386,7 @@ class Show extends StatelessWidget {
                       note: note,
                       bookingPhotos: bookingPhotos,
                       accessoryNames: accessoryNames,
+                      requiresInvoice: requiresInvoice,
                       total: price,
                     ),
                     isScrollControlled: true,

@@ -21,6 +21,7 @@ class Show extends StatelessWidget {
     this.note = 'unknown',
     this.bookingPhotos = const <String>[],
     this.accessoryNames = const <String>[],
+    this.requiresInvoice = false,
   });
 
   final int billId;
@@ -38,6 +39,7 @@ class Show extends StatelessWidget {
   final String note;
   final List<String> bookingPhotos;
   final List<String> accessoryNames;
+  final bool requiresInvoice;
 
   static const _accentColor = Color(0xFF6366F1);
 
@@ -209,6 +211,13 @@ class Show extends StatelessWidget {
                       expand: true,
                     ),
                   ],
+                  const SizedBox(height: 6),
+                  _buildChip(
+                    context,
+                    Icons.receipt_long_rounded,
+                    '${'requires_invoice'.tr}: ${requiresInvoice ? 'yes'.tr : 'no'.tr}',
+                    expand: true,
+                  ),
 
                   // Note (only if meaningful)
                   if (note.isNotEmpty && note != 'unknown') ...[
@@ -239,6 +248,7 @@ class Show extends StatelessWidget {
                     note: note,
                     bookingPhotos: bookingPhotos,
                     accessoryNames: accessoryNames,
+                    requiresInvoice: requiresInvoice,
                     total: 0,
                     isNew: true,
                   ),

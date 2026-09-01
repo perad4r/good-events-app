@@ -21,6 +21,7 @@ class EventOrderModel {
   final int applicantCount;
   final List<String> bookingPhotos;
   final List<AccessoryModel> accessories;
+  final bool requiresInvoice;
   final OrderVoucherSummaryModel? voucher;
   final String createdAt;
 
@@ -44,6 +45,7 @@ class EventOrderModel {
     required this.applicantCount,
     required this.bookingPhotos,
     this.accessories = const <AccessoryModel>[],
+    this.requiresInvoice = false,
     this.voucher,
     required this.createdAt,
   });
@@ -71,6 +73,8 @@ class EventOrderModel {
       applicantCount: json['applicant_count'] as int? ?? 0,
       bookingPhotos: _parseBookingPhotos(json['booking_photos']),
       accessories: AccessoryModel.listFromJson(json['accessories']),
+      requiresInvoice: json['requires_invoice'] == true ||
+          json['requires_invoice'] == 1,
       voucher: json['voucher'] is Map<String, dynamic>
           ? OrderVoucherSummaryModel.fromJson(
               json['voucher'] as Map<String, dynamic>,

@@ -16,6 +16,7 @@ class PartnerBill {
   final String? note;
   final List<String> bookingPhotos;
   final List<AccessoryModel> accessories;
+  final bool requiresInvoice;
 
   const PartnerBill({
     required this.id,
@@ -33,6 +34,7 @@ class PartnerBill {
     this.note,
     this.bookingPhotos = const <String>[],
     this.accessories = const <AccessoryModel>[],
+    this.requiresInvoice = false,
   });
 
   factory PartnerBill.fromMap(Map<String, dynamic> map) {
@@ -54,6 +56,7 @@ class PartnerBill {
       note: map['note'] as String?,
       bookingPhotos: _parseBookingPhotos(map['booking_photos']),
       accessories: AccessoryModel.listFromJson(map['accessories']),
+      requiresInvoice: _parseBoolean(map['requires_invoice']),
     );
   }
 
@@ -80,6 +83,7 @@ class PartnerBill {
                 'name': accessory.name,
               })
           .toList(growable: false),
+      'requires_invoice': requiresInvoice,
     };
   }
 
@@ -91,6 +95,10 @@ class PartnerBill {
         .where((photo) => photo.isNotEmpty)
         .take(5)
         .toList(growable: false);
+  }
+
+  static bool _parseBoolean(dynamic value) {
+    return value == true || value == 1 || value == '1' || value == 'true';
   }
 }
 

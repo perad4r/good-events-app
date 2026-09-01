@@ -305,6 +305,12 @@ class AppTranslations extends Translations {
       'booking_accessories_empty':
           'Danh mục này hiện chưa có phụ kiện để lựa chọn.',
       'accessories': 'Phụ kiện',
+      'booking_requires_invoice': 'Có xuất hóa đơn?',
+      'booking_requires_invoice_subtitle':
+          'Chọn nếu bạn cần đối tác xuất hóa đơn cho đơn này.',
+      'requires_invoice': 'Yêu cầu xuất hóa đơn',
+      'yes': 'Có',
+      'no': 'Không',
       'booking_stage_location_title': 'Địa điểm tổ chức',
       'booking_stage_location_subtitle':
           'Chọn khu vực và nhập địa chỉ chi tiết.',
@@ -1300,6 +1306,12 @@ class AppTranslations extends Translations {
       'booking_accessories_empty':
           'There are no accessories available for this category.',
       'accessories': 'Accessories',
+      'booking_requires_invoice': 'Require an invoice?',
+      'booking_requires_invoice_subtitle':
+          'Select this if you need an invoice for this order.',
+      'requires_invoice': 'Invoice requested',
+      'yes': 'Yes',
+      'no': 'No',
       'booking_stage_location_title': 'Select location',
       'booking_stage_location_subtitle':
           'Choose area and enter detailed address.',

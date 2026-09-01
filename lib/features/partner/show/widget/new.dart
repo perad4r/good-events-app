@@ -125,6 +125,7 @@ class NewWidget extends GetView<ShowController> {
                       accessoryNames: bill.accessories
                           .map((accessory) => accessory.name)
                           .toList(growable: false),
+                      requiresInvoice: bill.requiresInvoice,
                     )
                     .animate(delay: (100 * index).ms)
                     .fadeIn(duration: 500.ms)

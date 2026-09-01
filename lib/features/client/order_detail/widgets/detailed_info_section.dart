@@ -108,6 +108,13 @@ class DetailedInfoSection extends GetView<ClientOrderDetailController> {
                   ),
                 _buildInfoRow(
                   context,
+                  icon: Icons.receipt_long_rounded,
+                  label: 'requires_invoice'.tr,
+                  value: controller.requiresInvoice ? 'yes'.tr : 'no'.tr,
+                  primary: primary,
+                ),
+                _buildInfoRow(
+                  context,
                   icon: Icons.notes_rounded,
                   label: 'special_note'.tr,
                   value: controller.note.isEmpty ? 'none'.tr : controller.note,

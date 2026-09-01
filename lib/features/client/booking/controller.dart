@@ -32,6 +32,7 @@ class ClientBookingController extends GetxController {
   final RxList<String> eventTypes = <String>[].obs;
   final RxList<AccessoryModel> categoryAccessories = <AccessoryModel>[].obs;
   final RxSet<int> selectedAccessoryIds = <int>{}.obs;
+  final RxBool requiresInvoice = false.obs;
   final RxBool isFetchingAccessories = false.obs;
   //location models
   final provinces = <LocationModel>[].obs;
@@ -140,6 +141,10 @@ class ClientBookingController extends GetxController {
     } else {
       selectedAccessoryIds.add(accessoryId);
     }
+  }
+
+  void toggleRequiresInvoice() {
+    requiresInvoice.toggle();
   }
 
   void nextStage() {
@@ -470,6 +475,7 @@ class ClientBookingController extends GetxController {
       'location_detail': addressDetailController.text.trim(),
       'note': noteController.text.trim(),
       'category_id': categoryId,
+      'requires_invoice': requiresInvoice.value,
       if (selectedAccessoryIds.isNotEmpty)
         'accessory_ids': selectedAccessoryIds.toList(),
     };

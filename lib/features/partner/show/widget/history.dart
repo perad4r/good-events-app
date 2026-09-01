@@ -126,6 +126,7 @@ class HistoryWidget extends GetView<ShowController> {
                       accessoryNames: bill.accessories
                           .map((accessory) => accessory.name)
                           .toList(growable: false),
+                      requiresInvoice: bill.requiresInvoice,
                       reviewExists: bill.isReviewed == true,
                     )
                     .animate(delay: (100 * index).ms)

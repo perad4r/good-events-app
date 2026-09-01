@@ -218,6 +218,7 @@ class NewShowScreen extends GetView<NewShowController> {
                 accessoryNames: bill.accessories
                     .map((accessory) => accessory.name)
                     .toList(growable: false),
+                requiresInvoice: bill.requiresInvoice,
               ),
             );
           },

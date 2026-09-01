@@ -126,7 +126,85 @@ class BookingAccessoriesStage extends GetView<ClientBookingController> {
             }).toList(growable: false),
           );
         }),
+        const SizedBox(height: 6),
+        Obx(() {
+          final bool selected = controller.requiresInvoice.value;
+          return GestureDetector(
+            onTap: controller.toggleRequiresInvoice,
+            child: Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: selected
+                    ? AppColors.red600.withValues(alpha: 0.06)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: selected
+                      ? AppColors.red600
+                      : const Color(0xFFE2E8F0),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.receipt_long_rounded,
+                    color: selected
+                        ? AppColors.red600
+                        : context.fTheme.colors.mutedForeground,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'booking_requires_invoice'.tr,
+                          style: context.typography.sm.copyWith(
+                            color: context.fTheme.colors.foreground,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'booking_requires_invoice_subtitle'.tr,
+                          style: context.typography.xs.copyWith(
+                            color: context.fTheme.colors.mutedForeground,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  _SelectionMark(selected: selected),
+                ],
+              ),
+            ),
+          );
+        }),
       ],
+    );
+  }
+}
+
+class _SelectionMark extends StatelessWidget {
+  const _SelectionMark({required this.selected});
+
+  final bool selected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 22,
+      height: 22,
+      decoration: BoxDecoration(
+        color: selected ? AppColors.red600 : Colors.transparent,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(
+          color: selected ? AppColors.red600 : const Color(0xFF94A3B8),
+        ),
+      ),
+      child: selected
+          ? const Icon(Icons.check_rounded, color: Colors.white, size: 16)
+          : null,
     );
   }
 }

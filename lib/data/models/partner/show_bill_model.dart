@@ -19,6 +19,7 @@ class ShowBill {
   final int? threadId;
   final List<String> bookingPhotos;
   final List<AccessoryModel> accessories;
+  final bool requiresInvoice;
 
   final bool? isReviewed;
   final bool isOverdue;
@@ -41,6 +42,7 @@ class ShowBill {
     this.threadId,
     this.bookingPhotos = const <String>[],
     this.accessories = const <AccessoryModel>[],
+    this.requiresInvoice = false,
 
     this.isReviewed,
     this.isOverdue = false,
@@ -64,6 +66,7 @@ class ShowBill {
       threadId: threadId,
       bookingPhotos: bookingPhotos,
       accessories: accessories,
+      requiresInvoice: requiresInvoice,
       isReviewed: isReviewed ?? this.isReviewed,
       isOverdue: isOverdue ?? this.isOverdue,
     );
@@ -88,6 +91,8 @@ class ShowBill {
       event: map['event'] as String,
       bookingPhotos: _parseBookingPhotos(map['booking_photos']),
       accessories: AccessoryModel.listFromJson(map['accessories']),
+      requiresInvoice: map['requires_invoice'] == true ||
+          map['requires_invoice'] == 1,
       isReviewed: map['review_exists'] == true,
       isOverdue: map['is_overdue'] == true,
     );
