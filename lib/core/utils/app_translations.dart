@@ -301,14 +301,14 @@ class AppTranslations extends Translations {
       'booking_stage_accessories_subtitle':
           'Chọn các phụ kiện bạn cần cho sự kiện (không bắt buộc).',
       'booking_accessories_fee_notice':
-          'Phụ kiện bạn chọn có thể làm thay đổi báo giá từ đối tác.',
+          'Yêu cầu thêm phụ kiện có thể có phụ phí.',
       'booking_accessories_empty':
           'Danh mục này hiện chưa có phụ kiện để lựa chọn.',
       'accessories': 'Phụ kiện',
       'booking_requires_invoice': 'Có xuất hóa đơn?',
       'booking_requires_invoice_subtitle':
           'Chọn nếu bạn cần đối tác xuất hóa đơn cho đơn này.',
-      'requires_invoice': 'Yêu cầu xuất hóa đơn',
+      'requires_invoice': 'Xuất hóa đơn?',
       'yes': 'Có',
       'no': 'Không',
       'booking_stage_location_title': 'Địa điểm tổ chức',
@@ -1302,11 +1302,11 @@ class AppTranslations extends Translations {
       'booking_stage_accessories_subtitle':
           'Choose accessories needed for your event (optional).',
       'booking_accessories_fee_notice':
-          'Selected accessories may affect the partner\'s quoted price.',
+          'Additional fees may apply for selected accessories.',
       'booking_accessories_empty':
           'There are no accessories available for this category.',
       'accessories': 'Accessories',
-      'booking_requires_invoice': 'Require an invoice?',
+      'booking_requires_invoice': 'Invoice?',
       'booking_requires_invoice_subtitle':
           'Select this if you need an invoice for this order.',
       'requires_invoice': 'Invoice requested',

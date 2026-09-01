@@ -559,19 +559,42 @@ class Show extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          Text(
-                            'detail_info'.tr,
-                            style: context.typography.xs.copyWith(
-                              color: context.fTheme.colors.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
                             ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            FIcons.arrowRight,
-                            color: context.fTheme.colors.primary,
-                            size: 13,
+                            decoration: BoxDecoration(
+                              color: statusAccent.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(9),
+                              border: Border.all(
+                                color: statusAccent.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.visibility_outlined,
+                                  color: statusAccent,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'detail_info'.tr,
+                                  style: context.typography.xs.copyWith(
+                                    color: statusAccent,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 3),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: statusAccent,
+                                  size: 14,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),
