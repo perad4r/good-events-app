@@ -8,6 +8,7 @@ class ArrivalPhotoSection extends GetView<ClientOrderDetailController> {
   Widget build(BuildContext context) {
     return Obx(() {
       String? imageUrl = controller.arrivalPhoto;
+      final String createTime = controller.arrivalPhotoCreateTime?.trim() ?? '';
 
       // If not history AND no specific arrival photo, hide the section
       if (!controller.isHistory.value && (imageUrl == null || imageUrl.isEmpty)) {
@@ -58,18 +59,25 @@ class ArrivalPhotoSection extends GetView<ClientOrderDetailController> {
                 ),
               ),
               const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'arrival_photo_banner'.tr,
-                    style: context.typography.base.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  Text(
-                    'click_to_view_photo'.tr,
-                    style: context.typography.xs.copyWith(color: Colors.grey[600]),
-                  ),
-                ],
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'arrival_photo_banner'.tr,
+                      style: context.typography.base.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'click_to_view_photo'.tr,
+                      style: context.typography.xs.copyWith(color: Colors.grey[600]),
+                    ),
+                    if (createTime.isNotEmpty)
+                      Text(
+                        createTime,
+                        style: context.typography.xs.copyWith(color: Colors.grey[600]),
+                      ),
+                  ],
+                ),
               ),
             ],
           ),

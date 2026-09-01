@@ -11,6 +11,8 @@ class EventOrderModel {
   final double? finalTotal;
   final String? arrivalPhoto;
   final String? completionPhoto;
+  final String? arrivalPhotoCreateTime;
+  final String? completionPhotoCreateTime;
   final String note;
   final String status;
   final int threadId;
@@ -35,6 +37,8 @@ class EventOrderModel {
     this.finalTotal,
     required this.arrivalPhoto,
     required this.completionPhoto,
+    this.arrivalPhotoCreateTime,
+    this.completionPhotoCreateTime,
     required this.note,
     required this.status,
     required this.threadId,
@@ -63,6 +67,8 @@ class EventOrderModel {
           : null,
       arrivalPhoto: json['arrival_photo'] as String? ?? '',
       completionPhoto: json['completion_photo'] as String? ?? '',
+      arrivalPhotoCreateTime: json['arrival_photo_create_time'] as String?,
+      completionPhotoCreateTime: json['completion_photo_create_time'] as String?,
       note: json['note'] as String? ?? '',
       status: json['status'] as String? ?? '',
       threadId: json['thread_id'] as int? ?? 0,
