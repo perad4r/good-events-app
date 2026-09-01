@@ -101,6 +101,8 @@ class LoginController extends GetxController {
               'client',
         },
       );
+    } on AccountSuspendedException {
+      // The global interceptor owns the blocking suspension UI.
     } catch (e) {
       AppSnackbar.showError(message: e.toString());
     } finally {
@@ -186,6 +188,8 @@ class LoginController extends GetxController {
               'client',
         },
       );
+    } on AccountSuspendedException {
+      // The global interceptor owns the blocking suspension UI.
     } catch (e) {
       AppSnackbar.showError(message: e.toString());
     } finally {
@@ -241,6 +245,8 @@ class LoginController extends GetxController {
               'client',
         },
       );
+    } on AccountSuspendedException {
+      // The global interceptor owns the blocking suspension UI.
     } catch (e) {
       if (e.toString().toLowerCase().startsWith('exception:')) {
         AppSnackbar.showError(message: e.toString().substring(10).trim());

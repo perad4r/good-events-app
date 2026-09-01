@@ -6,6 +6,8 @@ import 'package:sukientotapp/data/models/partner/show_review_model.dart';
 import 'package:sukientotapp/domain/repositories/partner/show_repository.dart';
 import 'package:sukientotapp/features/partner/home/controller.dart';
 import 'package:sukientotapp/features/partner/new_show/controller.dart';
+import 'package:sukientotapp/core/services/handle_notification_tap.dart';
+import 'package:sukientotapp/core/utils/app_exceptions.dart';
 
 class ShowController extends GetxController
     with GetSingleTickerProviderStateMixin {
@@ -486,6 +488,12 @@ class ShowController extends GetxController
       }
       AppSnackbar.showSuccess(message: 'complete_bill_success'.tr);
     } on DioException catch (e) {
+      if (e.error is PartnerWorkflowLockedException) {
+        selectedCompletionImage.value = null;
+        if (Get.isBottomSheetOpen ?? false) Get.back<void>();
+        await _showWorkflowLockedDialog();
+        return;
+      }
       final statusCode = e.response?.statusCode;
       final message = e.response?.data?['message'] as String?;
       if (statusCode == 403) {
@@ -535,6 +543,12 @@ class ShowController extends GetxController
         upcomingBills[index] = upcomingBills[index].copyWith(status: 'in_job');
       }
     } on DioException catch (e) {
+      if (e.error is PartnerWorkflowLockedException) {
+        selectedImage.value = null;
+        if (Get.isBottomSheetOpen ?? false) Get.back<void>();
+        await _showWorkflowLockedDialog();
+        return;
+      }
       final statusCode = e.response?.statusCode;
       final message = e.response?.data?['message'] as String?;
       if (statusCode == 403) {
@@ -553,6 +567,30 @@ class ShowController extends GetxController
     } finally {
       isLoading.value = false;
     }
+  }
+
+  Future<void> _showWorkflowLockedDialog() async {
+    await Get.dialog<void>(
+      AlertDialog(
+        title: const Text('Cần hoàn thành đơn quá hạn'),
+        content: const Text(
+          'Bạn cần hoàn thành các đơn đang quá hạn trước khi check-in hoặc hoàn thành đơn khác.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: Get.back<void>,
+            child: const Text('Đóng'),
+          ),
+          TextButton(
+            onPressed: () {
+              Get.back<void>();
+              HandleNotificationTap.openPartnerActiveBills();
+            },
+            child: const Text('Xem đơn quá hạn'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> cancelAcceptBill(int billId) async {

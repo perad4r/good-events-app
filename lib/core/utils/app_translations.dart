@@ -662,6 +662,9 @@ class AppTranslations extends Translations {
 
       'complete_bill_success': 'Đơn đã được hoàn thành!',
       'insufficient_balance': 'Số dư không đủ để hoàn thành đơn!',
+      'overdue_bill': 'Đơn đang quá hạn',
+      'overdue_bill_workflow_notice':
+          'Hãy hoàn thành đơn này để mở khóa quy trình làm việc.',
 
       'code': 'Mã',
       'status': 'Trạng thái',
@@ -1642,6 +1645,9 @@ class AppTranslations extends Translations {
 
       'complete_bill_success': 'The bill has been completed!',
       'insufficient_balance': 'Insufficient balance to complete the bill!',
+      'overdue_bill': 'Overdue bill',
+      'overdue_bill_workflow_notice':
+          'Complete this bill to unlock your partner workflow.',
 
       ///New Show
       'accept_new_show': ' Accept New Show',

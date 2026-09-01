@@ -122,6 +122,7 @@ class UpcomingWidget extends GetView<ShowController> {
                       address: bill.address,
                       note: bill.note ?? '',
                       currentStatus: bill.status,
+                      isOverdue: bill.isOverdue,
                       bookingPhotos: bill.bookingPhotos,
                     )
                     .animate(delay: (100 * index).ms)

@@ -39,6 +39,8 @@ class AuthProvider {
     } on DioException catch (e) {
       logger.e('[AuthProvider] [login] DioException: ${e.message}');
 
+      if (e.error is AccountSuspendedException) throw e.error!;
+
       if (e.response != null) {
         final code = e.response?.data['code'];
         if (e.response?.statusCode == 403 && code == 'UNVERIFIED') {
@@ -77,6 +79,8 @@ class AuthProvider {
       }
     } on DioException catch (e) {
       logger.e('[AuthProvider] [loginWithGoogle] DioException: \${e.message}');
+
+      if (e.error is AccountSuspendedException) throw e.error!;
 
       if (e.response != null) {
         final code = e.response?.data['code'];
@@ -131,6 +135,8 @@ class AuthProvider {
       }
     } on DioException catch (e) {
       logger.e('[AuthProvider] [loginWithApple] DioException: ${e.message}');
+
+      if (e.error is AccountSuspendedException) throw e.error!;
 
       if (e.response != null) {
         final code = e.response?.data['code'];
@@ -248,6 +254,8 @@ class AuthProvider {
       }
     } on DioException catch (e) {
       logger.e('[AuthProvider] [checkToken] DioException: ${e.message}');
+
+      if (e.error is AccountSuspendedException) throw e.error!;
 
       if (e.response?.statusCode == 401) {
         return null;

@@ -28,6 +28,7 @@ class Show extends StatelessWidget {
     required this.currentStatus,
     this.bookingPhotos = const <String>[],
     this.reviewExists = false,
+    this.isOverdue = false,
   });
 
   final int billId;
@@ -45,6 +46,7 @@ class Show extends StatelessWidget {
   final String currentStatus;
   final List<String> bookingPhotos;
   final bool reviewExists;
+  final bool isOverdue;
 
   static const Map<String, Map<String, Color>> _statusColors = {
     'pending': {
@@ -108,6 +110,9 @@ class Show extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.fTheme.colors.muted,
         borderRadius: BorderRadius.circular(18),
+        border: isOverdue
+            ? Border.all(color: AppColors.red600.withValues(alpha: 0.65))
+            : null,
         boxShadow: [
           BoxShadow(
             color: context.fTheme.colors.foreground.withValues(alpha: 0.04),
@@ -122,7 +127,10 @@ class Show extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top accent strip
-            Container(height: 3, color: statusAccent),
+            Container(
+              height: 3,
+              color: isOverdue ? AppColors.red600 : statusAccent,
+            ),
 
             // Main content
             Padding(
@@ -174,6 +182,56 @@ class Show extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (isOverdue) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 9,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.red600.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.red600.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            FIcons.triangleAlert,
+                            size: 16,
+                            color: AppColors.red600,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'overdue_bill'.tr,
+                                  style: context.typography.xs.copyWith(
+                                    color: AppColors.red600,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'overdue_bill_workflow_notice'.tr,
+                                  style: context.typography.xs.copyWith(
+                                    color: AppColors.red600,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 14),
 
                   // Client name row

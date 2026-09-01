@@ -19,6 +19,7 @@ class ShowBill {
   final List<String> bookingPhotos;
 
   final bool? isReviewed;
+  final bool isOverdue;
 
   const ShowBill({
     required this.id,
@@ -39,9 +40,10 @@ class ShowBill {
     this.bookingPhotos = const <String>[],
 
     this.isReviewed,
+    this.isOverdue = false,
   });
 
-  ShowBill copyWith({String? status, bool? isReviewed}) {
+  ShowBill copyWith({String? status, bool? isReviewed, bool? isOverdue}) {
     return ShowBill(
       id: id,
       code: code,
@@ -59,6 +61,7 @@ class ShowBill {
       threadId: threadId,
       bookingPhotos: bookingPhotos,
       isReviewed: isReviewed ?? this.isReviewed,
+      isOverdue: isOverdue ?? this.isOverdue,
     );
   }
 
@@ -81,6 +84,7 @@ class ShowBill {
       event: map['event'] as String,
       bookingPhotos: _parseBookingPhotos(map['booking_photos']),
       isReviewed: map['review_exists'] == true,
+      isOverdue: map['is_overdue'] == true,
     );
   }
 
