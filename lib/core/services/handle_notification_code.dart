@@ -36,6 +36,13 @@ class NotificationHandler {
         case 'NEW_REVIEW_RECEIVED':
           NotificationHandler().handleNewReviewReceivedCode(data);
           break;
+        case 'BILL_COMPLETED_REMINDER':
+          NotificationHandler().handleBillCompletedReminderCode(data);
+          break;
+        case 'PRICE_INCREASE_REQUEST_CREATED':
+        case 'PRICE_INCREASE_REQUEST_STATUS_UPDATED':
+          NotificationHandler().handlePriceIncreaseRequestCode(data);
+          break;
         case 'TEST_NOTIFICATION':
           logger.i(
             '[NotificationHandler] Received test notification with data: $data',
@@ -109,6 +116,23 @@ class NotificationHandler {
     }
   }
 
+  void handlePriceIncreaseRequestCode(Map<String, dynamic> data) {
+    logger.i(
+      '[NotificationHandler] Handling price increase notification: $data',
+    );
+    if (Get.isRegistered<MessageController>()) {
+      final MessageController controller = Get.find<MessageController>();
+      controller.handlePriceIncreaseNotification(data);
+      controller.refreshThreads();
+    }
+    if (Get.isRegistered<ShowController>()) {
+      Get.find<ShowController>().refreshUpcomingBills();
+    }
+    if (Get.isRegistered<ClientOrderController>()) {
+      Get.find<ClientOrderController>().fetchEventOrders();
+    }
+  }
+
   void handleChatInvitationCode(Map<String, dynamic> data) {
     final threadId = data['thread_id']?.toString();
     if (threadId == null || threadId.isEmpty) {
@@ -129,6 +153,13 @@ class NotificationHandler {
       logger.w(
         '[NotificationHandler] PartnerReviewsController not registered, cannot refresh reviews',
       );
+    }
+  }
+
+  void handleBillCompletedReminderCode(Map<String, dynamic> data) {
+    logger.i('[NotificationHandler] Handling overdue bill reminder');
+    if (Get.isRegistered<ShowController>()) {
+      Get.find<ShowController>().refreshUpcomingBills();
     }
   }
 }

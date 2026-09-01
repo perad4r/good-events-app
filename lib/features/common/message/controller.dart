@@ -975,6 +975,55 @@ class MessageController extends GetxController {
     }
   }
 
+  void handlePriceIncreaseNotification(Map<String, dynamic> data) {
+    final int? requestId = int.tryParse(
+      data['price_increase_request_id']?.toString() ?? '',
+    );
+    final String status = data['status']?.toString().toLowerCase() ?? '';
+    final String threadId = data['thread_id']?.toString() ?? '';
+    final int? requestedTotal = int.tryParse(
+      data['requested_total']?.toString() ?? '',
+    );
+
+    bool updatedMessage = false;
+    if (requestId != null && status.isNotEmpty) {
+      for (int index = 0; index < messagesDetail.length; index++) {
+        final MessageModel message = messagesDetail[index];
+        final PriceIncreaseRequestModel? request =
+            message.priceIncreaseRequest;
+        if (request?.id != requestId) continue;
+        messagesDetail[index] = message.copyWith(
+          priceIncreaseRequest: request!.copyWith(status: status),
+        );
+        updatedMessage = true;
+        break;
+      }
+    }
+
+    if (status == 'accepted' && requestedTotal != null) {
+      final int listIndex = filteredMessages.indexWhere(
+        (thread) => thread.id == threadId,
+      );
+      if (listIndex != -1) {
+        filteredMessages[listIndex] = filteredMessages[listIndex].copyWith(
+          bill: filteredMessages[listIndex].bill.copyWith(
+            total: requestedTotal,
+          ),
+        );
+      }
+      final MessageListModel? current = selectedThread.value;
+      if (current != null && current.id == threadId) {
+        selectedThread.value = current.copyWith(
+          bill: current.bill.copyWith(total: requestedTotal),
+        );
+      }
+    }
+
+    if (selectedThreadId == threadId && !updatedMessage) {
+      unawaited(loadMessages());
+    }
+  }
+
   Future<List<PriceIncreaseRequestModel>> getPriceIncreaseRequests({
     required int billId,
     int page = 1,

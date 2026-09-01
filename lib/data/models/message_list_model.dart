@@ -45,6 +45,18 @@ class MessageBillModel {
     if (value is num) return value.round();
     return int.tryParse(value?.toString() ?? '');
   }
+
+  MessageBillModel copyWith({int? total}) {
+    return MessageBillModel(
+      id: id,
+      eventName: eventName,
+      datetime: datetime,
+      address: address,
+      status: status,
+      total: total ?? this.total,
+      partnerId: partnerId,
+    );
+  }
 }
 
 class MessageThreadParticipant {

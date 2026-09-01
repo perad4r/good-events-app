@@ -41,6 +41,13 @@ class HandleNotificationTap {
         case 'NEW_REVIEW_RECEIVED':
           HandleNotificationTap().handleNewReviewReceivedCode(data);
           break;
+        case 'BILL_COMPLETED_REMINDER':
+          openPartnerActiveBills();
+          break;
+        case 'PRICE_INCREASE_REQUEST_CREATED':
+        case 'PRICE_INCREASE_REQUEST_STATUS_UPDATED':
+          HandleNotificationTap().handlePriceIncreaseRequestCode(data);
+          break;
         default:
           logger.w('[HandleNotificationTap] Unknown code: $code');
       }
@@ -78,6 +85,11 @@ class HandleNotificationTap {
         '[HandleNotificationTap] MessageController not registered, cannot open thread',
       );
     }
+  }
+
+  void handlePriceIncreaseRequestCode(Map<String, dynamic> data) {
+    logger.i('[HandleNotificationTap] Opening price increase thread');
+    handleNewMessageCode(data);
   }
 
   void handleChatInvitationCode(Map<String, dynamic> data) {
@@ -192,6 +204,10 @@ class HandleNotificationTap {
         '[HandleNotificationTap] ShowController not registered, cannot refresh upcoming bills',
       );
     }
+  }
+
+  static void openPartnerActiveBills() {
+    HandleNotificationTap()._openPartnerShowScreen(showTabIndex: 1);
   }
 
   void _openClientOrdersScreen() {

@@ -89,11 +89,67 @@ class _PriceIncreaseRequestCardState extends State<PriceIncreaseRequestCard> {
           const SizedBox(height: 4),
           Text(widget.request.reason, style: const TextStyle(color: Color(0xFF1E293B), fontSize: 13, height: 1.4)),
           if (canRespond) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: 16),
             Row(children: [
-              Expanded(child: OutlinedButton(onPressed: _processing ? null : () => _respond(false), child: const Text('Từ chối'))),
-              const SizedBox(width: 8),
-              Expanded(child: ElevatedButton(onPressed: _processing ? null : () => _respond(true), child: _processing ? const SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)) : const Text('Đồng ý'))),
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: OutlinedButton.icon(
+                    onPressed: _processing ? null : () => _respond(false),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: const Color(0xFFDC2626),
+                      backgroundColor: const Color(0xFFFEF2F2),
+                      disabledForegroundColor: const Color(0xFFDC2626).withValues(alpha: 0.45),
+                      disabledBackgroundColor: const Color(0xFFFEF2F2).withValues(alpha: 0.6),
+                      side: const BorderSide(color: Color(0xFFFECACA)),
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                    ),
+                    icon: const Icon(Icons.close_rounded, size: 17),
+                    label: const Text(
+                      'Từ chối',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: SizedBox(
+                  height: 44,
+                  child: ElevatedButton.icon(
+                    onPressed: _processing ? null : () => _respond(true),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: AppColors.primary,
+                      disabledForegroundColor: Colors.white,
+                      disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.55),
+                      elevation: 0,
+                      shadowColor: Colors.transparent,
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(13),
+                      ),
+                    ),
+                    icon: _processing
+                        ? const SizedBox.square(
+                            dimension: 15,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.check_rounded, size: 17),
+                    label: Text(
+                      _processing ? 'Đang xử lý' : 'Đồng ý',
+                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                ),
+              ),
             ]),
           ],
         ],
