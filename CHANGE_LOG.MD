@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.9.0+85]
+
+- Change call idle time to 30s
+- Change call behavior to if 1 user end call and room only have 1 user left, room will be closed automatically
+- Add dialog ask if user want to leave old room when join new room
+- Add sender avatar to thread list and chat detail
+- Add alert to update app when have new version on store
+- Change max time bill will wait to choose partner before auto expire
+- Remake category view UI in client home
+- Add app update request digalog
+- Add dialog show reason if you getting banned
+- Add change bill price request feature
+- Add feature when have new show confirm app automatic add it to system calender
+- Add require invoice option when booking and UI to show it
+- Add new accessory option when booking and UI to show it
+- Fix chat show wrong thread in wrong side
+- Add ability to enter chat from notification
+- Add check-in Check-out time to UI
+
 ## [2.8.4+84]
 
 - Add auto endcall if user idle for 2m
