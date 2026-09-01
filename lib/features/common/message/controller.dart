@@ -96,7 +96,7 @@ class MessageController extends GetxController {
     _restoreInvitedMemberships();
     fetchThreads();
     listScrollController.addListener(_onListScroll);
-    _handlePendingThreadDeepLink();
+    unawaited(_handlePendingThreadDeepLink());
     _handlePendingChatInvitation();
     scrollController.addListener(_onDetailScroll);
     debounce(
@@ -271,18 +271,22 @@ class MessageController extends GetxController {
   // ─── Pending Deep Link ──────────────────────────────────────────────────────
 
   /// Handles a thread deep link saved from a terminated-state notification tap.
-  void _handlePendingThreadDeepLink() {
-    final threadId =
-        StorageService.readData(key: LocalStorageKeys.pendingThreadId)
-            as String?;
+  Future<void> _handlePendingThreadDeepLink() async {
+    final String? threadId = await StorageService.consumeStringData(
+      key: LocalStorageKeys.pendingThreadId,
+    );
     if (threadId == null || threadId.isEmpty) return;
 
-    StorageService.removeData(key: LocalStorageKeys.pendingThreadId);
     logger.i('[MessageController] [PendingDeepLink] Opening thread=$threadId');
 
-    // Wait until threads are loaded before opening
-    ever(isLoading, (bool loading) {
-      if (!loading && filteredMessages.isNotEmpty) {
+    if (!isLoading.value) {
+      await openThreadById(threadId);
+      return;
+    }
+
+    // Wait for the initial thread load once, then release the deep-link worker.
+    once(isLoading, (bool loading) {
+      if (!loading) {
         openThreadById(threadId);
       }
     });
