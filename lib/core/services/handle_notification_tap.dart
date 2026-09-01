@@ -74,17 +74,23 @@ class HandleNotificationTap {
   void handleNewMessageCode(Map<String, dynamic> data) {
     logger.i('[HandleNotificationTap] Handling tap for new message');
     final threadId = data['thread_id']?.toString();
-    if (threadId == null) {
+    if (threadId == null || threadId.isEmpty) {
       logger.w('[HandleNotificationTap] NEW_MESSAGE tap missing thread_id');
       return;
     }
     if (Get.isRegistered<MessageController>()) {
       Get.find<MessageController>().openThreadById(threadId);
-    } else {
-      logger.w(
-        '[HandleNotificationTap] MessageController not registered, cannot open thread',
-      );
+      return;
     }
+
+    logger.i(
+      '[HandleNotificationTap] MessageController is not ready; queuing thread=$threadId',
+    );
+    StorageService.writeStringData(
+      key: LocalStorageKeys.pendingThreadId,
+      value: threadId,
+    );
+    _openMessagesTab();
   }
 
   void handlePriceIncreaseRequestCode(Map<String, dynamic> data) {
