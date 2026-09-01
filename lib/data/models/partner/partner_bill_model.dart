@@ -1,3 +1,5 @@
+import 'package:sukientotapp/data/models/accessory_model.dart';
+
 class PartnerBill {
   final int id;
   final String code;
@@ -13,6 +15,7 @@ class PartnerBill {
   final String address;
   final String? note;
   final List<String> bookingPhotos;
+  final List<AccessoryModel> accessories;
 
   const PartnerBill({
     required this.id,
@@ -29,6 +32,7 @@ class PartnerBill {
     required this.address,
     this.note,
     this.bookingPhotos = const <String>[],
+    this.accessories = const <AccessoryModel>[],
   });
 
   factory PartnerBill.fromMap(Map<String, dynamic> map) {
@@ -49,6 +53,7 @@ class PartnerBill {
       address: map['address'] as String,
       note: map['note'] as String?,
       bookingPhotos: _parseBookingPhotos(map['booking_photos']),
+      accessories: AccessoryModel.listFromJson(map['accessories']),
     );
   }
 
@@ -68,6 +73,13 @@ class PartnerBill {
       'address': address,
       'note': note,
       'booking_photos': bookingPhotos,
+      'accessories': accessories
+          .map((accessory) => <String, dynamic>{
+                'id': accessory.id,
+                'accessory_id': accessory.accessoryId,
+                'name': accessory.name,
+              })
+          .toList(growable: false),
     };
   }
 

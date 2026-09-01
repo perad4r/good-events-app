@@ -297,6 +297,14 @@ class AppTranslations extends Translations {
       'booking_stage_event_title': 'Nội dung sự kiện',
       'booking_stage_event_subtitle':
           'Cho biết nội dung hoặc ghi chú cần thiết.',
+      'booking_stage_accessories_title': 'Chọn phụ kiện',
+      'booking_stage_accessories_subtitle':
+          'Chọn các phụ kiện bạn cần cho sự kiện (không bắt buộc).',
+      'booking_accessories_fee_notice':
+          'Phụ kiện bạn chọn có thể làm thay đổi báo giá từ đối tác.',
+      'booking_accessories_empty':
+          'Danh mục này hiện chưa có phụ kiện để lựa chọn.',
+      'accessories': 'Phụ kiện',
       'booking_stage_location_title': 'Địa điểm tổ chức',
       'booking_stage_location_subtitle':
           'Chọn khu vực và nhập địa chỉ chi tiết.',
@@ -1284,6 +1292,14 @@ class AppTranslations extends Translations {
       'booking_stage_event_title': 'Event details',
       'booking_stage_event_subtitle':
           'Describe the event and add notes if needed.',
+      'booking_stage_accessories_title': 'Choose accessories',
+      'booking_stage_accessories_subtitle':
+          'Choose accessories needed for your event (optional).',
+      'booking_accessories_fee_notice':
+          'Selected accessories may affect the partner\'s quoted price.',
+      'booking_accessories_empty':
+          'There are no accessories available for this category.',
+      'accessories': 'Accessories',
       'booking_stage_location_title': 'Select location',
       'booking_stage_location_subtitle':
           'Choose area and enter detailed address.',

@@ -22,6 +22,7 @@ class ShowDetail extends StatelessWidget {
     required this.note,
     required this.total,
     this.bookingPhotos = const <String>[],
+    this.accessoryNames = const <String>[],
     this.isNew = false,
   });
 
@@ -40,6 +41,7 @@ class ShowDetail extends StatelessWidget {
   final String note;
   final int total;
   final List<String> bookingPhotos;
+  final List<String> accessoryNames;
   final bool isNew;
   @override
   Widget build(BuildContext context) {
@@ -154,6 +156,15 @@ class ShowDetail extends StatelessWidget {
                         _buildDivider(context),
                         _buildRow(context, FIcons.ticket, 'event'.tr, event),
                         _buildDivider(context),
+                        if (accessoryNames.isNotEmpty) ...[
+                          _buildRow(
+                            context,
+                            Icons.inventory_2_rounded,
+                            'accessories'.tr,
+                            accessoryNames.join(', '),
+                          ),
+                          _buildDivider(context),
+                        ],
                         _buildRow(
                           context,
                           FIcons.calendarDays,

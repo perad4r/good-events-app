@@ -122,6 +122,9 @@ class NewWidget extends GetView<ShowController> {
                       note: bill.note ?? '',
                       currentStatus: bill.status,
                       bookingPhotos: bill.bookingPhotos,
+                      accessoryNames: bill.accessories
+                          .map((accessory) => accessory.name)
+                          .toList(growable: false),
                     )
                     .animate(delay: (100 * index).ms)
                     .fadeIn(duration: 500.ms)

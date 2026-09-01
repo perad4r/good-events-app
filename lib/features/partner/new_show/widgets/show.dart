@@ -20,6 +20,7 @@ class Show extends StatelessWidget {
     required this.address,
     this.note = 'unknown',
     this.bookingPhotos = const <String>[],
+    this.accessoryNames = const <String>[],
   });
 
   final int billId;
@@ -36,6 +37,7 @@ class Show extends StatelessWidget {
   final String address;
   final String note;
   final List<String> bookingPhotos;
+  final List<String> accessoryNames;
 
   static const _accentColor = Color(0xFF6366F1);
 
@@ -198,6 +200,16 @@ class Show extends StatelessWidget {
                   // Address chip
                   _buildChip(context, FIcons.mapPin, address, expand: true),
 
+                  if (accessoryNames.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    _buildChip(
+                      context,
+                      Icons.inventory_2_rounded,
+                      accessoryNames.join(', '),
+                      expand: true,
+                    ),
+                  ],
+
                   // Note (only if meaningful)
                   if (note.isNotEmpty && note != 'unknown') ...[
                     const SizedBox(height: 6),
@@ -226,6 +238,7 @@ class Show extends StatelessWidget {
                     address: address,
                     note: note,
                     bookingPhotos: bookingPhotos,
+                    accessoryNames: accessoryNames,
                     total: 0,
                     isNew: true,
                   ),

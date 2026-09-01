@@ -3,6 +3,7 @@ import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/data/models/common/public_profile_preview_model.dart';
 import 'package:sukientotapp/data/models/client/event_order_model.dart';
 import 'package:sukientotapp/data/models/client/history_order_model.dart';
+import 'package:sukientotapp/data/models/accessory_model.dart';
 import 'package:sukientotapp/data/models/client/order_detail_model.dart';
 import 'package:sukientotapp/data/models/client/voucher_model.dart';
 import 'package:sukientotapp/domain/repositories/common/my_profile_repository.dart';

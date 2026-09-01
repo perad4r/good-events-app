@@ -5,6 +5,7 @@ import 'package:sukientotapp/data/providers/client/booking_provider.dart';
 import 'package:sukientotapp/domain/repositories/location_repository.dart';
 import 'package:sukientotapp/data/models/location_model.dart';
 import 'package:sukientotapp/data/models/client/event_order_model.dart';
+import 'package:sukientotapp/data/models/accessory_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'widgets/booking_loading_dialog.dart';
 
@@ -13,7 +14,7 @@ class ClientBookingController extends GetxController {
   final LocationRepository _locationRepository;
 
   static const String customEventTypeKey = 'event_type_custom';
-  static const int totalStages = 3;
+  static const int totalStages = 4;
   static const int minEventDurationMinutes = 5;
   static const int maxBookingPhotos = 5;
   static const int maxBookingPhotoBytes = 20 * 1024 * 1024;
@@ -29,6 +30,9 @@ class ClientBookingController extends GetxController {
   final RxInt currentStage = 0.obs;
 
   final RxList<String> eventTypes = <String>[].obs;
+  final RxList<AccessoryModel> categoryAccessories = <AccessoryModel>[].obs;
+  final RxSet<int> selectedAccessoryIds = <int>{}.obs;
+  final RxBool isFetchingAccessories = false.obs;
   //location models
   final provinces = <LocationModel>[].obs;
   final wards = <LocationModel>[].obs;
@@ -107,9 +111,35 @@ class ClientBookingController extends GetxController {
     selectedEndTime.value = '';
     selectedEventType.value = '';
 
+    await fetchCategoryAccessories();
+
     await fetchProvinces();
 
     isLoading.value = false;
+  }
+
+  Future<void> fetchCategoryAccessories() async {
+    if (categoryId == null) return;
+    try {
+      isFetchingAccessories.value = true;
+      final accessories = await _bookingProvider.getCategoryAccessories(
+        categoryId!,
+      );
+      categoryAccessories.assignAll(AccessoryModel.listFromJson(accessories));
+    } catch (e) {
+      logger.e('[ClientBookingController] Failed to load accessories: $e');
+      categoryAccessories.clear();
+    } finally {
+      isFetchingAccessories.value = false;
+    }
+  }
+
+  void toggleAccessory(int accessoryId) {
+    if (selectedAccessoryIds.contains(accessoryId)) {
+      selectedAccessoryIds.remove(accessoryId);
+    } else {
+      selectedAccessoryIds.add(accessoryId);
+    }
   }
 
   void nextStage() {
@@ -362,7 +392,7 @@ class ClientBookingController extends GetxController {
       return isValid;
     }
 
-    if (currentStage.value == 2) {
+    if (currentStage.value == 3) {
       if (selectedProvinceModel.value == null) {
         fieldErrors['province'] = 'Vui lòng chọn tỉnh/thành phố.';
         isValid = false;
@@ -440,6 +470,8 @@ class ClientBookingController extends GetxController {
       'location_detail': addressDetailController.text.trim(),
       'note': noteController.text.trim(),
       'category_id': categoryId,
+      if (selectedAccessoryIds.isNotEmpty)
+        'accessory_ids': selectedAccessoryIds.toList(),
     };
 
     if (shouldShowCustomEvent) {

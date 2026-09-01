@@ -123,6 +123,9 @@ class HistoryWidget extends GetView<ShowController> {
                       note: bill.note ?? '',
                       currentStatus: bill.status,
                       bookingPhotos: bill.bookingPhotos,
+                      accessoryNames: bill.accessories
+                          .map((accessory) => accessory.name)
+                          .toList(growable: false),
                       reviewExists: bill.isReviewed == true,
                     )
                     .animate(delay: (100 * index).ms)

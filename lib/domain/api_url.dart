@@ -61,6 +61,8 @@ class AppUrl {
 
   // Client Booking Screen APIs
   static const String quickBookingEventList = '/quick-booking/event-list';
+  static String partnerCategoryAccessories(int categoryId) =>
+      '/partner-categories/$categoryId/accessories';
   static const String quickBookingSave = '/quick-booking/save';
 
   // Client Order Screen APIs

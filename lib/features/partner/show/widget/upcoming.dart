@@ -124,6 +124,9 @@ class UpcomingWidget extends GetView<ShowController> {
                       currentStatus: bill.status,
                       isOverdue: bill.isOverdue,
                       bookingPhotos: bill.bookingPhotos,
+                      accessoryNames: bill.accessories
+                          .map((accessory) => accessory.name)
+                          .toList(growable: false),
                     )
                     .animate(delay: (100 * index).ms)
                     .fadeIn(duration: 500.ms)

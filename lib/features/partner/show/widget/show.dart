@@ -27,6 +27,7 @@ class Show extends StatelessWidget {
     required this.note,
     required this.currentStatus,
     this.bookingPhotos = const <String>[],
+    this.accessoryNames = const <String>[],
     this.reviewExists = false,
     this.isOverdue = false,
   });
@@ -45,6 +46,7 @@ class Show extends StatelessWidget {
   final String note;
   final String currentStatus;
   final List<String> bookingPhotos;
+  final List<String> accessoryNames;
   final bool reviewExists;
   final bool isOverdue;
 
@@ -297,6 +299,16 @@ class Show extends StatelessWidget {
                   // Address
                   _buildInfoChip(context, FIcons.mapPin, address, expand: true),
 
+                  if (accessoryNames.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    _buildInfoChip(
+                      context,
+                      Icons.inventory_2_rounded,
+                      accessoryNames.join(', '),
+                      expand: true,
+                    ),
+                  ],
+
                   // Price highlight for active statuses
                   if (isActive) ...[
                     const SizedBox(height: 12),
@@ -364,6 +376,7 @@ class Show extends StatelessWidget {
                       address: address,
                       note: note,
                       bookingPhotos: bookingPhotos,
+                      accessoryNames: accessoryNames,
                       total: price,
                     ),
                     isScrollControlled: true,

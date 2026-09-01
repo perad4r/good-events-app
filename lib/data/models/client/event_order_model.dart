@@ -1,4 +1,5 @@
 import 'package:sukientotapp/data/models/client/order_voucher_summary_model.dart';
+import 'package:sukientotapp/data/models/accessory_model.dart';
 
 class EventOrderModel {
   final int id;
@@ -19,6 +20,7 @@ class EventOrderModel {
   final String eventName;
   final int applicantCount;
   final List<String> bookingPhotos;
+  final List<AccessoryModel> accessories;
   final OrderVoucherSummaryModel? voucher;
   final String createdAt;
 
@@ -41,6 +43,7 @@ class EventOrderModel {
     required this.eventName,
     required this.applicantCount,
     required this.bookingPhotos,
+    this.accessories = const <AccessoryModel>[],
     this.voucher,
     required this.createdAt,
   });
@@ -67,6 +70,7 @@ class EventOrderModel {
       eventName: (json['event_name'] as String? ?? '').trim(),
       applicantCount: json['applicant_count'] as int? ?? 0,
       bookingPhotos: _parseBookingPhotos(json['booking_photos']),
+      accessories: AccessoryModel.listFromJson(json['accessories']),
       voucher: json['voucher'] is Map<String, dynamic>
           ? OrderVoucherSummaryModel.fromJson(
               json['voucher'] as Map<String, dynamic>,

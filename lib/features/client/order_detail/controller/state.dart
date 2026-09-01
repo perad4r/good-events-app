@@ -239,6 +239,13 @@ mixin ClientOrderDetailState {
     return const <String>[];
   }
 
+  List<String> get accessoryNames {
+    final List<AccessoryModel> accessories = isHistory.value
+        ? _historyOrder.value?.accessories ?? const <AccessoryModel>[]
+        : _eventOrder.value?.accessories ?? const <AccessoryModel>[];
+    return accessories.map((accessory) => accessory.name).toList(growable: false);
+  }
+
   int? get partnerId {
     if (isHistory.value && _historyOrder.value != null) {
       return _historyOrder.value!.partner?.id;

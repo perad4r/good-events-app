@@ -215,6 +215,9 @@ class NewShowScreen extends GetView<NewShowController> {
                 address: bill.address,
                 note: bill.note ?? 'unknown',
                 bookingPhotos: bill.bookingPhotos,
+                accessoryNames: bill.accessories
+                    .map((accessory) => accessory.name)
+                    .toList(growable: false),
               ),
             );
           },
