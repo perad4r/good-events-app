@@ -1,0 +1,22 @@
+[
+  {
+    "label": "Flutter - Android - Debug mode",
+    "adapter": "Dart",
+    "type": "flutter",
+    "request": "launch",
+    "program": "lib/main.dart",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "deviceId": "db245f23",
+    "flutterMode": "debug"
+  },
+  {
+    "label": "Flutter - Android - Release mode",
+    "adapter": "Dart",
+    "type": "flutter",
+    "request": "launch",
+    "program": "lib/main.dart",
+    "cwd": "$ZED_WORKTREE_ROOT",
+    "deviceId": "db245f23",
+    "flutterMode": "release"
+  }
+]
