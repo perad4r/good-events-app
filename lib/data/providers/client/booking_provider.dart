@@ -25,6 +25,29 @@ class BookingProvider {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getCategoryAccessories(
+    int categoryId,
+  ) async {
+    try {
+      final response = await _dio.get(
+        AppUrl.partnerCategoryAccessories(categoryId),
+      );
+      final dynamic data = response.data is Map<String, dynamic>
+          ? response.data['data']
+          : response.data;
+      if (data is! List) return <Map<String, dynamic>>[];
+      return data
+          .whereType<Map>()
+          .map((item) => Map<String, dynamic>.from(item))
+          .toList(growable: false);
+    } on DioException catch (e) {
+      if (e.response != null) {
+        throw Exception(e.response?.data['message'] ?? 'fetch_failed');
+      }
+      throw Exception('network_error');
+    }
+  }
+
   Future<Map<String, dynamic>> saveBookingInfo(
     Map<String, dynamic> payload, {
     List<XFile> bookingPhotos = const [],

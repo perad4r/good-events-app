@@ -4,6 +4,7 @@ import 'package:sukientotapp/features/components/widget/badge.dart';
 import 'package:sukientotapp/features/components/widget/show_detail.dart';
 
 import 'package:sukientotapp/features/common/message/controller.dart';
+import 'package:sukientotapp/features/common/message/price_increase_history_screen.dart';
 
 import 'upload_arrived_photo.dart';
 import 'upload_completion_photo.dart';
@@ -26,7 +27,10 @@ class Show extends StatelessWidget {
     required this.note,
     required this.currentStatus,
     this.bookingPhotos = const <String>[],
+    this.accessoryNames = const <String>[],
+    this.requiresInvoice = false,
     this.reviewExists = false,
+    this.isOverdue = false,
   });
 
   final int billId;
@@ -43,7 +47,10 @@ class Show extends StatelessWidget {
   final String note;
   final String currentStatus;
   final List<String> bookingPhotos;
+  final List<String> accessoryNames;
+  final bool requiresInvoice;
   final bool reviewExists;
+  final bool isOverdue;
 
   static const Map<String, Map<String, Color>> _statusColors = {
     'pending': {
@@ -107,6 +114,9 @@ class Show extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.fTheme.colors.muted,
         borderRadius: BorderRadius.circular(18),
+        border: isOverdue
+            ? Border.all(color: AppColors.red600.withValues(alpha: 0.65))
+            : null,
         boxShadow: [
           BoxShadow(
             color: context.fTheme.colors.foreground.withValues(alpha: 0.04),
@@ -121,7 +131,10 @@ class Show extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Top accent strip
-            Container(height: 3, color: statusAccent),
+            Container(
+              height: 3,
+              color: isOverdue ? AppColors.red600 : statusAccent,
+            ),
 
             // Main content
             Padding(
@@ -173,6 +186,56 @@ class Show extends StatelessWidget {
                       ),
                     ],
                   ),
+                  if (isOverdue) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 9,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppColors.red600.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.red600.withValues(alpha: 0.25),
+                        ),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(
+                            FIcons.triangleAlert,
+                            size: 16,
+                            color: AppColors.red600,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'overdue_bill'.tr,
+                                  style: context.typography.xs.copyWith(
+                                    color: AppColors.red600,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 2),
+                                Text(
+                                  'overdue_bill_workflow_notice'.tr,
+                                  style: context.typography.xs.copyWith(
+                                    color: AppColors.red600,
+                                    height: 1.35,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   const SizedBox(height: 14),
 
                   // Client name row
@@ -237,6 +300,23 @@ class Show extends StatelessWidget {
 
                   // Address
                   _buildInfoChip(context, FIcons.mapPin, address, expand: true),
+
+                  if (accessoryNames.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    _buildInfoChip(
+                      context,
+                      Icons.inventory_2_rounded,
+                      accessoryNames.join(', '),
+                      expand: true,
+                    ),
+                  ],
+                  const SizedBox(height: 6),
+                  _buildInfoChip(
+                    context,
+                    Icons.receipt_long_rounded,
+                    '${'requires_invoice'.tr}: ${requiresInvoice ? 'yes'.tr : 'no'.tr}',
+                    expand: true,
+                  ),
 
                   // Price highlight for active statuses
                   if (isActive) ...[
@@ -305,6 +385,8 @@ class Show extends StatelessWidget {
                       address: address,
                       note: note,
                       bookingPhotos: bookingPhotos,
+                      accessoryNames: accessoryNames,
+                      requiresInvoice: requiresInvoice,
                       total: price,
                     ),
                     isScrollControlled: true,
@@ -416,6 +498,22 @@ class Show extends StatelessWidget {
                             ),
                             const SizedBox(width: 8),
                             GestureDetector(
+                              onTap: () => Get.to<void>(
+                                () => PriceIncreaseHistoryScreen(billId: billId),
+                              ),
+                              child: Container(
+                                width: 36,
+                                height: 36,
+                                decoration: BoxDecoration(
+                                  color: context.fTheme.colors.background.withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: context.fTheme.colors.border),
+                                ),
+                                child: Icon(Icons.price_change_outlined, size: 17, color: context.fTheme.colors.foreground),
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
                               onTap: () => {
                                 Get.isRegistered<MessageController>()
                                     ? Get.find<MessageController>()
@@ -461,19 +559,42 @@ class Show extends StatelessWidget {
                             ),
                           ),
                           const Spacer(),
-                          Text(
-                            'detail_info'.tr,
-                            style: context.typography.xs.copyWith(
-                              color: context.fTheme.colors.primary,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 11,
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
                             ),
-                          ),
-                          const SizedBox(width: 2),
-                          Icon(
-                            FIcons.arrowRight,
-                            color: context.fTheme.colors.primary,
-                            size: 13,
+                            decoration: BoxDecoration(
+                              color: statusAccent.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(9),
+                              border: Border.all(
+                                color: statusAccent.withValues(alpha: 0.25),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.visibility_outlined,
+                                  color: statusAccent,
+                                  size: 14,
+                                ),
+                                const SizedBox(width: 5),
+                                Text(
+                                  'detail_info'.tr,
+                                  style: context.typography.xs.copyWith(
+                                    color: statusAccent,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(width: 3),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: statusAccent,
+                                  size: 14,
+                                ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

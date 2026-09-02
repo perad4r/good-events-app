@@ -199,6 +199,26 @@ mixin ClientOrderDetailState {
     return null;
   }
 
+  String? get arrivalPhotoCreateTime {
+    if (isHistory.value && _historyOrder.value != null) {
+      return _historyOrder.value!.arrivalPhotoCreateTime;
+    }
+    if (!isHistory.value && _eventOrder.value != null) {
+      return _eventOrder.value!.arrivalPhotoCreateTime;
+    }
+    return null;
+  }
+
+  String? get completionPhotoCreateTime {
+    if (isHistory.value && _historyOrder.value != null) {
+      return _historyOrder.value!.completionPhotoCreateTime;
+    }
+    if (!isHistory.value && _eventOrder.value != null) {
+      return _eventOrder.value!.completionPhotoCreateTime;
+    }
+    return null;
+  }
+
   String? get categoryImage {
     if (isHistory.value && _historyOrder.value != null) {
       return _historyOrder.value!.categoryImage;
@@ -238,6 +258,17 @@ mixin ClientOrderDetailState {
     }
     return const <String>[];
   }
+
+  List<String> get accessoryNames {
+    final List<AccessoryModel> accessories = isHistory.value
+        ? _historyOrder.value?.accessories ?? const <AccessoryModel>[]
+        : _eventOrder.value?.accessories ?? const <AccessoryModel>[];
+    return accessories.map((accessory) => accessory.name).toList(growable: false);
+  }
+
+  bool get requiresInvoice => isHistory.value
+      ? _historyOrder.value?.requiresInvoice ?? false
+      : _eventOrder.value?.requiresInvoice ?? false;
 
   int? get partnerId {
     if (isHistory.value && _historyOrder.value != null) {

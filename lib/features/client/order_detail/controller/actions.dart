@@ -257,6 +257,25 @@ extension ClientOrderDetailActions on ClientOrderDetailController {
         }
 
         await fetchOrderDetails();
+        await showCalendarPermissionDialogIfNeeded(force: true);
+        final calendarSynced =
+            await SystemCalendarService.syncNotificationData(<String, dynamic>{
+          'code': 'BILL_CONFIRMED',
+          'bill_id': orderId.toString(),
+          'date': date,
+          'start_time': startTime,
+          'end_time': endTime,
+          'address': address,
+          'partner': partnerName,
+          'event': eventName,
+          'category': categoryName,
+          'calendar_owner': 'client',
+        });
+        if (calendarSynced) {
+          logger.i(
+            '[ClientOrderDetail] Added order $orderId to the system calendar.',
+          );
+        }
         if (Get.isRegistered<MessageController>()) {
           await Get.find<MessageController>().refreshThreads();
         }

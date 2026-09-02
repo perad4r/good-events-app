@@ -98,6 +98,21 @@ class DetailedInfoSection extends GetView<ClientOrderDetailController> {
                   value: controller.eventName,
                   primary: primary,
                 ),
+                if (controller.accessoryNames.isNotEmpty)
+                  _buildInfoRow(
+                    context,
+                    icon: Icons.inventory_2_rounded,
+                    label: 'accessories'.tr,
+                    value: controller.accessoryNames.join(', '),
+                    primary: primary,
+                  ),
+                _buildInfoRow(
+                  context,
+                  icon: Icons.receipt_long_rounded,
+                  label: 'requires_invoice'.tr,
+                  value: controller.requiresInvoice ? 'yes'.tr : 'no'.tr,
+                  primary: primary,
+                ),
                 _buildInfoRow(
                   context,
                   icon: Icons.notes_rounded,

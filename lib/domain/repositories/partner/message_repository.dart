@@ -21,6 +21,25 @@ abstract class MessageRepository {
     Map<String, dynamic>? location,
   });
 
+  Future<Map<String, dynamic>> sendPriceIncreaseRequest({
+    required String threadId,
+    required int requestedPrice,
+    required String reason,
+    required String clientMessageId,
+  });
+
+  Future<Map<String, dynamic>> getPriceIncreaseRequests({
+    required int billId,
+    required bool isPartner,
+    required int page,
+  });
+
+  Future<Map<String, dynamic>> respondToPriceIncreaseRequest({
+    required int orderId,
+    required int requestId,
+    required bool accept,
+  });
+
   Future<List<ChatUserSearchResult>> searchUsersByPhone(String phone);
 
   Future<ChatInvitationResponse> inviteUser({

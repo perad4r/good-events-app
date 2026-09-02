@@ -2,6 +2,8 @@ import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/domain/repositories/partner/dashboard_repository.dart';
 import 'package:sukientotapp/data/models/partner/dashboard_model.dart';
+import 'package:sukientotapp/features/components/calendar_permission_dialog.dart';
+
 import 'widgets/app_notification_card.dart';
 
 class PartnerHomeController extends GetxController {
@@ -183,9 +185,7 @@ class PartnerHomeController extends GetxController {
       isLoading.value = false;
     }
 
-    if (data != null) {
-      await _showStartupDialogs(data.appNotification);
-    }
+    await _showStartupDialogs(data?.appNotification);
   }
 
   Future<void> _showStartupDialogs(
@@ -198,6 +198,8 @@ class PartnerHomeController extends GetxController {
         !isAppNotificationDismissed.value) {
       await _showAppNotificationDialog(appNotification);
     }
+
+    await showCalendarPermissionDialogIfNeeded();
 
     if (isLegit.value == 'false') {
       _showVerifyBanner();

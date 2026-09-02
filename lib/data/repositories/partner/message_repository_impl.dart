@@ -54,6 +54,41 @@ class MessageRepositoryImpl implements MessageRepository {
   }
 
   @override
+  Future<Map<String, dynamic>> sendPriceIncreaseRequest({
+    required String threadId,
+    required int requestedPrice,
+    required String reason,
+    required String clientMessageId,
+  }) => _provider.sendPriceIncreaseRequest(
+    threadId: threadId,
+    requestedPrice: requestedPrice,
+    reason: reason,
+    clientMessageId: clientMessageId,
+  );
+
+  @override
+  Future<Map<String, dynamic>> getPriceIncreaseRequests({
+    required int billId,
+    required bool isPartner,
+    required int page,
+  }) => _provider.getPriceIncreaseRequests(
+    billId: billId,
+    isPartner: isPartner,
+    page: page,
+  );
+
+  @override
+  Future<Map<String, dynamic>> respondToPriceIncreaseRequest({
+    required int orderId,
+    required int requestId,
+    required bool accept,
+  }) => _provider.respondToPriceIncreaseRequest(
+    orderId: orderId,
+    requestId: requestId,
+    accept: accept,
+  );
+
+  @override
   Future<List<ChatUserSearchResult>> searchUsersByPhone(String phone) =>
       _provider.searchUsersByPhone(phone: phone);
 

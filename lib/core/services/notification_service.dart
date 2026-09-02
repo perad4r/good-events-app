@@ -12,11 +12,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:sukientotapp/core/services/api_service.dart';
 import 'package:sukientotapp/core/services/android_callkit_service.dart';
 import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/core/services/call_ringtone_service.dart';
 import 'package:sukientotapp/core/services/localstorage_service.dart';
+import 'package:sukientotapp/core/services/system_calendar_service.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
 import 'package:sukientotapp/domain/api_url.dart';
 import 'package:sukientotapp/firebase_options.dart';
@@ -105,6 +107,10 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     );
   }
   logger.i('[FCM] Background message received: ${message.messageId}');
+  if (message.data['code']?.toString() == 'BILL_CONFIRMED') {
+    await GetStorage.init();
+    await SystemCalendarService.syncNotificationData(message.data);
+  }
   final type = message.data['type']?.toString();
   if (type == 'incoming_call') {
     await _showIncomingCallNotification(message.data);
@@ -341,12 +347,15 @@ class NotificationService {
     if (Get.isRegistered<CallCoordinator>()) {
       final coordinator = Get.find<CallCoordinator>();
       await coordinator.handleIncomingNotification(data);
-      final call = coordinator.activeCall.value;
+      final activeCall = coordinator.activeCall.value;
+      final pendingCall = coordinator.pendingSwitchCall.value;
+      final call = activeCall?.id == callId ? activeCall : pendingCall;
       final state = coordinator.localState.value;
       final isAlreadyJoiningOrConnected =
-          state == LocalCallState.joining ||
-          state == LocalCallState.connected ||
-          state == LocalCallState.reconnecting;
+          activeCall?.id == callId &&
+          (state == LocalCallState.joining ||
+              state == LocalCallState.connected ||
+              state == LocalCallState.reconnecting);
 
       if (call?.id != callId || isAlreadyJoiningOrConnected) {
         await CallRingtoneService.stop();
@@ -493,7 +502,18 @@ class NotificationService {
           if (data == null || !Get.isRegistered<CallCoordinator>()) return;
           final coordinator = Get.find<CallCoordinator>();
           await coordinator.handleIncomingNotification(data);
-          await coordinator.joinActiveCall();
+          final callId = data['call_id']?.toString();
+          final activeCall = coordinator.activeCall.value;
+          final pendingCall = coordinator.pendingSwitchCall.value;
+          final targetCall = pendingCall?.id == callId
+              ? pendingCall
+              : activeCall;
+          if (targetCall == null) return;
+          if (coordinator.requiresCallSwitch(targetCall)) {
+            await coordinator.switchToCall(targetCall);
+          } else {
+            await coordinator.joinActiveCall();
+          }
           return;
         case 'voipCallEnded':
           final data = _stringKeyedMap(call.arguments);

@@ -39,8 +39,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     double statusBarHeight = MediaQuery.of(context).viewPadding.top;
-    TextEditingController searchController = TextEditingController();
-
     return FScaffold(
       header: Container(
         padding: EdgeInsets.only(
@@ -67,9 +65,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 14),
             FakeSearchBar(
               onTap: () {
-                searchController.clear();
                 controller.ensurePartnersLoaded();
-                controller.openCategoryListBottomSheet(context);
+                controller.openCategoryListScreen();
               },
             ),
           ],

@@ -335,7 +335,6 @@ class NewShowController extends GetxController {
         if (Get.isRegistered<PartnerHomeController>()) {
           Get.find<PartnerHomeController>().updateShowDataOnNewBill();
         }
-        logger.i('[NewShow] [Pusher] New bill received: ${newBill.code}');
       } else {
         final response = RealtimeBillsResponse.fromMap(data);
         bills.insertAll(0, response.partnerBills);

@@ -236,6 +236,14 @@ class AndroidCallkitService {
       return;
     }
     await coordinator.handleIncomingNotification(data);
-    await coordinator.joinActiveCall();
+    final call = coordinator.pendingSwitchCall.value?.id == callId
+        ? coordinator.pendingSwitchCall.value
+        : coordinator.activeCall.value;
+    if (call == null) return;
+    if (coordinator.requiresCallSwitch(call)) {
+      await coordinator.switchToCall(call);
+    } else {
+      await coordinator.joinActiveCall();
+    }
   }
 }

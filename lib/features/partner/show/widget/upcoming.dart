@@ -122,7 +122,12 @@ class UpcomingWidget extends GetView<ShowController> {
                       address: bill.address,
                       note: bill.note ?? '',
                       currentStatus: bill.status,
+                      isOverdue: bill.isOverdue,
                       bookingPhotos: bill.bookingPhotos,
+                      accessoryNames: bill.accessories
+                          .map((accessory) => accessory.name)
+                          .toList(growable: false),
+                      requiresInvoice: bill.requiresInvoice,
                     )
                     .animate(delay: (100 * index).ms)
                     .fadeIn(duration: 500.ms)
@@ -206,6 +211,17 @@ class UpcomingWidget extends GetView<ShowController> {
                       );
                     }),
                     const Spacer(),
+                    Obx(
+                      () => _buildToolbarBtn(
+                        context,
+                        icon: FIcons.calendarPlus,
+                        onTap: controller.isSyncingCalendar.value
+                            ? () {}
+                            : controller.syncUpcomingBillsToCalendar,
+                        color: const Color(0xFF3B82F6),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
                     _buildToolbarBtn(
                       context,
                       icon: FIcons.refreshCw,

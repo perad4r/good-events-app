@@ -30,7 +30,7 @@ class CategoryIntroCard extends GetView<ClientHomeController> {
                 FTappable(
                   onPress: () {
                     controller.ensurePartnersLoaded();
-                    controller.openCategoryListBottomSheet(context);
+                    controller.openCategoryListScreen();
                   },
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -80,8 +80,7 @@ class CategoryIntroCard extends GetView<ClientHomeController> {
                         final PartnerCategoryModel category = categories[index];
                         return _CategoryItem(
                           category: category,
-                          onTap: () => controller.openCategoryListBottomSheet(
-                            context,
+                          onTap: () => controller.openCategoryListScreen(
                             selectedCategory: category,
                           ),
                         );

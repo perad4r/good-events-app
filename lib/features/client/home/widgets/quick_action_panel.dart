@@ -1,6 +1,5 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/client/home/controller.dart';
-import 'package:sukientotapp/features/client/home/widgets/popup_search_sheet.dart';
 
 class ClientQuickActionPanel extends StatelessWidget {
   const ClientQuickActionPanel({super.key, required this.controller});
@@ -17,14 +16,7 @@ class ClientQuickActionPanel extends StatelessWidget {
           animationDelayMs: 200,
           onPress: () {
             controller.ensurePartnersLoaded();
-            showModalBottomSheet(
-              context: context,
-              builder: (context) => PopupPartnerSearchSheet(
-                partnerCategories: controller.partnerList,
-                isLoadingPartners: controller.isLoadingPartners,
-              ),
-              isScrollControlled: true,
-            );
+            controller.openCategoryListScreen();
           },
           color: const Color(0xFF3B82F6),
         ),

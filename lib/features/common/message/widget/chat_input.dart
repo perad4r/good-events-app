@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:sukientotapp/core/utils/import/global.dart';
 import '../controller.dart';
+import 'price_increase_request_sheet.dart';
 
 class ChatInput extends StatelessWidget {
   final MessageController controller;
@@ -244,8 +245,8 @@ class _AttachmentButtonState extends State<_AttachmentButton>
   late final Animation<Offset> _slideAnimation;
   OverlayEntry? _overlayEntry;
 
-  static const double _menuWidth = 164;
-  static const double _menuHeight = 106;
+  static const double _menuWidth = 180;
+  double get _menuHeight => widget.controller.canRequestPriceIncrease.value ? 159 : 106;
   static const double _menuGap = 2;
   static const double _arrowSize = 12;
 
@@ -349,6 +350,12 @@ class _AttachmentButtonState extends State<_AttachmentButton>
                         await _hideMenu();
                         await widget.controller.sendCurrentLocation();
                       },
+                      onPriceIncreaseTap: widget.controller.canRequestPriceIncrease.value
+                          ? () async {
+                              await _hideMenu();
+                              await showPriceIncreaseRequestSheet(widget.controller);
+                            }
+                          : null,
                     ),
                   ),
                 ),
@@ -376,11 +383,13 @@ class _AttachmentMenuPanel extends StatelessWidget {
     required this.arrowCenterX,
     required this.onImageTap,
     required this.onLocationTap,
+    this.onPriceIncreaseTap,
   });
 
   final double arrowCenterX;
   final VoidCallback onImageTap;
   final VoidCallback onLocationTap;
+  final VoidCallback? onPriceIncreaseTap;
 
   @override
   Widget build(BuildContext context) {
@@ -408,6 +417,14 @@ class _AttachmentMenuPanel extends StatelessWidget {
                 label: 'Gửi vị trí',
                 onTap: onLocationTap,
               ),
+              if (onPriceIncreaseTap != null) ...[
+                const Divider(height: 1, color: Color(0xFFE5E7EB)),
+                _AttachmentMenuItem(
+                  icon: Icons.trending_up_rounded,
+                  label: 'Yêu cầu tăng giá',
+                  onTap: onPriceIncreaseTap!,
+                ),
+              ],
             ],
           ),
         ),

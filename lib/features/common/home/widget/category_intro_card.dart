@@ -1,6 +1,5 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/data/models/client/partner_category_model.dart';
-import 'package:sukientotapp/features/client/home/widgets/popup_search_sheet.dart';
 import '../controller.dart';
 
 class CategoryIntroCard extends GetView<GuestHomeController> {
@@ -11,14 +10,7 @@ class CategoryIntroCard extends GetView<GuestHomeController> {
     return GestureDetector(
       onTap: () {
         controller.ensurePartnersLoaded();
-        showModalBottomSheet(
-          context: context,
-          builder: (context) => PopupPartnerSearchSheet(
-            partnerCategories: controller.partnerList,
-            isLoadingPartners: controller.isLoadingPartners,
-          ),
-          isScrollControlled: true,
-        );
+        controller.openCategoryListScreen();
       },
       child: Container(
         width: double.infinity,
