@@ -32,6 +32,15 @@ class HandleNotificationTerminatedTap {
         case 'NEW_REVIEW_RECEIVED':
           HandleNotificationTerminatedTap().handleNewReviewReceivedCode(data);
           break;
+        case 'BILL_COMPLETED_REMINDER':
+          HandleNotificationTerminatedTap().handleBillCompletedReminderCode(
+            data,
+          );
+          break;
+        case 'PRICE_INCREASE_REQUEST_CREATED':
+        case 'PRICE_INCREASE_REQUEST_STATUS_UPDATED':
+          HandleNotificationTerminatedTap().handleNewMessageCode(data);
+          break;
         default:
           logger.w('[HandleNotificationTerminatedTap] Unknown code: $code');
       }
@@ -76,6 +85,17 @@ class HandleNotificationTerminatedTap {
     );
     logger.i(
       '[HandleNotificationTerminatedTap] Saved pendingPartnerTabIndex=1, pendingPartnerShowTabIndex=1',
+    );
+  }
+
+  void handleBillCompletedReminderCode(Map<String, dynamic> data) {
+    StorageService.writeStringData(
+      key: LocalStorageKeys.pendingPartnerTabIndex,
+      value: '1',
+    );
+    StorageService.writeStringData(
+      key: LocalStorageKeys.pendingPartnerShowTabIndex,
+      value: '1',
     );
   }
 

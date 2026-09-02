@@ -20,6 +20,8 @@ class Show extends StatelessWidget {
     required this.address,
     this.note = 'unknown',
     this.bookingPhotos = const <String>[],
+    this.accessoryNames = const <String>[],
+    this.requiresInvoice = false,
   });
 
   final int billId;
@@ -36,6 +38,8 @@ class Show extends StatelessWidget {
   final String address;
   final String note;
   final List<String> bookingPhotos;
+  final List<String> accessoryNames;
+  final bool requiresInvoice;
 
   static const _accentColor = Color(0xFF6366F1);
 
@@ -198,6 +202,15 @@ class Show extends StatelessWidget {
                   // Address chip
                   _buildChip(context, FIcons.mapPin, address, expand: true),
 
+                  if (accessoryNames.isNotEmpty) ...[
+                    const SizedBox(height: 6),
+                    _buildChip(
+                      context,
+                      Icons.inventory_2_rounded,
+                      accessoryNames.join(', '),
+                      expand: true,
+                    ),
+                  ],
                   // Note (only if meaningful)
                   if (note.isNotEmpty && note != 'unknown') ...[
                     const SizedBox(height: 6),
@@ -226,6 +239,8 @@ class Show extends StatelessWidget {
                     address: address,
                     note: note,
                     bookingPhotos: bookingPhotos,
+                    accessoryNames: accessoryNames,
+                    requiresInvoice: requiresInvoice,
                     total: 0,
                     isNew: true,
                   ),
@@ -242,23 +257,99 @@ class Show extends StatelessWidget {
               },
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+                padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Text(
-                      'detail_info'.tr,
-                      style: context.typography.xs.copyWith(
-                        color: context.fTheme.colors.primary,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 11,
+                    Expanded(
+                      child: Container(
+                        height: 42,
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        decoration: BoxDecoration(
+                          color: requiresInvoice
+                              ? const Color(0xFFECFDF5)
+                              : context.fTheme.colors.muted,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: requiresInvoice
+                                ? const Color(0xFF86EFAC)
+                                : context.fTheme.colors.border,
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.receipt_long_rounded,
+                              color: requiresInvoice
+                                  ? const Color(0xFF15803D)
+                                  : context.fTheme.colors.mutedForeground,
+                              size: 17,
+                            ),
+                            const SizedBox(width: 7),
+                            Expanded(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'requires_invoice'.tr,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: context.typography.xs.copyWith(
+                                      color: context.fTheme.colors.mutedForeground,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  Text(
+                                    requiresInvoice ? 'yes'.tr : 'no'.tr,
+                                    style: context.typography.xs.copyWith(
+                                      color: requiresInvoice
+                                          ? const Color(0xFF15803D)
+                                          : context.fTheme.colors.foreground,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                    const SizedBox(width: 2),
-                    Icon(
-                      FIcons.arrowRight,
-                      color: context.fTheme.colors.primary,
-                      size: 13,
+                    const SizedBox(width: 10),
+                    Container(
+                      height: 42,
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        color: _accentColor.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: _accentColor.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.visibility_outlined,
+                            color: _accentColor,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'detail_info'.tr,
+                            style: context.typography.xs.copyWith(
+                              color: _accentColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.arrow_forward_rounded,
+                            color: _accentColor,
+                            size: 15,
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),

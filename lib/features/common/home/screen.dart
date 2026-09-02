@@ -8,7 +8,6 @@ import 'package:sukientotapp/features/components/button/plus.dart';
 import 'package:sukientotapp/features/common/home/widget/guest_intro_card.dart';
 import 'package:sukientotapp/features/client/home/widgets/blogs_panel.dart';
 import 'package:sukientotapp/features/client/home/widgets/fake_search_bar.dart';
-import 'package:sukientotapp/features/client/home/widgets/popup_search_sheet.dart';
 import 'package:sukientotapp/features/components/common/language_switch/language_switch.dart';
 
 class GuestHomeScreen extends GetView<GuestHomeController> {
@@ -17,8 +16,6 @@ class GuestHomeScreen extends GetView<GuestHomeController> {
   @override
   Widget build(BuildContext context) {
     double statusBarHeight = MediaQuery.of(context).viewPadding.top;
-    TextEditingController searchController = TextEditingController();
-
     return FScaffold(
       header: Obx(
         () => Container(
@@ -176,16 +173,8 @@ class GuestHomeScreen extends GetView<GuestHomeController> {
                       padding: const EdgeInsets.fromLTRB(5, 12, 5, 0),
                       child: FakeSearchBar(
                         onTap: () {
-                          searchController.clear();
                           controller.ensurePartnersLoaded();
-                          showModalBottomSheet(
-                            context: context,
-                            builder: (context) => PopupPartnerSearchSheet(
-                              partnerCategories: controller.partnerList,
-                              isLoadingPartners: controller.isLoadingPartners,
-                            ),
-                            isScrollControlled: true,
-                          );
+                          controller.openCategoryListScreen();
                         },
                       ),
                     )

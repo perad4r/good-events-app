@@ -1,4 +1,5 @@
 import 'package:sukientotapp/data/models/client/order_voucher_summary_model.dart';
+import 'package:sukientotapp/data/models/accessory_model.dart';
 
 class PartnerProfileModel {
   final int? id;
@@ -93,7 +94,11 @@ class HistoryOrderModel {
   final String? eventName;
   final String? arrivalPhoto;
   final String? completionPhoto;
+  final String? arrivalPhotoCreateTime;
+  final String? completionPhotoCreateTime;
   final List<String> bookingPhotos;
+  final List<AccessoryModel> accessories;
+  final bool requiresInvoice;
   final HistoryPartnerModel? partner;
   final HistoryReviewModel? review;
   final OrderVoucherSummaryModel? voucher;
@@ -117,7 +122,11 @@ class HistoryOrderModel {
     this.eventName,
     this.arrivalPhoto,
     this.completionPhoto,
+    this.arrivalPhotoCreateTime,
+    this.completionPhotoCreateTime,
     this.bookingPhotos = const <String>[],
+    this.accessories = const <AccessoryModel>[],
+    this.requiresInvoice = false,
     this.partner,
     this.review,
     this.voucher,
@@ -143,7 +152,12 @@ class HistoryOrderModel {
       eventName: json['event_name'] as String?,
       arrivalPhoto: json['arrival_photo'] as String?,
       completionPhoto: json['completion_photo'] as String?,
+      arrivalPhotoCreateTime: json['arrival_photo_create_time'] as String?,
+      completionPhotoCreateTime: json['completion_photo_create_time'] as String?,
       bookingPhotos: _parseBookingPhotos(json['booking_photos']),
+      accessories: AccessoryModel.listFromJson(json['accessories']),
+      requiresInvoice: json['requires_invoice'] == true ||
+          json['requires_invoice'] == 1,
       partner: json['partner'] != null
           ? HistoryPartnerModel.fromJson(json['partner'] as Map<String, dynamic>)
           : null,

@@ -1,4 +1,5 @@
 import 'package:sukientotapp/data/models/client/order_voucher_summary_model.dart';
+import 'package:sukientotapp/data/models/accessory_model.dart';
 
 class EventOrderModel {
   final int id;
@@ -10,6 +11,8 @@ class EventOrderModel {
   final double? finalTotal;
   final String? arrivalPhoto;
   final String? completionPhoto;
+  final String? arrivalPhotoCreateTime;
+  final String? completionPhotoCreateTime;
   final String note;
   final String status;
   final int threadId;
@@ -19,6 +22,8 @@ class EventOrderModel {
   final String eventName;
   final int applicantCount;
   final List<String> bookingPhotos;
+  final List<AccessoryModel> accessories;
+  final bool requiresInvoice;
   final OrderVoucherSummaryModel? voucher;
   final String createdAt;
 
@@ -32,6 +37,8 @@ class EventOrderModel {
     this.finalTotal,
     required this.arrivalPhoto,
     required this.completionPhoto,
+    this.arrivalPhotoCreateTime,
+    this.completionPhotoCreateTime,
     required this.note,
     required this.status,
     required this.threadId,
@@ -41,6 +48,8 @@ class EventOrderModel {
     required this.eventName,
     required this.applicantCount,
     required this.bookingPhotos,
+    this.accessories = const <AccessoryModel>[],
+    this.requiresInvoice = false,
     this.voucher,
     required this.createdAt,
   });
@@ -58,6 +67,8 @@ class EventOrderModel {
           : null,
       arrivalPhoto: json['arrival_photo'] as String? ?? '',
       completionPhoto: json['completion_photo'] as String? ?? '',
+      arrivalPhotoCreateTime: json['arrival_photo_create_time'] as String?,
+      completionPhotoCreateTime: json['completion_photo_create_time'] as String?,
       note: json['note'] as String? ?? '',
       status: json['status'] as String? ?? '',
       threadId: json['thread_id'] as int? ?? 0,
@@ -67,6 +78,9 @@ class EventOrderModel {
       eventName: (json['event_name'] as String? ?? '').trim(),
       applicantCount: json['applicant_count'] as int? ?? 0,
       bookingPhotos: _parseBookingPhotos(json['booking_photos']),
+      accessories: AccessoryModel.listFromJson(json['accessories']),
+      requiresInvoice: json['requires_invoice'] == true ||
+          json['requires_invoice'] == 1,
       voucher: json['voucher'] is Map<String, dynamic>
           ? OrderVoucherSummaryModel.fromJson(
               json['voucher'] as Map<String, dynamic>,

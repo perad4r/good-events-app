@@ -5,15 +5,17 @@ import 'widget/chat_bubble.dart';
 import 'widget/chat_input.dart';
 import 'package:sukientotapp/features/common/call/widgets/call_ui.dart';
 
-class MessageDetailScreen extends GetView<MessageController> {
-  const MessageDetailScreen({super.key});
+class MessageDetailScreen extends StatelessWidget {
+  const MessageDetailScreen({super.key, required this.controller});
+
+  final MessageController controller;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: const Color(0xFFF0F2F5),
-      appBar: const ChatAppBar(),
+      appBar: ChatAppBar(controller: controller),
       body: Column(
         children: [
           ActiveCallBanner(
@@ -53,11 +55,35 @@ class MessageDetailScreen extends GetView<MessageController> {
                       reverse: true,
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       itemCount: controller.messagesDetail.length + 1,
+                      findChildIndexCallback: (Key key) {
+                        if (key == const ValueKey<String>('security-notice')) {
+                          return controller.messagesDetail.length;
+                        }
+
+                        for (
+                          int messageIndex = 0;
+                          messageIndex < controller.messagesDetail.length;
+                          messageIndex++
+                        ) {
+                          final message = controller.messagesDetail[messageIndex];
+                          final messageKey = message.id?.toString() ??
+                              'pending-${identityHashCode(message)}';
+                          if (key ==
+                              ValueKey<String>(
+                                'message-animation-$messageKey',
+                              )) {
+                            return messageIndex;
+                          }
+                        }
+                        return null;
+                      },
                       itemBuilder: (context, index) {
                         // Last item (visually at top) = security notice
                         if (index == controller.messagesDetail.length) {
                           return const _SecurityNotice()
-                              .animate()
+                              .animate(
+                                key: const ValueKey<String>('security-notice'),
+                              )
                               .fadeIn(duration: 600.ms)
                               .slideY(
                                 begin: -0.05,
@@ -67,16 +93,22 @@ class MessageDetailScreen extends GetView<MessageController> {
                               );
                         }
                         final message = controller.messagesDetail[index];
+                        final String messageKey = message.id?.toString() ??
+                            'pending-${identityHashCode(message)}';
                         return ChatBubble(
+                              key: ValueKey<String>('message-$messageKey'),
                               message: message,
                               isFirst:
                                   index == controller.messagesDetail.length - 1,
                             )
-                            .animate(delay: (50 * index).ms)
-                            .fadeIn(duration: 500.ms)
+                            .animate(
+                              key: ValueKey<String>('message-animation-$messageKey'),
+                            )
+                            .fadeIn(duration: 280.ms)
                             .slideY(
                               begin: -0.02,
                               end: 0,
+                              duration: 280.ms,
                               curve: Curves.easeOut,
                             );
                       },

@@ -209,4 +209,66 @@ class MessageProvider {
       rethrow;
     }
   }
+
+  Future<Map<String, dynamic>> sendPriceIncreaseRequest({
+    required String threadId,
+    required int requestedPrice,
+    required String reason,
+    required String clientMessageId,
+  }) async {
+    try {
+      final response = await _apiService.dio.post<Map<String, dynamic>>(
+        AppUrl.chatMessages(threadId),
+        data: <String, dynamic>{
+          'client_message_id': clientMessageId,
+          'type': 'price_increase_request',
+          'requested_price': requestedPrice,
+          'reason': reason.trim(),
+        },
+      );
+      return response.data ?? <String, dynamic>{};
+    } on DioException catch (error) {
+      throw _chatException(error, fallback: 'Không thể gửi yêu cầu tăng giá.');
+    }
+  }
+
+  Future<Map<String, dynamic>> getPriceIncreaseRequests({
+    required int billId,
+    required bool isPartner,
+    required int page,
+  }) async {
+    try {
+      final response = await _apiService.dio.get<Map<String, dynamic>>(
+        isPartner
+            ? AppUrl.partnerPriceIncreaseRequests(billId)
+            : AppUrl.clientPriceIncreaseRequests(billId),
+        queryParameters: <String, dynamic>{'page': page, 'per_page': 20},
+      );
+      return response.data ?? <String, dynamic>{};
+    } on DioException catch (error) {
+      throw _chatException(error, fallback: 'Không thể tải lịch sử tăng giá.');
+    }
+  }
+
+  Future<Map<String, dynamic>> respondToPriceIncreaseRequest({
+    required int orderId,
+    required int requestId,
+    required bool accept,
+  }) async {
+    try {
+      final response = await _apiService.dio.post<Map<String, dynamic>>(
+        accept
+            ? AppUrl.acceptPriceIncreaseRequest(orderId, requestId)
+            : AppUrl.rejectPriceIncreaseRequest(orderId, requestId),
+      );
+      return response.data ?? <String, dynamic>{};
+    } on DioException catch (error) {
+      throw _chatException(
+        error,
+        fallback: accept
+            ? 'Không thể đồng ý yêu cầu tăng giá.'
+            : 'Không thể từ chối yêu cầu tăng giá.',
+      );
+    }
+  }
 }

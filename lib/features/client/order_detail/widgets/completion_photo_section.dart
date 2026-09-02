@@ -9,6 +9,7 @@ class CompletionPhotoSection extends GetView<ClientOrderDetailController> {
   Widget build(BuildContext context) {
     return Obx(() {
       final imageUrl = controller.completionPhoto?.trim() ?? '';
+      final createTime = controller.completionPhotoCreateTime?.trim() ?? '';
       if (imageUrl.isEmpty) return const SizedBox.shrink();
 
       return Padding(
@@ -63,6 +64,13 @@ class CompletionPhotoSection extends GetView<ClientOrderDetailController> {
                           color: Colors.grey[600],
                         ),
                       ),
+                      if (createTime.isNotEmpty)
+                        Text(
+                          createTime,
+                          style: context.typography.xs.copyWith(
+                            color: Colors.grey[600],
+                          ),
+                        ),
                     ],
                   ),
                 ),

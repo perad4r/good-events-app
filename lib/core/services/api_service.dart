@@ -10,6 +10,9 @@ import 'package:sukientotapp/core/utils/env_config.dart';
 import 'package:sukientotapp/core/services/localstorage_service.dart';
 import 'package:sukientotapp/core/error_reporting/app_error_reporter.dart';
 import 'package:sukientotapp/core/error_reporting/error_reporting_interceptor.dart';
+import 'package:sukientotapp/core/services/account_suspension_handler.dart';
+import 'package:sukientotapp/core/services/api_contract_error_mapper.dart';
+import 'package:sukientotapp/core/utils/app_exceptions.dart';
 
 class ApiService {
   late Dio _dio;
@@ -24,7 +27,11 @@ class ApiService {
         error.response?.statusCode == 429 &&
         (code == 'OTP_COOLDOWN' || code == 'MAX_ATTEMPTS');
 
-    if (isOtpLimitError) return false;
+    if (isOtpLimitError ||
+        code == 'ACCOUNT_SUSPENDED' ||
+        code == 'PARTNER_WORKFLOW_LOCKED') {
+      return false;
+    }
 
     return RetryInterceptor.defaultRetryEvaluator(error, attempt);
   }
@@ -58,6 +65,15 @@ class ApiService {
           return handler.next(options);
         },
         onError: (DioException e, handler) {
+          final contractError = ApiContractErrorMapper.fromResponseData(
+            e.response?.data,
+          );
+          if (contractError is AccountSuspendedException) {
+            unawaited(AccountSuspensionHandler.handle(contractError));
+          }
+          if (contractError != null) {
+            return handler.next(e.copyWith(error: contractError));
+          }
           return handler.next(e);
         },
       ),

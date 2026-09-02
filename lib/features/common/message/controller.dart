@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -39,6 +40,21 @@ class MessageController extends GetxController {
   bool _messagesHasMore = true;
 
   String get selectedThreadId => selectedThread.value?.id ?? '';
+  bool get isPartner =>
+      (StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'role') ?? '')
+          .toString()
+          .toLowerCase() ==
+      'partner';
+  int? get currentUserId {
+    final Object? value = StorageService.readMapData(
+      key: LocalStorageKeys.user,
+      mapKey: 'id',
+    );
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '');
+  }
+  final RxBool canRequestPriceIncrease = false.obs;
 
   String? _subscribedChannel;
   static const _pusherEventName = 'SendMessage';
@@ -80,7 +96,7 @@ class MessageController extends GetxController {
     _restoreInvitedMemberships();
     fetchThreads();
     listScrollController.addListener(_onListScroll);
-    _handlePendingThreadDeepLink();
+    unawaited(_handlePendingThreadDeepLink());
     _handlePendingChatInvitation();
     scrollController.addListener(_onDetailScroll);
     debounce(
@@ -93,6 +109,7 @@ class MessageController extends GetxController {
       (_) => _searchMembers(),
       time: const Duration(milliseconds: 400),
     );
+    ever(selectedThread, (_) => _updateCanRequestPriceIncrease());
   }
 
   void _handlePendingChatInvitation() {
@@ -254,18 +271,22 @@ class MessageController extends GetxController {
   // ─── Pending Deep Link ──────────────────────────────────────────────────────
 
   /// Handles a thread deep link saved from a terminated-state notification tap.
-  void _handlePendingThreadDeepLink() {
-    final threadId =
-        StorageService.readData(key: LocalStorageKeys.pendingThreadId)
-            as String?;
+  Future<void> _handlePendingThreadDeepLink() async {
+    final String? threadId = await StorageService.consumeStringData(
+      key: LocalStorageKeys.pendingThreadId,
+    );
     if (threadId == null || threadId.isEmpty) return;
 
-    StorageService.removeData(key: LocalStorageKeys.pendingThreadId);
     logger.i('[MessageController] [PendingDeepLink] Opening thread=$threadId');
 
-    // Wait until threads are loaded before opening
-    ever(isLoading, (bool loading) {
-      if (!loading && filteredMessages.isNotEmpty) {
+    if (!isLoading.value) {
+      await openThreadById(threadId);
+      return;
+    }
+
+    // Wait for the initial thread load once, then release the deep-link worker.
+    once(isLoading, (bool loading) {
+      if (!loading) {
         openThreadById(threadId);
       }
     });
@@ -367,6 +388,15 @@ class MessageController extends GetxController {
 
   // ─── User Channel event handler (called by BottomNavController) ─────────────
   void onUserChannelEvent(PusherEvent event) {
+    loggerNoStack.i(
+      '[MessageController] [ThreadList] [IncomingEvent]\n'
+      'channelName: ${event.channelName}\n'
+      'eventName: ${event.eventName}\n'
+      'userId: ${event.userId}\n'
+      'dataType: ${event.data.runtimeType}\n'
+      'data: ${event.data}',
+    );
+
     final eventName = _normalizedPusherEventName(event.eventName);
     if (eventName != _pusherEventName) return;
     if (event.data == null) return;
@@ -388,6 +418,7 @@ class MessageController extends GetxController {
         final updated = filteredMessages[idx].copyWith(
           newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
+          newestMessageSenderAvatar: incoming.senderAvatar,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: incoming.isSender,
           unreadMessages: incoming.isSender
@@ -413,6 +444,7 @@ class MessageController extends GetxController {
     await _unsubscribeThread();
     pendingInvitationUserIds.clear();
     selectedThread.value = thread;
+    _updateCanRequestPriceIncrease();
     callCoordinator.setThreadContext(
       threadId: thread.id,
       title: thread.subject,
@@ -434,6 +466,7 @@ class MessageController extends GetxController {
       filteredMessages[idx] = filteredMessages[idx].copyWith(
         newestMessage: lastMessage.previewText,
         newestMessageSender: lastMessage.sender,
+        newestMessageSenderAvatar: lastMessage.senderAvatar,
         time: lastMessage.time,
         isRead: true,
         unreadMessages: 0,
@@ -445,6 +478,16 @@ class MessageController extends GetxController {
     logger.i(
       '[MessageController] [closeThread] Updated preview for thread=$threadId',
     );
+  }
+
+  void _updateCanRequestPriceIncrease() {
+    final bill = selectedThread.value?.bill;
+    final status = bill?.status;
+    canRequestPriceIncrease.value =
+        isPartner &&
+        currentUserId != null &&
+        bill?.partnerId == currentUserId &&
+        (status == 'confirmed' || status == 'in_job');
   }
 
   /// Opens a thread by its ID — used when tapping a NEW_MESSAGE notification.
@@ -464,7 +507,7 @@ class MessageController extends GetxController {
     }
 
     await openThread(thread);
-    await Get.to<void>(() => const MessageDetailScreen());
+    await Get.to<void>(() => MessageDetailScreen(controller: this));
     closeThread();
   }
 
@@ -484,7 +527,7 @@ class MessageController extends GetxController {
     }
 
     await openThread(thread);
-    await Get.to<void>(() => const MessageDetailScreen());
+    await Get.to<void>(() => MessageDetailScreen(controller: this));
     closeThread();
   }
 
@@ -534,6 +577,7 @@ class MessageController extends GetxController {
         return;
       }
 
+      _supersedePendingPriceRequests(incoming.priceIncreaseRequest);
       messagesDetail.insert(0, incoming);
       scrollToBottom();
 
@@ -544,6 +588,7 @@ class MessageController extends GetxController {
         final updated = filteredMessages[idx].copyWith(
           newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
+          newestMessageSenderAvatar: incoming.senderAvatar,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: true,
           unreadMessages: 0,
@@ -770,6 +815,10 @@ class MessageController extends GetxController {
         StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
             as String? ??
         '';
+    final currentUserAvatar = StorageService.readMapData(
+      key: LocalStorageKeys.user,
+      mapKey: 'avatar_url',
+    )?.toString();
     final optimisticAttachments = isImageMessage
         ? images
               .map(
@@ -784,6 +833,7 @@ class MessageController extends GetxController {
 
     final optimistic = MessageModel(
       sender: currentUserName,
+      senderAvatar: currentUserAvatar,
       text: isImageMessage ? censoredText : previewText,
       type: isImageMessage ? 'image' : 'text',
       previewText: previewText,
@@ -823,6 +873,202 @@ class MessageController extends GetxController {
     }
   }
 
+  Future<bool> sendPriceIncreaseRequest({
+    required int requestedPrice,
+    required String reason,
+  }) async {
+    final thread = selectedThread.value;
+    if (thread == null || isSendingMessage.value) return false;
+    if (!isPartner ||
+        currentUserId == null ||
+        thread.bill.partnerId != currentUserId) {
+      AppSnackbar.showError(
+        message: 'Chỉ đối tác đang phụ trách đơn mới có thể yêu cầu tăng giá.',
+      );
+      return false;
+    }
+    if (reason.trim().isEmpty || reason.trim().length > 1000) return false;
+    if (thread.bill.total != null && requestedPrice <= thread.bill.total!) {
+      AppSnackbar.showError(message: 'Giá đề nghị phải lớn hơn giá hiện tại.');
+      return false;
+    }
+
+    try {
+      isSendingMessage.value = true;
+      final userId = StorageService.readMapData(
+        key: LocalStorageKeys.user,
+        mapKey: 'id',
+      );
+      final response = await _repository.sendPriceIncreaseRequest(
+        threadId: thread.id,
+        requestedPrice: requestedPrice,
+        reason: reason.trim(),
+        clientMessageId: _generateUuidV4(),
+      );
+
+      try {
+        final MessageModel message = MessageModel.fromApiJson(
+          response,
+          currentUserId: userId is int ? userId : int.tryParse('$userId'),
+        );
+        if (message.priceIncreaseRequest != null &&
+            !messagesDetail.any((item) => item.id == message.id)) {
+          _supersedePendingPriceRequests(message.priceIncreaseRequest);
+          messagesDetail.insert(0, message);
+        } else {
+          await loadMessages();
+        }
+      } catch (error) {
+        logger.w(
+          '[MessageController] Could not parse price increase response: $error',
+        );
+        await loadMessages();
+      }
+
+      _updateThreadPreview(
+        threadId: thread.id,
+        text: '[Yêu cầu tăng giá]',
+      );
+      scrollToBottom();
+      return true;
+    } catch (error) {
+      AppSnackbar.showError(message: error.toString());
+      return false;
+    } finally {
+      isSendingMessage.value = false;
+    }
+  }
+
+  String _generateUuidV4() {
+    final Random random = Random.secure();
+    final List<int> bytes = List<int>.generate(
+      16,
+      (_) => random.nextInt(256),
+      growable: false,
+    );
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+
+    final String hex = bytes
+        .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+        .join();
+    return '${hex.substring(0, 8)}-'
+        '${hex.substring(8, 12)}-'
+        '${hex.substring(12, 16)}-'
+        '${hex.substring(16, 20)}-'
+        '${hex.substring(20)}';
+  }
+
+  void _supersedePendingPriceRequests(
+    PriceIncreaseRequestModel? newestRequest,
+  ) {
+    if (newestRequest == null || newestRequest.status != 'pending') return;
+
+    for (int index = 0; index < messagesDetail.length; index++) {
+      final MessageModel message = messagesDetail[index];
+      final PriceIncreaseRequestModel? request = message.priceIncreaseRequest;
+      if (request == null ||
+          !request.isPending ||
+          request.id == newestRequest.id ||
+          request.orderId != newestRequest.orderId) {
+        continue;
+      }
+      messagesDetail[index] = message.copyWith(
+        priceIncreaseRequest: request.copyWith(status: 'superseded'),
+      );
+    }
+  }
+
+  void handlePriceIncreaseNotification(Map<String, dynamic> data) {
+    final int? requestId = int.tryParse(
+      data['price_increase_request_id']?.toString() ?? '',
+    );
+    final String status = data['status']?.toString().toLowerCase() ?? '';
+    final String threadId = data['thread_id']?.toString() ?? '';
+    final int? requestedTotal = int.tryParse(
+      data['requested_total']?.toString() ?? '',
+    );
+
+    bool updatedMessage = false;
+    if (requestId != null && status.isNotEmpty) {
+      for (int index = 0; index < messagesDetail.length; index++) {
+        final MessageModel message = messagesDetail[index];
+        final PriceIncreaseRequestModel? request =
+            message.priceIncreaseRequest;
+        if (request?.id != requestId) continue;
+        messagesDetail[index] = message.copyWith(
+          priceIncreaseRequest: request!.copyWith(status: status),
+        );
+        updatedMessage = true;
+        break;
+      }
+    }
+
+    if (status == 'accepted' && requestedTotal != null) {
+      final int listIndex = filteredMessages.indexWhere(
+        (thread) => thread.id == threadId,
+      );
+      if (listIndex != -1) {
+        filteredMessages[listIndex] = filteredMessages[listIndex].copyWith(
+          bill: filteredMessages[listIndex].bill.copyWith(
+            total: requestedTotal,
+          ),
+        );
+      }
+      final MessageListModel? current = selectedThread.value;
+      if (current != null && current.id == threadId) {
+        selectedThread.value = current.copyWith(
+          bill: current.bill.copyWith(total: requestedTotal),
+        );
+      }
+    }
+
+    if (selectedThreadId == threadId && !updatedMessage) {
+      unawaited(loadMessages());
+    }
+  }
+
+  Future<List<PriceIncreaseRequestModel>> getPriceIncreaseRequests({
+    required int billId,
+    int page = 1,
+  }) async {
+    final response = await _repository.getPriceIncreaseRequests(
+      billId: billId,
+      isPartner: isPartner,
+      page: page,
+    );
+    dynamic raw = response['data'] ?? response['price_increase_requests'];
+    if (raw is Map) raw = raw['data'];
+    if (raw is! List) return <PriceIncreaseRequestModel>[];
+    return raw
+        .whereType<Map>()
+        .map((item) => PriceIncreaseRequestModel.fromJson(
+              Map<String, dynamic>.from(item),
+            ))
+        .toList(growable: false);
+  }
+
+  Future<bool> respondToPriceIncreaseRequest({
+    required PriceIncreaseRequestModel request,
+    required bool accept,
+  }) async {
+    try {
+      await _repository.respondToPriceIncreaseRequest(
+        orderId: request.orderId,
+        requestId: request.id,
+        accept: accept,
+      );
+      await loadMessages();
+      AppSnackbar.showSuccess(
+        message: accept ? 'Đã đồng ý mức giá mới.' : 'Đã từ chối yêu cầu.',
+      );
+      return true;
+    } catch (error) {
+      AppSnackbar.showError(message: error.toString());
+      return false;
+    }
+  }
+
   Future<void> sendCurrentLocation() async {
     final threadId = selectedThreadId;
     if (threadId.isEmpty ||
@@ -842,9 +1088,14 @@ class MessageController extends GetxController {
           StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
               as String? ??
           '';
+      final currentUserAvatar = StorageService.readMapData(
+        key: LocalStorageKeys.user,
+        mapKey: 'avatar_url',
+      )?.toString();
       const previewText = '[Vị trí]';
       optimistic = MessageModel(
         sender: currentUserName,
+        senderAvatar: currentUserAvatar,
         text: previewText,
         type: 'location',
         previewText: previewText,
@@ -978,6 +1229,7 @@ class MessageController extends GetxController {
 
     messagesDetail[idx] = MessageModel(
       sender: optimistic.sender,
+      senderAvatar: optimistic.senderAvatar,
       text: optimistic.text,
       type: optimistic.type,
       previewText: optimistic.previewText,
@@ -995,12 +1247,17 @@ class MessageController extends GetxController {
         StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
             as String? ??
         '';
+    final currentUserAvatar = StorageService.readMapData(
+      key: LocalStorageKeys.user,
+      mapKey: 'avatar_url',
+    )?.toString();
     final threadIdx = filteredMessages.indexWhere((t) => t.id == threadId);
     if (threadIdx == -1) return;
 
     final updated = filteredMessages[threadIdx].copyWith(
       newestMessage: text,
       newestMessageSender: currentUserName,
+      newestMessageSenderAvatar: currentUserAvatar,
       time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
       isRead: true,
       unreadMessages: 0,

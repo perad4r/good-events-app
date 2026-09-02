@@ -52,12 +52,14 @@ class MessageBinding extends Bindings {
       fenix: true,
     );
 
-    Get.lazyPut<MessageController>(
-      () => MessageController(
-        Get.find<MessageRepository>(),
-        Get.find<CallCoordinator>(),
-      ),
-      fenix: true,
-    );
+    if (!Get.isRegistered<MessageController>()) {
+      Get.put<MessageController>(
+        MessageController(
+          Get.find<MessageRepository>(),
+          Get.find<CallCoordinator>(),
+        ),
+        permanent: true,
+      );
+    }
   }
 }

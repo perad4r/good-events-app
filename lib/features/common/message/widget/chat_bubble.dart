@@ -7,6 +7,8 @@ import 'package:sukientotapp/data/models/message_model.dart'; // Correct import
 import 'package:url_launcher/url_launcher.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/common/call/widgets/call_ui.dart';
+import 'cached_message_avatar.dart';
+import 'price_increase_request_card.dart';
 
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
@@ -16,6 +18,25 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (message.type == 'price_increase_request' &&
+        message.priceIncreaseRequest != null) {
+      return Padding(
+        padding: EdgeInsets.fromLTRB(12, isFirst ? 12 : 4, 12, 4),
+        child: Row(
+          mainAxisAlignment: message.isSender
+              ? MainAxisAlignment.end
+              : MainAxisAlignment.start,
+          children: [
+            PriceIncreaseRequestCard(
+              key: ValueKey<String>(
+                'price-${message.priceIncreaseRequest!.id}-${message.priceIncreaseRequest!.status}',
+              ),
+              request: message.priceIncreaseRequest!,
+            ),
+          ],
+        ),
+      );
+    }
     if (message.type == 'call') {
       return _CallMessageCard(message: message, isFirst: isFirst);
     }
@@ -30,7 +51,7 @@ class ChatBubble extends StatelessWidget {
         children: [
           if (!isSender)
             Padding(
-              padding: const EdgeInsets.only(left: 4, bottom: 3),
+              padding: const EdgeInsets.only(left: 40, bottom: 3),
               child: Text(
                 message.sender,
                 style: TextStyle(
@@ -46,6 +67,10 @@ class ChatBubble extends StatelessWidget {
                 : MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
+              if (!isSender) ...[
+                CachedMessageAvatar(imageUrl: message.senderAvatar),
+                const SizedBox(width: 8),
+              ],
               if (isSender)
                 Padding(
                   padding: const EdgeInsets.only(right: 6, bottom: 2),
@@ -59,7 +84,7 @@ class ChatBubble extends StatelessWidget {
                 ),
               ConstrainedBox(
                 constraints: BoxConstraints(
-                  maxWidth: MediaQuery.of(context).size.width * 0.72,
+                  maxWidth: MediaQuery.of(context).size.width * 0.64,
                 ),
                 child: Container(
                   padding: EdgeInsets.symmetric(
@@ -104,6 +129,10 @@ class ChatBubble extends StatelessWidget {
                     ),
                   ),
                 ),
+              if (isSender) ...[
+                const SizedBox(width: 8),
+                CachedMessageAvatar(imageUrl: message.senderAvatar),
+              ],
             ],
           ),
         ],
@@ -131,11 +160,20 @@ class _CallMessageCard extends StatelessWidget {
 
     return Padding(
       padding: EdgeInsets.fromLTRB(12, isFirst ? 12 : 4, 12, 4),
-      child: Align(
-        alignment: isOutgoing ? Alignment.centerRight : Alignment.centerLeft,
-        child: ConstrainedBox(
+      child: Row(
+        mainAxisAlignment: isOutgoing
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          if (!isOutgoing) ...[
+            CachedMessageAvatar(imageUrl: message.senderAvatar),
+            const SizedBox(width: 8),
+          ],
+          Flexible(
+            child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.sizeOf(context).width * 0.76,
+            maxWidth: MediaQuery.sizeOf(context).width * 0.68,
             minWidth: 230,
           ),
           child: Container(
@@ -248,8 +286,14 @@ class _CallMessageCard extends StatelessWidget {
                 ),
               ],
             ),
+              ),
+            ),
           ),
-        ),
+          if (isOutgoing) ...[
+            const SizedBox(width: 8),
+            CachedMessageAvatar(imageUrl: message.senderAvatar),
+          ],
+        ],
       ),
     );
   }

@@ -23,7 +23,7 @@ class PartnerDetailScreen extends GetView<PartnerDetailController> {
         ),
         prefixes: [
           FHeaderAction.back(
-            onPress: () => Get.back(result: 'show_category_bottom_sheet'),
+            onPress: () => Get.back<void>(),
           ),
         ],
         suffixes: [LanguageSwitch()],

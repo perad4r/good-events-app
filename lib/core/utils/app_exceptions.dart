@@ -11,6 +11,33 @@ class UnverifiedUserException implements Exception {
   String toString() => 'UnverifiedUserException: $message';
 }
 
+class PartnerWorkflowLockedException implements Exception {
+  final String message;
+
+  const PartnerWorkflowLockedException({
+    this.message =
+        'Bạn cần hoàn thành các đơn đang quá hạn trước khi check-in hoặc hoàn thành đơn khác.',
+  });
+
+  @override
+  String toString() => 'PartnerWorkflowLockedException: $message';
+}
+
+class AccountSuspendedException implements Exception {
+  final String message;
+  final String banReason;
+  final DateTime? suspendedAt;
+
+  const AccountSuspendedException({
+    this.message = 'Account suspended.',
+    required this.banReason,
+    this.suspendedAt,
+  });
+
+  @override
+  String toString() => 'AccountSuspendedException: $banReason';
+}
+
 /// Thrown when server returns 429 with code OTP_COOLDOWN.
 /// [retryAfter] is the remaining cooldown in seconds (if provided by server).
 class OtpCooldownException implements Exception {

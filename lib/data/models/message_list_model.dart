@@ -3,12 +3,18 @@ class MessageBillModel {
   final String eventName;
   final String datetime;
   final String address;
+  final String status;
+  final int? total;
+  final int? partnerId;
 
   const MessageBillModel({
     required this.id,
     required this.eventName,
     required this.datetime,
     required this.address,
+    this.status = '',
+    this.total,
+    this.partnerId,
   });
 
   factory MessageBillModel.fromJson(Map<String, dynamic> json) {
@@ -17,6 +23,9 @@ class MessageBillModel {
       eventName: json['event_name'] as String? ?? '',
       datetime: json['datetime'] as String? ?? '',
       address: json['address'] as String? ?? '',
+      status: json['status']?.toString() ?? '',
+      total: _asInt(json['total'] ?? json['final_total']),
+      partnerId: _asInt(json['partner_id']),
     );
   }
 
@@ -26,7 +35,27 @@ class MessageBillModel {
       'event_name': eventName,
       'datetime': datetime,
       'address': address,
+      'status': status,
+      'total': total,
+      'partner_id': partnerId,
     };
+  }
+
+  static int? _asInt(dynamic value) {
+    if (value is num) return value.round();
+    return int.tryParse(value?.toString() ?? '');
+  }
+
+  MessageBillModel copyWith({int? total}) {
+    return MessageBillModel(
+      id: id,
+      eventName: eventName,
+      datetime: datetime,
+      address: address,
+      status: status,
+      total: total ?? this.total,
+      partnerId: partnerId,
+    );
   }
 }
 
@@ -63,6 +92,7 @@ class MessageListModel {
   final String code;
   final String? newestMessage;
   final String? newestMessageSender;
+  final String? newestMessageSenderAvatar;
   final String time;
   final bool isRead;
   final int unreadMessages;
@@ -77,6 +107,7 @@ class MessageListModel {
     required this.code,
     required this.newestMessage,
     required this.newestMessageSender,
+    this.newestMessageSenderAvatar,
     required this.time,
     required this.isRead,
     required this.unreadMessages,
@@ -110,6 +141,8 @@ class MessageListModel {
                     ? 'Vị trí hiện tại'
                     : latestType == 'call'
                         ? '[Cuộc gọi]'
+                        : latestType == 'price_increase_request'
+                            ? '[Yêu cầu tăng giá]'
                     : null);
 
     return MessageListModel(
@@ -120,6 +153,7 @@ class MessageListModel {
       code: json['code'] as String? ?? '',
       newestMessage: latestPreviewText,
       newestMessageSender: latestMessage?['sender_name'] as String?,
+      newestMessageSenderAvatar: latestMessage?['sender_avatar']?.toString(),
       time: latestMessage?['created_at'] as String? ?? '',
       isRead: !isUnread,
       unreadMessages: isUnread ? 1 : 0,
@@ -149,6 +183,7 @@ class MessageListModel {
     String? code,
     String? newestMessage,
     String? newestMessageSender,
+    String? newestMessageSenderAvatar,
     String? time,
     bool? isRead,
     int? unreadMessages,
@@ -163,6 +198,8 @@ class MessageListModel {
       code: code ?? this.code,
       newestMessage: newestMessage ?? this.newestMessage,
       newestMessageSender: newestMessageSender ?? this.newestMessageSender,
+      newestMessageSenderAvatar:
+          newestMessageSenderAvatar ?? this.newestMessageSenderAvatar,
       time: time ?? this.time,
       isRead: isRead ?? this.isRead,
       unreadMessages: unreadMessages ?? this.unreadMessages,
@@ -181,6 +218,7 @@ class MessageListModel {
           .toList(),
       'newestMessage': newestMessage,
       'newestMessageSender': newestMessageSender,
+      'newestMessageSenderAvatar': newestMessageSenderAvatar,
       'time': time,
       'isRead': isRead,
       'unreadMessages': unreadMessages,

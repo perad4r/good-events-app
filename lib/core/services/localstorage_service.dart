@@ -49,6 +49,14 @@ class StorageService {
     box.remove(key);
   }
 
+  static Future<String?> consumeStringData({required String key}) async {
+    final String? value = box.read(key)?.toString();
+    if (value != null) {
+      await box.remove(key);
+    }
+    return value;
+  }
+
   static void clearAllData() {
     final pushDeviceId = box.read<String>(LocalStorageKeys.pushDeviceId);
     final fcmToken = box.read<String>(LocalStorageKeys.fcmToken);

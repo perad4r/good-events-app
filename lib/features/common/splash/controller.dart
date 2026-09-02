@@ -229,6 +229,8 @@ class SplashController extends GetxController {
       AppSnackbar.showWarning(message: 'account_unverified'.tr);
       await Future.delayed(const Duration(seconds: 2));
       Get.offAllNamed(Routes.userVerifyScreen);
+    } on AccountSuspendedException {
+      // The global interceptor clears the session and presents the blocking UI.
     } catch (e) {
       StorageService.removeData(key: LocalStorageKeys.token);
       StorageService.removeData(key: LocalStorageKeys.user);

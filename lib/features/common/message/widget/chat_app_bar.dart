@@ -4,9 +4,12 @@ import 'package:sukientotapp/features/common/call/widgets/call_ui.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/common/message/widget/member_invitation_sheet.dart';
 import 'package:sukientotapp/features/common/report/report_bottom_sheet.dart';
+import 'package:sukientotapp/features/common/message/price_increase_history_screen.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
-  const ChatAppBar({super.key});
+  const ChatAppBar({super.key, required this.controller});
+
+  final MessageController controller;
 
   @override
   Size get preferredSize => const Size.fromHeight(84);
@@ -14,8 +17,6 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     final colors = context.fTheme.colors;
-    final controller = Get.find<MessageController>();
-
     return AppBar(
       backgroundColor: colors.background,
       automaticallyImplyLeading: false,
@@ -167,6 +168,8 @@ class _HeaderActionButton extends StatelessWidget {
     required this.icon,
     required this.foregroundColor,
     required this.backgroundColor,
+    this.borderColor,
+    this.circular = false,
   });
 
   final String tooltip;
@@ -174,6 +177,8 @@ class _HeaderActionButton extends StatelessWidget {
   final IconData icon;
   final Color foregroundColor;
   final Color backgroundColor;
+  final Color? borderColor;
+  final bool circular;
 
   @override
   Widget build(BuildContext context) {
@@ -185,7 +190,10 @@ class _HeaderActionButton extends StatelessWidget {
       style: IconButton.styleFrom(
         backgroundColor: backgroundColor,
         foregroundColor: foregroundColor,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: borderColor == null ? null : BorderSide(color: borderColor!),
+        shape: circular
+            ? const CircleBorder()
+            : RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       icon: Icon(icon, size: 19),
     );
@@ -203,27 +211,31 @@ class _CallActionButton extends StatelessWidget {
     final colors = buildContext.fTheme.colors;
     final thread = controller.selectedThread.value!;
     final coordinator = controller.callCoordinator;
-    final hasCall = coordinator.activeCall.value != null;
+    final call = coordinator.callForThread(thread.id);
+    final hasCall = call != null;
 
     return _HeaderActionButton(
       tooltip: hasCall ? 'Mở cuộc gọi' : 'Gọi âm thanh',
-      foregroundColor: hasCall
-          ? const Color(0xFF059669)
-          : colors.foreground,
-      backgroundColor: hasCall
-          ? const Color(0xFFECFDF5)
-          : colors.secondary,
+      foregroundColor: colors.primary,
+      backgroundColor: colors.primary.withValues(alpha: 0.06),
+      borderColor: colors.primary,
+      circular: true,
       icon: hasCall ? Icons.call_rounded : Icons.add_call,
       onPressed: () async {
-        if (hasCall) {
+        if (call != null) {
           final connected =
-              coordinator.localState.value == LocalCallState.connected ||
-              coordinator.localState.value == LocalCallState.reconnecting;
-          if (!connected) {
-            final session = await coordinator.joinActiveCall();
-            if (session == null) return;
+              coordinator.activeCall.value?.id == call.id &&
+              (coordinator.localState.value == LocalCallState.connected ||
+                  coordinator.localState.value == LocalCallState.reconnecting);
+          if (connected) {
+            await openAudioCallScreen();
+          } else {
+            await joinCallFromUi(
+              context: context,
+              coordinator: coordinator,
+              call: call,
+            );
           }
-          await openAudioCallScreen();
           return;
         }
         if (context.mounted) {
@@ -274,9 +286,18 @@ class _ChatOptionsButton extends StatelessWidget {
               reportedBillId: thread.bill.id,
               billCode: thread.code,
             );
+          } else if (value == 'price_history') {
+            await Get.to<void>(() => PriceIncreaseHistoryScreen(billId: thread.bill.id));
           }
         },
         itemBuilder: (_) => [
+          const PopupMenuItem<String>(
+            value: 'price_history',
+            child: _MenuAction(
+              icon: Icons.price_change_outlined,
+              label: 'Lịch sử tăng giá',
+            ),
+          ),
           const PopupMenuItem<String>(
             value: 'invite',
             child: _MenuAction(
@@ -307,17 +328,15 @@ class _ChatOptionsButton extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: colors.secondary,
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: colors.border.withValues(alpha: 0.65),
-            ),
+            color: colors.primary.withValues(alpha: 0.06),
+            shape: BoxShape.circle,
+            border: Border.all(color: colors.primary),
           ),
           alignment: Alignment.center,
           child: Icon(
             Icons.more_horiz_rounded,
             size: 22,
-            color: colors.foreground,
+            color: colors.primary,
           ),
         ),
       ),

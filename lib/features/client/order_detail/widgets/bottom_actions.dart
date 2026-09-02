@@ -1,6 +1,7 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/common/message/detail_screen.dart';
+import 'package:sukientotapp/features/common/message/price_increase_history_screen.dart';
 import '../controller/controller.dart';
 
 class BottomActions extends GetView<ClientOrderDetailController> {
@@ -65,6 +66,14 @@ class BottomActions extends GetView<ClientOrderDetailController> {
         child: SafeArea(
           child: Row(
             children: [
+              IconButton(
+                tooltip: 'Lịch sử tăng giá',
+                onPressed: () => Get.to<void>(
+                  () => PriceIncreaseHistoryScreen(billId: controller.orderId),
+                ),
+                icon: const Icon(Icons.price_change_outlined),
+              ),
+              const SizedBox(width: 4),
               Expanded(
                 child: ElevatedButton(
                   onPressed: controller.canChat
@@ -92,7 +101,11 @@ class BottomActions extends GetView<ClientOrderDetailController> {
                           }
 
                           await messageController.openThread(thread);
-                          await Get.to<void>(() => const MessageDetailScreen());
+                          await Get.to<void>(
+                            () => MessageDetailScreen(
+                              controller: messageController,
+                            ),
+                          );
                           messageController.closeThread();
                         }
                       : null,
