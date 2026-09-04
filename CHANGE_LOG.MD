@@ -2,6 +2,10 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.9.1+86]
+
+- Improve require invoice UI
+
 ## [2.9.0+85]
 
 - Change call idle time to 30s
