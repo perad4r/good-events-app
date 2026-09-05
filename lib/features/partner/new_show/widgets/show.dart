@@ -257,22 +257,22 @@ class Show extends StatelessWidget {
               },
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.fromLTRB(16, 2, 16, 12),
+                padding: const EdgeInsets.fromLTRB(16, 2, 16, 8),
                 child: Row(
                   children: [
                     Expanded(
                       child: Container(
-                        height: 42,
+                        height: 36,
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         decoration: BoxDecoration(
                           color: requiresInvoice
                               ? const Color(0xFFECFDF5)
-                              : context.fTheme.colors.muted,
+                              : const Color(0xFFFEF2F2),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
                             color: requiresInvoice
                                 ? const Color(0xFF86EFAC)
-                                : context.fTheme.colors.border,
+                                : const Color(0xFFFECACA),
                           ),
                         ),
                         child: Row(
@@ -281,34 +281,24 @@ class Show extends StatelessWidget {
                               Icons.receipt_long_rounded,
                               color: requiresInvoice
                                   ? const Color(0xFF15803D)
-                                  : context.fTheme.colors.mutedForeground,
+                                  : const Color(0xFFB91C1C),
                               size: 17,
                             ),
                             const SizedBox(width: 7),
                             Expanded(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'requires_invoice'.tr,
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: context.typography.xs.copyWith(
-                                      color: context.fTheme.colors.mutedForeground,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                  Text(
-                                    requiresInvoice ? 'yes'.tr : 'no'.tr,
-                                    style: context.typography.xs.copyWith(
-                                      color: requiresInvoice
-                                          ? const Color(0xFF15803D)
-                                          : context.fTheme.colors.foreground,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                                  ),
-                                ],
+                              child: Text(
+                                requiresInvoice
+                                    ? 'invoice_required'.tr
+                                    : 'invoice_not_required'.tr,
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                style: context.typography.xs.copyWith(
+                                  color: requiresInvoice
+                                      ? const Color(0xFF15803D)
+                                      : const Color(0xFFB91C1C),
+                                  fontWeight: FontWeight.w800,
+                                  height: 1.25,
+                                ),
                               ),
                             ),
                           ],
@@ -317,7 +307,7 @@ class Show extends StatelessWidget {
                     ),
                     const SizedBox(width: 10),
                     Container(
-                      height: 42,
+                      height: 36,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       decoration: BoxDecoration(
                         color: _accentColor.withValues(alpha: 0.12),

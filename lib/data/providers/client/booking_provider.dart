@@ -57,7 +57,25 @@ class BookingProvider {
       final Options? options;
 
       if (bookingPhotos.isNotEmpty) {
-        final formData = FormData.fromMap(payload);
+        // Build multipart fields explicitly. FormData.fromMap can encode
+        // collection values differently depending on Dio's list format;
+        // Laravel expects accessory_ids[] entries for multipart arrays.
+        final formData = FormData();
+        for (final MapEntry<String, dynamic> entry in payload.entries) {
+          if (entry.key == 'accessory_ids' && entry.value is List) {
+            for (final dynamic accessoryId
+                in entry.value as List<dynamic>) {
+              formData.fields.add(
+                MapEntry('accessory_ids[]', accessoryId.toString()),
+              );
+            }
+            continue;
+          }
+
+          formData.fields.add(
+            MapEntry(entry.key, entry.value?.toString() ?? ''),
+          );
+        }
         for (final photo in bookingPhotos) {
           formData.files.add(
             MapEntry(

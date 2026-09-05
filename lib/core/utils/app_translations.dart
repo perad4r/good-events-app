@@ -222,7 +222,7 @@ class AppTranslations extends Translations {
       'partner_type': 'Loại đối tác',
       'rate': 'Đánh giá',
       'rate_count': '@rate đánh giá',
-      'detailed_info': 'Thông tin chi tiết',
+      'detailed_info': 'Chi tiết',
       'and': 'và',
       'about_the': 'về',
       'service': 'dịch vụ',
@@ -308,7 +308,9 @@ class AppTranslations extends Translations {
       'booking_requires_invoice': 'Có xuất hóa đơn?',
       'booking_requires_invoice_subtitle':
           'Chọn nếu bạn cần đối tác xuất hóa đơn cho đơn này.',
-      'requires_invoice': 'Xuất hóa đơn?',
+      'requires_invoice': 'Xuất hóa đơn',
+      'invoice_required': 'Có xuất hóa đơn',
+      'invoice_not_required': 'Không xuất hóa đơn',
       'yes': 'Có',
       'no': 'Không',
       'booking_stage_location_title': 'Địa điểm tổ chức',
@@ -541,7 +543,7 @@ class AppTranslations extends Translations {
       'upcomings': 'Sắp tới',
       'histories': 'Lịch sử',
 
-      'detail_info': 'Thông tin chi tiết',
+      'detail_info': 'Chi tiết',
       'view_review': 'Xem đánh giá',
       'review_pending_title': 'Chưa có dữ liệu đánh giá',
       'review_pending_desc':
@@ -1229,7 +1231,7 @@ class AppTranslations extends Translations {
       'partner_type': 'Partner type',
       'rate': 'Rate',
       'rate_count': '@rate ratings',
-      'detailed_info': 'Detailed info',
+      'detailed_info': 'Detailed',
       'and': 'and',
       'about_the': 'about the',
       'service': 'service',
@@ -1313,6 +1315,8 @@ class AppTranslations extends Translations {
       'booking_requires_invoice_subtitle':
           'Select this if you need an invoice for this order.',
       'requires_invoice': 'Invoice requested',
+      'invoice_required': 'Invoice requested',
+      'invoice_not_required': 'No invoice requested',
       'yes': 'Yes',
       'no': 'No',
       'booking_stage_location_title': 'Select location',
@@ -1518,7 +1522,7 @@ class AppTranslations extends Translations {
       'upcomings': 'Upcomings',
       'histories': 'Histories',
 
-      'detail_info': 'Detail info',
+      'detail_info': 'Detail',
       'view_review': 'View review',
       'review_pending_title': 'No review data yet',
       'review_pending_desc':
