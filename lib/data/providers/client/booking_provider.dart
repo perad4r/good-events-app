@@ -72,9 +72,10 @@ class BookingProvider {
             continue;
           }
 
-          formData.fields.add(
-            MapEntry(entry.key, entry.value?.toString() ?? ''),
-          );
+          final String fieldValue = entry.key == 'requires_invoice'
+              ? (entry.value == true || entry.value == 1 ? '1' : '0')
+              : entry.value?.toString() ?? '';
+          formData.fields.add(MapEntry(entry.key, fieldValue));
         }
         for (final photo in bookingPhotos) {
           formData.files.add(
