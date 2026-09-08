@@ -2,6 +2,51 @@ import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/data/models/common/call_model.dart';
 
+Future<void> _joinIncomingCallFromScreen({
+  required BuildContext context,
+  required CallCoordinator coordinator,
+  required CallModel call,
+}) async {
+  CallSession? session;
+  if (coordinator.requiresCallSwitch(call)) {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Bạn đang trong một cuộc gọi khác'),
+        content: const Text(
+          'Để tham gia cuộc gọi mới, bạn cần rời cuộc gọi hiện tại. '
+          'Bạn có muốn tiếp tục không?',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Từ chối, ở lại cuộc cũ'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('Rời và tham gia mới'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == false) {
+      await coordinator.declineCall(call);
+      return;
+    }
+    if (confirmed != true) return;
+    session = await coordinator.switchToCall(call);
+  } else {
+    if (coordinator.activeCall.value?.id != call.id) {
+      coordinator.activeCall.value = call;
+    }
+    session = await coordinator.joinActiveCall();
+  }
+
+  if (session == null && context.mounted && coordinator.errorMessage.value.isNotEmpty) {
+    AppSnackbar.showError(message: coordinator.errorMessage.value);
+  }
+}
+
 class AudioCallScreen extends GetView<CallCoordinator> {
   const AudioCallScreen({super.key});
 
@@ -241,6 +286,12 @@ class _CallControls extends StatelessWidget {
           StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'id')
               as int?;
       final isInitiator = call?.initiator?.id == currentUserId;
+      final isIncoming = call?.invitedUsers.any(
+            (user) =>
+                user.id == currentUserId &&
+                user.status == CallInviteStatus.pending,
+          ) ??
+          false;
       final connected =
           controller.localState.value == LocalCallState.connected ||
           controller.localState.value == LocalCallState.reconnecting;
@@ -249,6 +300,33 @@ class _CallControls extends StatelessWidget {
 
       return Column(
         children: [
+          if (isIncoming) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                _RoundControl(
+                  icon: Icons.call_end_rounded,
+                  label: 'Từ chối',
+                  destructive: true,
+                  onTap: () async {
+                    await controller.declineCall(call!);
+                    if (controller.activeCall.value == null) Get.back<void>();
+                  },
+                ),
+                const SizedBox(width: 26),
+                _RoundControl(
+                  icon: Icons.call_rounded,
+                  label: 'Tham gia',
+                  selected: true,
+                  onTap: () => _joinIncomingCallFromScreen(
+                    context: context,
+                    coordinator: controller,
+                    call: call!,
+                  ),
+                ),
+              ],
+            ),
+          ] else ...[
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -283,6 +361,7 @@ class _CallControls extends StatelessWidget {
               ),
             ],
           ),
+          ],
           if (isInitiator) ...[
             const SizedBox(height: 28),
             TextButton(
