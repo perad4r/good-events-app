@@ -6,6 +6,12 @@ import 'package:sukientotapp/core/utils/import/global.dart';
 bool _hasPromptedThisSession = false;
 
 Future<void> showCalendarPermissionDialogIfNeeded({bool force = false}) async {
+  final promptDisabled =
+      StorageService.readData(
+        key: LocalStorageKeys.calendarPermissionPromptDisabled,
+      ) ==
+      true;
+  if (promptDisabled) return;
   if (_hasPromptedThisSession && !force) return;
   if (!await SystemCalendarService.shouldShowPermissionExplanation()) return;
   _hasPromptedThisSession = true;
@@ -15,7 +21,7 @@ Future<void> showCalendarPermissionDialogIfNeeded({bool force = false}) async {
     return;
   }
 
-  final accepted = await Get.dialog<bool>(
+  final choice = await Get.dialog<_CalendarPermissionChoice>(
     Builder(
       builder: (context) => Dialog(
         backgroundColor: context.fTheme.colors.background,
@@ -70,18 +76,33 @@ Future<void> showCalendarPermissionDialogIfNeeded({bool force = false}) async {
                   Expanded(
                     child: FButton(
                       style: FButtonStyle.outline(),
-                      onPress: () => Get.back(result: false),
+                      onPress: () => Get.back(
+                        result: _CalendarPermissionChoice.later,
+                      ),
                       child: const Text('Để sau'),
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: FButton(
-                      onPress: () => Get.back(result: true),
+                      onPress: () => Get.back(
+                        result: _CalendarPermissionChoice.allow,
+                      ),
                       child: const Text('Cho phép'),
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              FButton(
+                style: FButtonStyle.ghost(),
+                onPress: () => Get.back(
+                  result: _CalendarPermissionChoice.neverAskAgain,
+                ),
+                child: Text(
+                  'Từ chối và không hỏi lại',
+                  style: TextStyle(color: context.fTheme.colors.destructive),
+                ),
               ),
             ],
           ),
@@ -91,10 +112,17 @@ Future<void> showCalendarPermissionDialogIfNeeded({bool force = false}) async {
     barrierDismissible: false,
   );
 
-  if (accepted == true) {
+  if (choice == _CalendarPermissionChoice.allow) {
     await SystemCalendarService.requestPermission();
+  } else if (choice == _CalendarPermissionChoice.neverAskAgain) {
+    StorageService.writeBoolData(
+      key: LocalStorageKeys.calendarPermissionPromptDisabled,
+      value: true,
+    );
   }
 }
+
+enum _CalendarPermissionChoice { allow, later, neverAskAgain }
 
 Future<bool> _waitForNavigator() async {
   const attempts = 30;

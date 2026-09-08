@@ -109,22 +109,6 @@ class MyProfileScreen extends GetView<MyProfileController> {
                   .slideY(begin: -0.02, end: 0, curve: Curves.easeOut),
               const SizedBox(height: 20),
 
-              // ── Identity ───────────────────────────────────────────
-              if (profile.identityCardNumber != null ||
-                  profile.frontIdentityCardImage != null ||
-                  profile.backIdentityCardImage != null) ...[
-                _SectionLabel(label: 'id_verification'.tr)
-                    .animate(delay: 300.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideY(begin: -0.02, end: 0, curve: Curves.easeOut),
-                const SizedBox(height: 10),
-                _IdentityCard(profile: profile)
-                    .animate(delay: 300.ms)
-                    .fadeIn(duration: 400.ms)
-                    .slideY(begin: -0.02, end: 0, curve: Curves.easeOut),
-                const SizedBox(height: 20),
-              ],
-
               // ── Introduction Video ────────────────────────────────
               if (profile.videoUrl.isNotEmpty) ...[
                 _SectionLabel(label: 'introduction_video'.tr)
