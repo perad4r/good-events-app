@@ -79,7 +79,9 @@ class MessageThreadParticipant {
             : int.tryParse((json['id'] ?? json['user_id'])?.toString() ?? '') ??
                   0,
         name: json['name']?.toString() ?? '',
-        avatar: json['avatar']?.toString(),
+        avatar: (json['avatar']?.toString().trim().isNotEmpty ?? false)
+            ? json['avatar'].toString().trim()
+            : json['avatar_url']?.toString().trim(),
         role: json['role']?.toString().toLowerCase(),
       );
 }

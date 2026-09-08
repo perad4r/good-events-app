@@ -8,12 +8,18 @@ Future<void> showPriceIncreaseRequestSheet(MessageController controller) async {
   String reasonText = '';
   final currencyFormatter = _CurrencyInputFormatter();
   await Get.bottomSheet<void>(
-    SafeArea(
-      child: Material(
+    Builder(
+      builder: (sheetContext) => SafeArea(
+        child: Material(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
         child: Padding(
-          padding: EdgeInsets.fromLTRB(20, 12, 20, MediaQuery.of(Get.context!).viewInsets.bottom + 20),
+          padding: EdgeInsets.fromLTRB(
+            20,
+            12,
+            20,
+            MediaQuery.viewInsetsOf(sheetContext).bottom + 20,
+          ),
           child: Form(
             key: formKey,
             child: SingleChildScrollView(
@@ -152,6 +158,7 @@ Future<void> showPriceIncreaseRequestSheet(MessageController controller) async {
               ]),
             ),
           ),
+        ),
         ),
       ),
     ),

@@ -1,5 +1,13 @@
 import 'package:sukientotapp/core/utils/import/global.dart';
 
+String? _firstNonEmptyString(Iterable<Object?> values) {
+  for (final value in values) {
+    final normalized = value?.toString().trim() ?? '';
+    if (normalized.isNotEmpty) return normalized;
+  }
+  return null;
+}
+
 class MessageAttachmentModel {
   final int? id;
   final String name;
@@ -321,13 +329,25 @@ class MessageModel {
     final user = json['user'] is Map
         ? Map<String, dynamic>.from(json['user'] as Map)
         : <String, dynamic>{};
+    final senderInfo = message['sender'] is Map
+        ? Map<String, dynamic>.from(message['sender'] as Map)
+        : <String, dynamic>{};
+    final callRaw = message['call'] ?? json['call'];
+    final callInfo = callRaw is Map
+        ? Map<String, dynamic>.from(callRaw)
+        : <String, dynamic>{};
+    final callInitiator = callInfo['initiator'] is Map
+        ? Map<String, dynamic>.from(callInfo['initiator'] as Map)
+        : <String, dynamic>{};
+    final resolvedSenderId =
+        senderId ?? _asInt(callInitiator['id'] ?? callInitiator['user_id']);
     final createdAt = message['created_at'] as String? ?? '';
     final type = (message['type'] ?? json['type'] ?? 'text').toString();
     final attachmentsRaw = message['attachments'] ?? json['attachments'];
     final attachments = _parseAttachments(attachmentsRaw);
     final locationRaw = message['location'] ?? json['location'];
     final location = _parseLocation(locationRaw);
-    final call = _parseCall(message['call'] ?? json['call']);
+    final call = _parseCall(callRaw);
     final priceIncreaseRequest = _parsePriceIncreaseRequest(
       message['price_increase_request'] ?? json['price_increase_request'],
     );
@@ -341,11 +361,29 @@ class MessageModel {
     return MessageModel(
       id: _asInt(message['id']),
       threadId: threadId,
-      userId: _asInt(message['user_id']) ?? senderId,
+      userId: _asInt(message['user_id']) ?? resolvedSenderId,
       sender:
-          (user['name'] as String?) ?? (json['sender_name'] as String?) ?? '',
-      senderAvatar:
-          user['avatar']?.toString() ?? json['sender_avatar']?.toString(),
+          _firstNonEmptyString(<Object?>[
+            user['name'],
+            senderInfo['name'],
+            json['sender_name'],
+            callInitiator['name'],
+          ]) ??
+          '',
+      // Call summary messages can be generated server-side with the sender
+      // nested under `call.initiator`, rather than the usual `user` payload.
+      senderAvatar: _firstNonEmptyString(<Object?>[
+        user['avatar'],
+        user['avatar_url'],
+        senderInfo['avatar'],
+        senderInfo['avatar_url'],
+        message['sender_avatar'],
+        message['sender_avatar_url'],
+        json['sender_avatar'],
+        json['sender_avatar_url'],
+        callInitiator['avatar'],
+        callInitiator['avatar_url'],
+      ]),
       text: body,
       type: type,
       previewText: previewText,
@@ -353,7 +391,7 @@ class MessageModel {
       location: location,
       call: call,
       priceIncreaseRequest: priceIncreaseRequest,
-      isSender: currentUserId != null && senderId == currentUserId,
+      isSender: currentUserId != null && resolvedSenderId == currentUserId,
       sended: true,
       time: diffForHumans(createdAt),
       date: '',

@@ -607,6 +607,10 @@ class AppTranslations extends Translations {
 
       'upload_id_notification':
           'Sau khi bạn tải lên giấy tờ tùy thân, đội ngũ của chúng tôi sẽ xem xét và xác minh danh tính của bạn trong vòng 24-48 giờ. Bạn sẽ nhận được thông báo khi quá trình xác minh hoàn tất.',
+      'identity_verification_pending_title': 'Thông tin CCCD đang chờ duyệt',
+      'identity_verification_pending_message':
+          'Thông tin CCCD đã gửi sẽ không hiển thị tại đây trong thời gian chờ quản trị viên duyệt. Bạn vẫn có thể nhập và tải lại thông tin CCCD mới nếu cần.',
+      'identity_verification_pending_confirm': 'Đã hiểu',
 
       'click_to_upload': 'Nhấn để tải ảnh lên',
       'click_to_change_image': 'Bấm để thay đổi hình ảnh',
@@ -1594,6 +1598,10 @@ class AppTranslations extends Translations {
 
       'upload_id_notification':
           'After uploading your ID, our team will review and verify your identity within 24-48 hours. You will receive a notification once the verification is complete.',
+      'identity_verification_pending_title': 'ID verification pending',
+      'identity_verification_pending_message':
+          'Your submitted ID information is hidden here while it is being reviewed by an administrator. You can still enter and upload updated ID information if needed.',
+      'identity_verification_pending_confirm': 'Got it',
 
       'front': 'Front',
       'back': 'Back',

@@ -157,6 +157,7 @@ class _CallMessageCard extends StatelessWidget {
         ? message.userId == currentUserId
         : message.isSender;
     final summary = message.call;
+    final senderAvatar = _resolveSenderAvatar(isOutgoing: isOutgoing);
 
     return Padding(
       padding: EdgeInsets.fromLTRB(12, isFirst ? 12 : 4, 12, 4),
@@ -167,7 +168,7 @@ class _CallMessageCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           if (!isOutgoing) ...[
-            CachedMessageAvatar(imageUrl: message.senderAvatar),
+            CachedMessageAvatar(imageUrl: senderAvatar),
             const SizedBox(width: 8),
           ],
           Flexible(
@@ -291,7 +292,7 @@ class _CallMessageCard extends StatelessWidget {
           ),
           if (isOutgoing) ...[
             const SizedBox(width: 8),
-            CachedMessageAvatar(imageUrl: message.senderAvatar),
+            CachedMessageAvatar(imageUrl: senderAvatar),
           ],
         ],
       ),
@@ -311,6 +312,42 @@ class _CallMessageCard extends StatelessWidget {
       thread: thread,
       coordinator: controller.callCoordinator,
     );
+  }
+
+  String? _resolveSenderAvatar({required bool isOutgoing}) {
+    final directAvatar = message.senderAvatar?.trim() ?? '';
+    if (directAvatar.isNotEmpty) return directAvatar;
+
+    if (isOutgoing) {
+      final storedAvatar =
+          StorageService.readMapData(
+            key: LocalStorageKeys.user,
+            mapKey: 'avatar_url',
+          )?.toString().trim() ??
+          '';
+      if (storedAvatar.isNotEmpty) return storedAvatar;
+      final alternateStoredAvatar =
+          StorageService.readMapData(
+            key: LocalStorageKeys.user,
+            mapKey: 'avatar',
+          )?.toString().trim() ??
+          '';
+      return alternateStoredAvatar.isEmpty ? null : alternateStoredAvatar;
+    }
+
+    if (!Get.isRegistered<MessageController>()) return null;
+    final participants = Get.find<MessageController>()
+        .selectedThread
+        .value
+        ?.participants;
+    if (participants == null) return null;
+    for (final participant in participants) {
+      final isMatchingSender = participant.id == message.userId ||
+          (message.userId == null && participant.name == message.sender);
+      final avatar = participant.avatar?.trim() ?? '';
+      if (isMatchingSender && avatar.isNotEmpty) return avatar;
+    }
+    return null;
   }
 
 }

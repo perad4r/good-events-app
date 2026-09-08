@@ -61,6 +61,9 @@ class StorageService {
     final pushDeviceId = box.read<String>(LocalStorageKeys.pushDeviceId);
     final fcmToken = box.read<String>(LocalStorageKeys.fcmToken);
     final voipToken = box.read<String>(LocalStorageKeys.voipToken);
+    final calendarPermissionPromptDisabled = box.read<bool>(
+      LocalStorageKeys.calendarPermissionPromptDisabled,
+    );
     box.erase();
     if (pushDeviceId != null && pushDeviceId.isNotEmpty) {
       box.write(LocalStorageKeys.pushDeviceId, pushDeviceId);
@@ -70,6 +73,9 @@ class StorageService {
     }
     if (voipToken != null && voipToken.isNotEmpty) {
       box.write(LocalStorageKeys.voipToken, voipToken);
+    }
+    if (calendarPermissionPromptDisabled == true) {
+      box.write(LocalStorageKeys.calendarPermissionPromptDisabled, true);
     }
   }
 
@@ -120,4 +126,6 @@ class LocalStorageKeys {
   // App settings
   static const String locale = "locale";
   static const String settings = "settings";
+  static const String calendarPermissionPromptDisabled =
+      "calendar_permission_prompt_disabled";
 }
