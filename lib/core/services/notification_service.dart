@@ -45,6 +45,9 @@ int _incomingCallNotificationId(String callId) {
 }
 
 Future<void> _showIncomingCallNotification(Map<String, dynamic> data) async {
+  // iOS VoIP pushes are rendered by CallKit while the app is backgrounded.
+  // Never create a second local-notification banner for the same call.
+  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) return;
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     await AndroidCallkitService.showIncomingCall(data);
     return;
@@ -131,6 +134,10 @@ class NotificationService {
   static const MethodChannel _pushKitChannel = MethodChannel(
     'com.sukientot.app/pushkit',
   );
+  static Map<String, dynamic>? _pendingIosVoipAnswer;
+  static Future<void>? _iosVoipAnswerPreparation;
+  static bool _isIosCallKitAudioSessionActive = false;
+  static String? _iosAudioSessionCallId;
 
   static const AndroidNotificationChannel _androidChannel =
       AndroidNotificationChannel(
@@ -302,10 +309,27 @@ class NotificationService {
           type == 'incoming_call' &&
           !kIsWeb &&
           defaultTargetPlatform == TargetPlatform.android;
+      final isIosIncomingCall =
+          type == 'incoming_call' &&
+          !kIsWeb &&
+          defaultTargetPlatform == TargetPlatform.iOS;
       if (isAndroidIncomingCall) {
         unawaited(_handleForegroundIncomingCall(data));
+      } else if (isIosIncomingCall) {
+        // PushKit owns iOS incoming-call delivery. Handling the FCM copy here
+        // would recreate an in-app alert alongside the CallKit call.
+        logger.i('[FCM] Ignoring duplicate iOS incoming-call message.');
       } else if (type == 'call_ended' && !kIsWeb) {
-        unawaited(AndroidCallkitService.handleCallEnded(data));
+        if (defaultTargetPlatform == TargetPlatform.iOS) {
+          final callId = data['call_id']?.toString();
+          if (callId != null && Get.isRegistered<CallCoordinator>()) {
+            unawaited(
+              Get.find<CallCoordinator>().handleCallEndedSignal(callId),
+            );
+          }
+        } else {
+          unawaited(AndroidCallkitService.handleCallEnded(data));
+        }
       } else if (!kIsWeb) {
         NotificationHandler.handleMessage(data);
         _showLocalNotification(message);
@@ -462,6 +486,18 @@ class NotificationService {
       await AndroidCallkitService.endCall(callId);
       return;
     }
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      if (!accepted) {
+        try {
+          await _pushKitChannel.invokeMethod<void>('endVoipCall', {
+            'call_id': callId,
+          });
+        } on PlatformException catch (error) {
+          logger.w('[PushKit] Unable to end CallKit call: ${error.code}');
+        }
+      }
+      return;
+    }
     await _localNotifications.cancel(id: _incomingCallNotificationId(callId));
   }
 
@@ -486,43 +522,10 @@ class NotificationService {
 
   static Future<void> _initializePushKitBridge() async {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.iOS) return;
-    _pushKitChannel.setMethodCallHandler((call) async {
-      switch (call.method) {
-        case 'voipTokenUpdated':
-          final token = call.arguments?.toString();
-          if (token == null || token.isEmpty) return;
-          StorageService.writeStringData(
-            key: LocalStorageKeys.voipToken,
-            value: token,
-          );
-          await _syncDeviceToBackend();
-          return;
-        case 'voipCallAnswered':
-          final data = _stringKeyedMap(call.arguments);
-          if (data == null || !Get.isRegistered<CallCoordinator>()) return;
-          final coordinator = Get.find<CallCoordinator>();
-          await coordinator.handleIncomingNotification(data);
-          final callId = data['call_id']?.toString();
-          final activeCall = coordinator.activeCall.value;
-          final pendingCall = coordinator.pendingSwitchCall.value;
-          final targetCall = pendingCall?.id == callId
-              ? pendingCall
-              : activeCall;
-          if (targetCall == null) return;
-          if (coordinator.requiresCallSwitch(targetCall)) {
-            await coordinator.switchToCall(targetCall);
-          } else {
-            await coordinator.joinActiveCall();
-          }
-          return;
-        case 'voipCallEnded':
-          final data = _stringKeyedMap(call.arguments);
-          if (data == null || !Get.isRegistered<CallCoordinator>()) return;
-          final coordinator = Get.find<CallCoordinator>();
-          await coordinator.handleIncomingNotification(data);
-          await coordinator.decline();
-          return;
-      }
+    _pushKitChannel.setMethodCallHandler((platformCall) async {
+      final data = _stringKeyedMap(platformCall.arguments);
+      if (data == null && platformCall.method != 'voipTokenUpdated') return;
+      await _handleIosVoipEvent(platformCall.method, data);
     });
     try {
       final token = await _pushKitChannel.invokeMethod<String>('getVoipToken');
@@ -532,9 +535,123 @@ class NotificationService {
           value: token,
         );
       }
+      final queuedEvents = await _pushKitChannel
+          .invokeMethod<List<dynamic>>('consumePendingVoipEvents');
+      if (queuedEvents == null) return;
+      for (final event in queuedEvents) {
+        final eventData = _stringKeyedMap(event);
+        final method = eventData?['method']?.toString();
+        final payload = _stringKeyedMap(eventData?['payload']);
+        if (method != null && payload != null) {
+          await _handleIosVoipEvent(method, payload);
+        }
+      }
     } on PlatformException catch (error) {
-      logger.w('[PushKit] Unable to read VoIP token: ${error.code}');
+      logger.w('[PushKit] Unable to initialize bridge: ${error.code}');
     }
+  }
+
+  static Future<void> _handleIosVoipEvent(
+    String method,
+    Map<String, dynamic>? data,
+  ) async {
+    switch (method) {
+      case 'voipTokenUpdated':
+        final token = data?['token']?.toString();
+        if (token == null || token.isEmpty) return;
+        StorageService.writeStringData(
+          key: LocalStorageKeys.voipToken,
+          value: token,
+        );
+        await _syncDeviceToBackend();
+        return;
+      case 'voipIncomingCall':
+        if (data != null) await _showIosForegroundCallUi(data);
+        return;
+      case 'voipCallAnswered':
+        if (data != null) _prepareIosVoipAnswer(data);
+        return;
+      case 'voipAudioSessionActivated':
+        _isIosCallKitAudioSessionActive = true;
+        _iosAudioSessionCallId = data?['call_id']?.toString();
+        unawaited(_joinIosVoipCallWhenAudioIsReady());
+        return;
+      case 'voipAudioSessionDeactivated':
+        _isIosCallKitAudioSessionActive = false;
+        _iosAudioSessionCallId = null;
+        return;
+      case 'voipCallEnded':
+        _isIosCallKitAudioSessionActive = false;
+        _iosAudioSessionCallId = null;
+        _pendingIosVoipAnswer = null;
+        _iosVoipAnswerPreparation = null;
+        if (data == null || !Get.isRegistered<CallCoordinator>()) return;
+        final coordinator = Get.find<CallCoordinator>();
+        final callId = data['call_id']?.toString();
+        if (data['type']?.toString() == 'call_ended' && callId != null) {
+          await coordinator.handleCallEndedSignal(callId);
+          return;
+        }
+        await coordinator.handleIncomingNotification(data);
+        await coordinator.decline();
+        return;
+    }
+  }
+
+  static void _prepareIosVoipAnswer(Map<String, dynamic> data) {
+    _pendingIosVoipAnswer = data;
+    _isIosCallKitAudioSessionActive =
+        _iosAudioSessionCallId == data['call_id']?.toString();
+    _iosVoipAnswerPreparation = _resolveIosVoipCall(data);
+    unawaited(_iosVoipAnswerPreparation!);
+    if (_isIosCallKitAudioSessionActive) {
+      unawaited(_joinIosVoipCallWhenAudioIsReady());
+    }
+  }
+
+  static Future<void> _resolveIosVoipCall(Map<String, dynamic> data) async {
+    if (!Get.isRegistered<CallCoordinator>()) return;
+    await Get.find<CallCoordinator>().handleIncomingNotification(data);
+  }
+
+  static Future<void> _joinIosVoipCallWhenAudioIsReady() async {
+    if (!_isIosCallKitAudioSessionActive) return;
+    final data = _pendingIosVoipAnswer;
+    final preparation = _iosVoipAnswerPreparation;
+    if (data == null || preparation == null || !Get.isRegistered<CallCoordinator>()) {
+      return;
+    }
+    await preparation;
+    if (!_isIosCallKitAudioSessionActive) return;
+
+    final coordinator = Get.find<CallCoordinator>();
+    final callId = data['call_id']?.toString();
+    final activeCall = coordinator.activeCall.value;
+    final pendingCall = coordinator.pendingSwitchCall.value;
+    final targetCall = pendingCall?.id == callId ? pendingCall : activeCall;
+    if (targetCall == null) {
+      logger.w('[PushKit] Accepted call is no longer active: $callId');
+      return;
+    }
+
+    if (coordinator.requiresCallSwitch(targetCall)) {
+      await coordinator.switchToCall(targetCall);
+    } else {
+      await coordinator.joinActiveCall();
+    }
+  }
+
+  static Future<void> _showIosForegroundCallUi(
+    Map<String, dynamic> data,
+  ) async {
+    if (!Get.isRegistered<CallCoordinator>()) return;
+    final coordinator = Get.find<CallCoordinator>();
+    await coordinator.handleIncomingNotification(data);
+    final callId = data['call_id']?.toString();
+    final call = coordinator.pendingSwitchCall.value?.id == callId
+        ? coordinator.pendingSwitchCall.value
+        : coordinator.activeCall.value;
+    if (call != null) coordinator.requestCallUi();
   }
 
   static Map<String, dynamic>? _stringKeyedMap(Object? value) {

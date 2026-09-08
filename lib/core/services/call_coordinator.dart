@@ -47,6 +47,7 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
   final RxInt callDurationSeconds = 0.obs;
   final RxBool hasPendingCallRecovery = false.obs;
   final RxBool isCallRecoveryInProgress = false.obs;
+  final RxBool shouldOpenCallUi = false.obs;
 
   RtcEngine? _engine;
   String? _currentThreadId;
@@ -103,6 +104,10 @@ class CallCoordinator extends GetxService with WidgetsBindingObserver {
       _isInChannel &&
       activeCall.value != null &&
       activeCall.value!.id != call.id;
+
+  /// Lets platform-level incoming-call handling request the Flutter call UI
+  /// without depending on a BuildContext.
+  void requestCallUi() => shouldOpenCallUi.value = true;
 
   Future<void> preparePersistedCallRecovery() async {
     if (_recoveryCheckInProgress || _isInChannel) return;

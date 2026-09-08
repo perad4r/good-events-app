@@ -194,6 +194,7 @@ class _CallResumeNavigatorState extends State<CallResumeNavigator>
     with WidgetsBindingObserver {
   late final CallCoordinator _coordinator;
   late final Worker _callStateWorker;
+  late final Worker _callUiRequestWorker;
   Timer? _navigationRetryTimer;
   bool _isAppResumed = false;
 
@@ -206,6 +207,10 @@ class _CallResumeNavigatorState extends State<CallResumeNavigator>
     WidgetsBinding.instance.addObserver(this);
     _callStateWorker = ever<LocalCallState>(
       _coordinator.localState,
+      (_) => _openCallUiIfNeeded(),
+    );
+    _callUiRequestWorker = ever<bool>(
+      _coordinator.shouldOpenCallUi,
       (_) => _openCallUiIfNeeded(),
     );
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -247,7 +252,12 @@ class _CallResumeNavigatorState extends State<CallResumeNavigator>
     final isOngoing = state == LocalCallState.joining ||
         state == LocalCallState.connected ||
         state == LocalCallState.reconnecting;
-    if (isOngoing) unawaited(openAudioCallScreen());
+    final shouldOpenIncomingUi =
+        _coordinator.shouldOpenCallUi.value && state == LocalCallState.ringing;
+    if (isOngoing || shouldOpenIncomingUi) {
+      if (shouldOpenIncomingUi) _coordinator.shouldOpenCallUi.value = false;
+      unawaited(openAudioCallScreen());
+    }
   }
 
   void _scheduleNavigationRetry() {
@@ -263,6 +273,7 @@ class _CallResumeNavigatorState extends State<CallResumeNavigator>
     _navigationRetryTimer?.cancel();
     WidgetsBinding.instance.removeObserver(this);
     _callStateWorker.dispose();
+    _callUiRequestWorker.dispose();
     super.dispose();
   }
 
@@ -486,6 +497,11 @@ class GlobalIncomingCallOverlay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (!Get.isRegistered<CallCoordinator>()) return child;
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+      // iOS foreground calls open the full Flutter call screen directly;
+      // background calls are owned by CallKit until the user returns to app.
+      return child;
+    }
     final coordinator = Get.find<CallCoordinator>();
     return Stack(
       children: [
@@ -500,13 +516,11 @@ class GlobalIncomingCallOverlay extends StatelessWidget {
                     mapKey: 'id',
                   )
                   as int?;
-          final isPendingInvite =
-              call?.invitedUsers.any(
-                (user) =>
-                    user.id == currentUserId &&
-                    user.status == CallInviteStatus.pending,
-              ) ??
-              false;
+          final isPendingInvite = call.invitedUsers.any(
+            (user) =>
+                user.id == currentUserId &&
+                user.status == CallInviteStatus.pending,
+          );
           final shouldShow =
               isPendingInvite &&
               (coordinator.pendingSwitchCall.value?.id == call.id ||
