@@ -693,21 +693,15 @@ class _MenuItem {
   final bool isExpanded;
   final List<_MenuItem> children;
 
-  const _MenuItem(
-    this.title,
-    this.icon,
-    this.onTap, {
-    this.color,
-    this.isExpanded = false,
-    this.children = const [],
-  });
+const _MenuItem(this.title, this.icon, this.onTap, {this.color})
+    : isExpanded = false,
+      children = const [];
 
-  const _MenuItem.dropdown(
+const _MenuItem.dropdown(
     this.title,
     this.icon,
     this.isExpanded,
     this.onTap, {
     required this.children,
-    this.color,
-  });
+  }) : color = null;
 }

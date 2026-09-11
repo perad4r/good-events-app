@@ -1,3 +1,5 @@
+// ignore_for_file: experimental_member_use
+
 import 'dart:io';
 
 import 'package:flutter_quill/flutter_quill.dart';
@@ -473,11 +475,10 @@ class _UploadRow extends StatelessWidget {
   const _UploadRow({
     required this.icon,
     required this.label,
-    this.initialImageUrl,
     this.validator,
     required this.onPicked,
     required this.onRemoved,
-  });
+  }) : initialImageUrl = null;
 
   @override
   Widget build(BuildContext context) {

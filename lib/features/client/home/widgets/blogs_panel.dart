@@ -33,7 +33,7 @@ class ClientBlogPanel extends StatelessWidget {
                 capacity: blog.maxPeople,
                 category: blog.type,
                 tag: blog
-                    .type, // TODO: backend payload has no tag mapped currently, so we will temporary use type as tag
+                    .type, // `TODO: backend payload has no tag mapped currently, so we will temporary use type as tag`
                 date: DateTime.now(), // Use publishedHuman for date later if needed, or parse
                 onTap: () {
                   Get.toNamed(

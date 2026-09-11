@@ -418,7 +418,6 @@ class MessageController extends GetxController {
         final updated = filteredMessages[idx].copyWith(
           newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
-          newestMessageSenderAvatar: incoming.senderAvatar,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: incoming.isSender,
           unreadMessages: incoming.isSender
@@ -466,7 +465,6 @@ class MessageController extends GetxController {
       filteredMessages[idx] = filteredMessages[idx].copyWith(
         newestMessage: lastMessage.previewText,
         newestMessageSender: lastMessage.sender,
-        newestMessageSenderAvatar: lastMessage.senderAvatar,
         time: lastMessage.time,
         isRead: true,
         unreadMessages: 0,
@@ -588,7 +586,6 @@ class MessageController extends GetxController {
         final updated = filteredMessages[idx].copyWith(
           newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
-          newestMessageSenderAvatar: incoming.senderAvatar,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: true,
           unreadMessages: 0,
@@ -1186,7 +1183,7 @@ class MessageController extends GetxController {
         return null;
       }
 
-      return Geolocator.getCurrentPosition(
+      return await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(
           accuracy: LocationAccuracy.high,
         ),
@@ -1247,17 +1244,12 @@ class MessageController extends GetxController {
         StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'name')
             as String? ??
         '';
-    final currentUserAvatar = StorageService.readMapData(
-      key: LocalStorageKeys.user,
-      mapKey: 'avatar_url',
-    )?.toString();
     final threadIdx = filteredMessages.indexWhere((t) => t.id == threadId);
     if (threadIdx == -1) return;
 
     final updated = filteredMessages[threadIdx].copyWith(
       newestMessage: text,
       newestMessageSender: currentUserName,
-      newestMessageSenderAvatar: currentUserAvatar,
       time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
       isRead: true,
       unreadMessages: 0,

@@ -15,7 +15,7 @@ void main() {
     'updated_at': '2026-09-01T10:00:00+07:00',
     'event': 'Wedding',
     'status': 'confirmed',
-    if (isOverdue != null) 'is_overdue': isOverdue,
+    'is_overdue': ?isOverdue,
   };
 
   test('parses is_overdue from partner bill response', () {

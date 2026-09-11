@@ -163,12 +163,14 @@ class _PriceIncreaseRequestCardState extends State<PriceIncreaseRequestCard> {
       request: widget.request,
       accept: accept,
     );
-    if (mounted) setState(() {
+    if (mounted) {
+      setState(() {
       _processing = false;
       if (success) {
         _localStatus = accept ? 'accepted' : 'rejected';
       }
     });
+    }
   }
 
   String _money(int value) => '${NumberFormat.decimalPattern('vi_VN').format(value)} ₫';

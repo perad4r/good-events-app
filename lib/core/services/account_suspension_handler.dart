@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:sukientotapp/core/services/localstorage_service.dart';
-import 'package:sukientotapp/core/services/pusher_service.dart';
 import 'package:sukientotapp/core/utils/app_exceptions.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 

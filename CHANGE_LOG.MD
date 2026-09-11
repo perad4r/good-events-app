@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.9.3+89]
+
+- Remove avatar change in thread list
+- Add fix some code warning
+
+## [2.9.3+88]
+
+- Fix bug
+
 ## [2.9.2+87]
 
 - Fix bug

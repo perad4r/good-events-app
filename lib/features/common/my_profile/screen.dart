@@ -352,7 +352,7 @@ class _SectionLabel extends StatelessWidget {
   final String label;
   final String? sub;
 
-  const _SectionLabel({required this.label, this.sub});
+  const _SectionLabel({required this.label}) : sub = null;
 
   @override
   Widget build(BuildContext context) {
@@ -610,123 +610,6 @@ class _VideoCardState extends State<_VideoCard> {
           ),
         ),
       ),
-    );
-  }
-}
-
-// ─── Identity Card ────────────────────────────────────────────────────────────
-
-class _IdentityCard extends StatelessWidget {
-  final ProfileModel profile;
-
-  const _IdentityCard({required this.profile});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: context.fTheme.colors.background,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: context.fTheme.colors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (profile.identityCardNumber != null) ...[
-            _InfoRow(
-              icon: FIcons.banknote,
-              label: 'id_number'.tr,
-              value: profile.identityCardNumber!,
-            ),
-          ],
-          if (profile.identityCardNumber != null &&
-              (profile.frontIdentityCardImage != null ||
-                  profile.backIdentityCardImage != null)) ...[
-            const SizedBox(height: 4),
-            Divider(color: context.fTheme.colors.border, height: 16),
-          ],
-          if (profile.frontIdentityCardImage != null ||
-              profile.backIdentityCardImage != null) ...[
-            Row(
-              children: [
-                if (profile.frontIdentityCardImage != null)
-                  Expanded(
-                    child: _IdCardImage(
-                      imageUrl: profile.frontIdentityCardImage!,
-                      label: 'front'.tr,
-                    ),
-                  ),
-                if (profile.frontIdentityCardImage != null &&
-                    profile.backIdentityCardImage != null)
-                  const SizedBox(width: 8),
-                if (profile.backIdentityCardImage != null)
-                  Expanded(
-                    child: _IdCardImage(
-                      imageUrl: profile.backIdentityCardImage!,
-                      label: 'back'.tr,
-                    ),
-                  ),
-              ],
-            ),
-          ],
-          if (profile.selfieImage != null) ...[
-            const SizedBox(height: 8),
-            _IdCardImage(
-              imageUrl: profile.selfieImage!,
-              label: 'selfie_image'.tr,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _IdCardImage extends StatelessWidget {
-  final String imageUrl;
-  final String label;
-
-  const _IdCardImage({required this.imageUrl, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(10),
-          child: CachedNetworkImage(
-            imageUrl: imageUrl,
-            height: 110,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              height: 110,
-              color: context.fTheme.colors.muted,
-              child: const Center(child: CircularProgressIndicator()),
-            ),
-            errorWidget: (context, url, error) => Container(
-              height: 110,
-              color: context.fTheme.colors.muted,
-              child: Center(
-                child: Icon(
-                  FIcons.imageOff,
-                  color: context.fTheme.colors.mutedForeground,
-                ),
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 11,
-            color: context.fTheme.colors.mutedForeground,
-          ),
-        ),
-      ],
     );
   }
 }
