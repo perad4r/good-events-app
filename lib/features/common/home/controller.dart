@@ -75,7 +75,7 @@ class GuestHomeController extends GetxController {
       arguments: <String, Object>{
         'categories': partnerList,
         'isLoading': isLoadingPartners,
-        if (selectedCategory != null) 'selectedCategory': selectedCategory,
+        'selectedCategory': ?selectedCategory,
       },
     );
   }

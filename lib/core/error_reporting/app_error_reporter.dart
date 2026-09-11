@@ -218,7 +218,7 @@ class AppErrorReporter {
     if (!isEnabled) return;
 
     try {
-      final reportContext = <String, dynamic>{if (context != null) ...context};
+      final reportContext = <String, dynamic>{...?context};
       try {
         final route = Get.currentRoute;
         if (route.isNotEmpty) reportContext.putIfAbsent('screen', () => route);
@@ -376,7 +376,7 @@ class AppErrorReporter {
   static String? _extractResponseCode(Object? data) {
     if (data is! Map) return null;
     final code = data['code'];
-    return code == null ? null : code.toString();
+    return code?.toString();
   }
 
   static String? _firstNonEmpty(Iterable<Object?> values) {

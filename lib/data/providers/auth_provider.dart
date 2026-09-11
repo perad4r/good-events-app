@@ -393,7 +393,7 @@ class AuthProvider {
 
   /// Forgot password – send OTP (phone) or reset email (email)
   /// POST /forgot/send
-  /// Body: { method: 'phone'|'email', credential: <value> }
+  /// Body: { method: 'phone'|'email', credential: `<value>` }
   Future<void> forgotSendOtp({
     required String method,
     required String credential,
@@ -441,7 +441,7 @@ class AuthProvider {
 
   /// Forgot password – verify OTP
   /// POST /forgot/verify-otp
-  /// Body: { phone: <value>, otp: <value> }
+  /// Body: { phone: `<value>`, otp: `<value>` }
   /// Returns reset_token on success.
   Future<String> forgotVerifyOtp({
     required String phone,
@@ -480,7 +480,7 @@ class AuthProvider {
 
   /// Forgot password – reset password with token
   /// POST /forgot/reset-password
-  /// Body: { reset_token: <token>, password: <newPassword> }
+  /// Body: { reset_token: `<token>`, password: `<newPassword>` }
   Future<void> forgotResetPassword({
     required String resetToken,
     required String password,

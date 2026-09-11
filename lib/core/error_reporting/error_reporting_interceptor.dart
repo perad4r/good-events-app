@@ -8,11 +8,11 @@ class ErrorReportingInterceptor extends Interceptor {
   ErrorReportingInterceptor({required this.reporter});
 
   @override
-  void onError(DioException error, ErrorInterceptorHandler handler) {
+  void onError(DioException err, ErrorInterceptorHandler handler) {
     if (AppErrorReporter.isEnabled &&
-        error.requestOptions.extra['skipErrorReporting'] != true) {
-      unawaited(reporter.reportApiError(error));
+        err.requestOptions.extra['skipErrorReporting'] != true) {
+      unawaited(reporter.reportApiError(err));
     }
-    handler.next(error);
+    handler.next(err);
   }
 }

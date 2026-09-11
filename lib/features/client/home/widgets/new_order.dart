@@ -93,7 +93,7 @@ class _NewOrderPanelState extends State<NewOrderPanel> with SingleTickerProvider
                         ),
                       ),
                       // ] else ...[
-                      //TODO: handle empty state when have data
+                      //`TODO: handle empty state when have data`
                       //   const Spacer(),
                       //   const _AvatarWidget(isLast: true),
                       // ],

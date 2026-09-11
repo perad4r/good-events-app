@@ -162,7 +162,7 @@ class NotificationController extends GetxController {
   }
 
   Future<void> readPartnerNotification(NotificationModel notification) async {
-    // TODO: Partner notification logic will be implemented here
+    // `TODO: Partner notification logic will be implemented here`
     Get.back();
     Get.find<PartnerBottomNavigationController>().setIndex(1);
     if (!notification.unread) {
