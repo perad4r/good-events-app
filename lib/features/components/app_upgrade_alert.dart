@@ -18,6 +18,7 @@ class _AppUpgradeAlertState extends State<AppUpgradeAlert> {
   void initState() {
     super.initState();
     _upgrader = Upgrader(
+      durationUntilAlertAgain: Duration.zero,
       // debugDisplayAlways: kDebugMode,
       // debugLogging: kDebugMode,
     );
@@ -181,7 +182,7 @@ class _BrandedUpgradeAlertState extends UpgradeAlertState {
                 SizedBox(
                   width: double.infinity,
                   child: CustomButtonPlus(
-                    onTap: () => onUserUpdated(context, !isBlocked),
+                    onTap: () => onUserUpdated(context, false),
                     btnText:
                         messages.message(UpgraderMessage.buttonTitleUpdate) ??
                         'Cập nhật ngay',
