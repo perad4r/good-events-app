@@ -7,9 +7,19 @@ Future<void> showPriceIncreaseRequestSheet(MessageController controller) async {
   String priceText = '';
   String reasonText = '';
   final currencyFormatter = _CurrencyInputFormatter();
-  await Get.bottomSheet<void>(
-    Builder(
-      builder: (sheetContext) => SafeArea(
+  await showModalBottomSheet<void>(
+    context: Get.context!,
+    isScrollControlled: true,
+    useSafeArea: false,
+    backgroundColor: Colors.transparent,
+    builder: (sheetContext) => AnimatedPadding(
+      duration: const Duration(milliseconds: 180),
+      curve: Curves.easeOutCubic,
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.viewInsetsOf(sheetContext).bottom,
+      ),
+      child: SafeArea(
+        top: false,
         child: Material(
         color: Colors.white,
         borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
@@ -18,7 +28,7 @@ Future<void> showPriceIncreaseRequestSheet(MessageController controller) async {
             20,
             12,
             20,
-            MediaQuery.viewInsetsOf(sheetContext).bottom + 20,
+            20,
           ),
           child: Form(
             key: formKey,
@@ -147,7 +157,7 @@ Future<void> showPriceIncreaseRequestSheet(MessageController controller) async {
                       reason: reasonText,
                     );
                     if (success) {
-                      Get.back<void>();
+                      Navigator.of(sheetContext).pop();
                       AppSnackbar.showSuccess(
                         message: 'Đã gửi yêu cầu tăng giá.',
                       );
@@ -162,7 +172,6 @@ Future<void> showPriceIncreaseRequestSheet(MessageController controller) async {
         ),
       ),
     ),
-    isScrollControlled: true,
   );
 }
 
