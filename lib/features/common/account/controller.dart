@@ -359,6 +359,7 @@ class AccountController extends GetxController {
 
   Future<void> _disposeSessionMessageController() async {
     if (Get.isRegistered<MessageController>()) {
+      await Get.find<MessageController>().disposeUploads();
       await Get.delete<MessageController>(force: true);
     }
   }

@@ -3,6 +3,7 @@ import 'controller.dart';
 import 'widget/chat_app_bar.dart';
 import 'widget/chat_bubble.dart';
 import 'widget/chat_input.dart';
+import 'widget/attachment_card.dart';
 import 'package:sukientotapp/features/common/call/widgets/call_ui.dart';
 
 class MessageDetailScreen extends StatelessWidget {
@@ -24,8 +25,10 @@ class MessageDetailScreen extends StatelessWidget {
           ),
           Expanded(
             child: Obx(() {
+              final uploads = controller.visibleUploads;
               if (controller.isLoadingMessages.value &&
-                  controller.messagesDetail.isEmpty) {
+                  controller.messagesDetail.isEmpty &&
+                  uploads.isEmpty) {
                 return Center(
                   child: CircularProgressIndicator(
                     color: AppColors.primary,
@@ -54,10 +57,24 @@ class MessageDetailScreen extends StatelessWidget {
                       controller: controller.scrollController,
                       reverse: true,
                       padding: const EdgeInsets.symmetric(vertical: 8),
-                      itemCount: controller.messagesDetail.length + 1,
+                      itemCount:
+                          uploads.length + controller.messagesDetail.length + 1,
                       findChildIndexCallback: (Key key) {
                         if (key == const ValueKey<String>('security-notice')) {
-                          return controller.messagesDetail.length;
+                          return uploads.length +
+                              controller.messagesDetail.length;
+                        }
+                        for (
+                          int uploadIndex = 0;
+                          uploadIndex < uploads.length;
+                          uploadIndex++
+                        ) {
+                          if (key ==
+                              ValueKey<String>(
+                                'upload-${uploads[uploadIndex].clientMessageId}',
+                              )) {
+                            return uploadIndex;
+                          }
                         }
 
                         for (
@@ -65,19 +82,38 @@ class MessageDetailScreen extends StatelessWidget {
                           messageIndex < controller.messagesDetail.length;
                           messageIndex++
                         ) {
-                          final message = controller.messagesDetail[messageIndex];
-                          final messageKey = message.id?.toString() ??
+                          final message =
+                              controller.messagesDetail[messageIndex];
+                          final messageKey =
+                              message.id?.toString() ??
                               'pending-${identityHashCode(message)}';
                           if (key ==
                               ValueKey<String>(
                                 'message-animation-$messageKey',
                               )) {
-                            return messageIndex;
+                            return uploads.length + messageIndex;
                           }
                         }
                         return null;
                       },
                       itemBuilder: (context, index) {
+                        if (index < uploads.length) {
+                          return Obx(
+                            key: ValueKey<String>(
+                              'upload-${uploads[index].clientMessageId}',
+                            ),
+                            () {
+                              final bool busy =
+                                  controller.isSendingMessage.value;
+                              return ChatUploadBubble(
+                                task: uploads[index],
+                                controller: controller,
+                                busy: busy,
+                              );
+                            },
+                          );
+                        }
+                        index -= uploads.length;
                         // Last item (visually at top) = security notice
                         if (index == controller.messagesDetail.length) {
                           return const _SecurityNotice()
@@ -93,7 +129,8 @@ class MessageDetailScreen extends StatelessWidget {
                               );
                         }
                         final message = controller.messagesDetail[index];
-                        final String messageKey = message.id?.toString() ??
+                        final String messageKey =
+                            message.id?.toString() ??
                             'pending-${identityHashCode(message)}';
                         return ChatBubble(
                               key: ValueKey<String>('message-$messageKey'),
@@ -102,7 +139,9 @@ class MessageDetailScreen extends StatelessWidget {
                                   index == controller.messagesDetail.length - 1,
                             )
                             .animate(
-                              key: ValueKey<String>('message-animation-$messageKey'),
+                              key: ValueKey<String>(
+                                'message-animation-$messageKey',
+                              ),
                             )
                             .fadeIn(duration: 280.ms)
                             .slideY(

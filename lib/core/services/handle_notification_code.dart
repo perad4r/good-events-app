@@ -115,6 +115,15 @@ class NotificationHandler {
       return;
     } else {
       logger.i('[NotificationHandler] New message for threadId: $threadId');
+      if (Get.isRegistered<MessageController>()) {
+        final MessageController controller = Get.find<MessageController>();
+        if (controller.selectedThreadId.isNotEmpty) {
+          // Realtime updates messages and previews while a chat detail is open.
+          // A push notification must not trigger another fetch of either view.
+          return;
+        }
+        controller.refreshThreads();
+      }
     }
   }
 

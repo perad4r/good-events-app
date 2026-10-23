@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import '../controller.dart';
 import 'price_increase_request_sheet.dart';
+import 'package:sukientotapp/data/models/chat_upload_model.dart';
+import 'attachment_card.dart';
 
 class ChatInput extends StatelessWidget {
   final MessageController controller;
@@ -24,6 +26,37 @@ class ChatInput extends StatelessWidget {
       ),
       child: Column(
         children: [
+          Obx(() {
+            final ChatAttachmentSelection? attachment =
+                controller.selectedAttachment.value;
+            if (attachment == null) return const SizedBox.shrink();
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+              child: FCard(
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: AttachmentInfo(
+                        name: attachment.name,
+                        size: attachment.size,
+                        video: attachment.type == ChatAttachmentType.video,
+                      ),
+                    ),
+                    FButton.icon(
+                      style: FButtonStyle.ghost(),
+                      onPress: controller.clearSelectedAttachment,
+                      child: const Icon(FIcons.x),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          }),
+          Obx(
+            () => controller.isPickingAttachment.value
+                ? const FProgress()
+                : const SizedBox.shrink(),
+          ),
           // File attachment preview row
           Obx(() {
             if (controller.selectedImages.isEmpty) {
@@ -170,7 +203,9 @@ class ChatInput extends StatelessWidget {
                   const SizedBox(width: 8),
                   // Send button
                   Obx(() {
-                    final isSending = controller.isSendingMessage.value;
+                    final isSending =
+                        controller.isSendingMessage.value ||
+                        controller.isPickingAttachment.value;
                     return GestureDetector(
                       onTap: isSending ? null : controller.sendMessage,
                       child: AnimatedOpacity(
@@ -245,8 +280,9 @@ class _AttachmentButtonState extends State<_AttachmentButton>
   late final Animation<Offset> _slideAnimation;
   OverlayEntry? _overlayEntry;
 
-  static const double _menuWidth = 180;
-  double get _menuHeight => widget.controller.canRequestPriceIncrease.value ? 159 : 106;
+  static const double _menuWidth = 240;
+  double get _menuHeight =>
+      widget.controller.canRequestPriceIncrease.value ? 230 : 186;
   static const double _menuGap = 2;
   static const double _arrowSize = 12;
 
@@ -350,10 +386,23 @@ class _AttachmentButtonState extends State<_AttachmentButton>
                         await _hideMenu();
                         await widget.controller.sendCurrentLocation();
                       },
-                      onPriceIncreaseTap: widget.controller.canRequestPriceIncrease.value
+                      onFileTap: () async {
+                        await _hideMenu();
+                        if (mounted) {
+                          await _chooseAttachmentSource(video: false);
+                        }
+                      },
+                      onVideoTap: () async {
+                        await _hideMenu();
+                        if (mounted) await _chooseAttachmentSource(video: true);
+                      },
+                      onPriceIncreaseTap:
+                          widget.controller.canRequestPriceIncrease.value
                           ? () async {
                               await _hideMenu();
-                              await showPriceIncreaseRequestSheet(widget.controller);
+                              await showPriceIncreaseRequestSheet(
+                                widget.controller,
+                              );
                             }
                           : null,
                     ),
@@ -376,6 +425,59 @@ class _AttachmentButtonState extends State<_AttachmentButton>
     _overlayEntry?.remove();
     _overlayEntry = null;
   }
+
+  Future<void> _chooseAttachmentSource({required bool video}) async {
+    await showFSheet<void>(
+      context: context,
+      side: FLayout.btt,
+      builder: (BuildContext sheetContext) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              if (video) ...<Widget>[
+                FButton(
+                  onPress: () {
+                    Navigator.of(sheetContext).pop();
+                    widget.controller.pickAttachment(
+                      ChatAttachmentType.video,
+                      fromGallery: true,
+                    );
+                  },
+                  child: Text('chat_video_gallery'.tr),
+                ),
+                const SizedBox(height: 8),
+              ],
+              FButton(
+                onPress: () {
+                  Navigator.of(sheetContext).pop();
+                  widget.controller.pickAttachment(
+                    video ? ChatAttachmentType.video : ChatAttachmentType.file,
+                  );
+                },
+                child: Text('chat_choose_from_files'.tr),
+              ),
+              if (!video) ...<Widget>[
+                const SizedBox(height: 8),
+                FButton(
+                  style: FButtonStyle.secondary(),
+                  onPress: () {
+                    Navigator.of(sheetContext).pop();
+                    widget.controller.pickAttachment(
+                      ChatAttachmentType.file,
+                      allFiles: true,
+                    );
+                  },
+                  child: Text('chat_choose_all_files'.tr),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class _AttachmentMenuPanel extends StatelessWidget {
@@ -383,12 +485,16 @@ class _AttachmentMenuPanel extends StatelessWidget {
     required this.arrowCenterX,
     required this.onImageTap,
     required this.onLocationTap,
+    required this.onFileTap,
+    required this.onVideoTap,
     this.onPriceIncreaseTap,
   });
 
   final double arrowCenterX;
   final VoidCallback onImageTap;
   final VoidCallback onLocationTap;
+  final VoidCallback onFileTap;
+  final VoidCallback onVideoTap;
   final VoidCallback? onPriceIncreaseTap;
 
   @override
@@ -397,12 +503,7 @@ class _AttachmentMenuPanel extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Material(
-          color: Colors.white,
-          elevation: 8,
-          shadowColor: Colors.black.withValues(alpha: 0.18),
-          borderRadius: BorderRadius.circular(12),
-          clipBehavior: Clip.antiAlias,
+        FCard.raw(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -411,14 +512,22 @@ class _AttachmentMenuPanel extends StatelessWidget {
                 label: 'Chọn ảnh',
                 onTap: onImageTap,
               ),
-              const Divider(height: 1, color: Color(0xFFE5E7EB)),
+              _AttachmentMenuItem(
+                icon: FIcons.file,
+                label: 'chat_send_file'.tr,
+                onTap: onFileTap,
+              ),
+              _AttachmentMenuItem(
+                icon: FIcons.video,
+                label: 'chat_send_video'.tr,
+                onTap: onVideoTap,
+              ),
               _AttachmentMenuItem(
                 icon: Icons.location_on_outlined,
                 label: 'Gửi vị trí',
                 onTap: onLocationTap,
               ),
               if (onPriceIncreaseTap != null) ...[
-                const Divider(height: 1, color: Color(0xFFE5E7EB)),
                 _AttachmentMenuItem(
                   icon: Icons.trending_up_rounded,
                   label: 'Yêu cầu tăng giá',
@@ -472,24 +581,14 @@ class _AttachmentMenuItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-        child: Row(
-          children: [
-            Icon(icon, size: 20, color: AppColors.primary),
-            const SizedBox(width: 10),
-            Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF1F2937),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
+    return SizedBox(
+      height: 44,
+      child: FButton(
+        style: FButtonStyle.ghost(),
+        onPress: onTap,
+        prefix: Icon(icon, size: 20),
+        mainAxisAlignment: MainAxisAlignment.start,
+        child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
     );
   }

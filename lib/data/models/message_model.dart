@@ -205,7 +205,9 @@ class PriceIncreaseRequestModel {
       requestedTotal: asInt(json['requested_total']),
       reason: json['reason']?.toString() ?? '',
       status: json['status']?.toString() ?? '',
-      respondedBy: json['responded_by'] == null ? null : asInt(json['responded_by']),
+      respondedBy: json['responded_by'] == null
+          ? null
+          : asInt(json['responded_by']),
       respondedAt: DateTime.tryParse(json['responded_at']?.toString() ?? ''),
       createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
       updatedAt: DateTime.tryParse(json['updated_at']?.toString() ?? ''),
@@ -243,8 +245,15 @@ class MessageModel {
   final PriceIncreaseRequestModel? priceIncreaseRequest;
   final bool isSender;
   final bool sended;
-  final String time;
+  final DateTime? createdAt;
+  final String _time;
   final String date;
+
+  String get time => timeAt(DateTime.now());
+
+  String timeAt(DateTime now) => createdAt == null
+      ? _time
+      : diffForHumans(createdAt!.toIso8601String(), now: now);
 
   MessageModel({
     this.id,
@@ -261,11 +270,16 @@ class MessageModel {
     this.priceIncreaseRequest,
     required this.isSender,
     required this.sended,
-    required this.time,
+    required String time,
+    this.createdAt,
     required this.date,
-  }) : previewText = previewText ?? text;
+  }) : _time = time,
+       previewText = previewText ?? text;
 
-  MessageModel copyWith({PriceIncreaseRequestModel? priceIncreaseRequest}) {
+  MessageModel copyWith({
+    PriceIncreaseRequestModel? priceIncreaseRequest,
+    bool? sended,
+  }) {
     return MessageModel(
       id: id,
       threadId: threadId,
@@ -278,21 +292,21 @@ class MessageModel {
       attachments: attachments,
       location: location,
       call: call,
-      priceIncreaseRequest:
-          priceIncreaseRequest ?? this.priceIncreaseRequest,
+      priceIncreaseRequest: priceIncreaseRequest ?? this.priceIncreaseRequest,
       isSender: isSender,
-      sended: sended,
-      time: time,
+      sended: sended ?? this.sended,
+      time: _time,
+      createdAt: createdAt,
       date: date,
     );
   }
 
   /// Converts an ISO 8601 timestamp string to a human-readable relative time.
-  static String diffForHumans(String isoString) {
+  static String diffForHumans(String isoString, {DateTime? now}) {
     if (isoString.isEmpty) return '';
     final DateTime? dateTime = DateTime.tryParse(isoString);
     if (dateTime == null) return isoString;
-    final Duration diff = DateTime.now().difference(dateTime);
+    final Duration diff = (now ?? DateTime.now()).difference(dateTime);
     if (diff.inSeconds < 60) return 'just_now'.tr;
     if (diff.inMinutes < 60) {
       final m = diff.inMinutes;
@@ -326,8 +340,9 @@ class MessageModel {
         _asInt(message['sender_id']) ??
         _asInt(message['user_id']);
     final threadId = _asInt(message['thread_id']);
-    final user = json['user'] is Map
-        ? Map<String, dynamic>.from(json['user'] as Map)
+    final userRaw = json['user'] ?? message['user'];
+    final user = userRaw is Map
+        ? Map<String, dynamic>.from(userRaw)
         : <String, dynamic>{};
     final senderInfo = message['sender'] is Map
         ? Map<String, dynamic>.from(message['sender'] as Map)
@@ -356,7 +371,12 @@ class MessageModel {
     final previewText =
         (message['preview_text'] as String?) ??
         (json['preview_text'] as String?) ??
-        _fallbackPreviewText(type: type, body: body, location: location);
+        _fallbackPreviewText(
+          type: type,
+          body: body,
+          location: location,
+          attachmentName: attachments.isEmpty ? '' : attachments.first.name,
+        );
 
     return MessageModel(
       id: _asInt(message['id']),
@@ -394,6 +414,7 @@ class MessageModel {
       isSender: currentUserId != null && resolvedSenderId == currentUserId,
       sended: true,
       time: diffForHumans(createdAt),
+      createdAt: DateTime.tryParse(createdAt),
       date: '',
     );
   }
@@ -409,10 +430,15 @@ class MessageModel {
       attachments: _parseAttachments(json['attachments']),
       location: _parseLocation(json['location']),
       call: _parseCall(json['call']),
-      priceIncreaseRequest: _parsePriceIncreaseRequest(json['priceIncreaseRequest']),
+      priceIncreaseRequest: _parsePriceIncreaseRequest(
+        json['priceIncreaseRequest'],
+      ),
       isSender: json['isSender'] ?? false,
       sended: json['sended'] ?? false,
       time: json['time'] ?? '',
+      createdAt: DateTime.tryParse(
+        (json['created_at'] ?? json['createdAt'])?.toString() ?? '',
+      ),
       date: json['date'] ?? '',
     );
   }
@@ -432,6 +458,7 @@ class MessageModel {
       'isSender': isSender,
       'sended': sended,
       'time': time,
+      'created_at': createdAt?.toIso8601String(),
       'date': date,
     };
   }
@@ -467,7 +494,9 @@ class MessageModel {
 
   static PriceIncreaseRequestModel? _parsePriceIncreaseRequest(dynamic value) {
     if (value is Map) {
-      return PriceIncreaseRequestModel.fromJson(Map<String, dynamic>.from(value));
+      return PriceIncreaseRequestModel.fromJson(
+        Map<String, dynamic>.from(value),
+      );
     }
     return null;
   }
@@ -476,9 +505,10 @@ class MessageModel {
     if (value is! List) return <MessageAttachmentModel>[];
     return value
         .whereType<Map>()
-        .map((item) => MessageAttachmentModel.fromJson(
-              Map<String, dynamic>.from(item),
-            ))
+        .map(
+          (item) =>
+              MessageAttachmentModel.fromJson(Map<String, dynamic>.from(item)),
+        )
         .toList();
   }
 
@@ -492,9 +522,14 @@ class MessageModel {
     required String type,
     required String body,
     required MessageLocationModel? location,
+    String attachmentName = '',
   }) {
     if (body.isNotEmpty) return body;
     if (type == 'image') return '[Ảnh]';
+    if (type == 'file') {
+      return '[Tệp]${attachmentName.isEmpty ? '' : ' $attachmentName'}';
+    }
+    if (type == 'video') return '[Video]';
     if (type == 'location') return location?.label ?? 'Vị trí hiện tại';
     if (type == 'call') return '[Cuộc gọi]';
     if (type == 'price_increase_request') return '[Yêu cầu tăng giá]';

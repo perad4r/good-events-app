@@ -9,6 +9,8 @@ import 'package:sukientotapp/features/common/message/controller.dart';
 import 'package:sukientotapp/features/common/call/widgets/call_ui.dart';
 import 'cached_message_avatar.dart';
 import 'price_increase_request_card.dart';
+import 'attachment_card.dart';
+import 'message_timestamp.dart';
 
 class ChatBubble extends StatelessWidget {
   final MessageModel message;
@@ -18,6 +20,9 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (message.type == 'file' || message.type == 'video') {
+      return ChatAttachmentBubble(message: message);
+    }
     if (message.type == 'price_increase_request' &&
         message.priceIncreaseRequest != null) {
       return Padding(
@@ -74,8 +79,8 @@ class ChatBubble extends StatelessWidget {
               if (isSender)
                 Padding(
                   padding: const EdgeInsets.only(right: 6, bottom: 2),
-                  child: Text(
-                    message.time,
+                  child: MessageTimestamp(
+                    message: message,
                     style: const TextStyle(
                       fontSize: 10,
                       color: Color(0xFF9CA3AF),
@@ -121,8 +126,8 @@ class ChatBubble extends StatelessWidget {
               if (!isSender)
                 Padding(
                   padding: const EdgeInsets.only(left: 6, bottom: 2),
-                  child: Text(
-                    message.time,
+                  child: MessageTimestamp(
+                    message: message,
                     style: const TextStyle(
                       fontSize: 10,
                       color: Color(0xFF9CA3AF),
@@ -250,8 +255,8 @@ class _CallMessageCard extends StatelessWidget {
                           ],
                         ),
                       ),
-                      Text(
-                        message.time,
+                      MessageTimestamp(
+                        message: message,
                         style: const TextStyle(
                           color: Color(0xFF9CA3AF),
                           fontSize: 10,

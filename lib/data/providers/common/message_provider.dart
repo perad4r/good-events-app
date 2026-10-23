@@ -1,23 +1,87 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio_smart_retry/dio_smart_retry.dart';
+import 'package:sukientotapp/data/models/chat_upload_model.dart';
+import 'package:sukientotapp/data/models/message_model.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sukientotapp/core/services/api_service.dart';
 import 'package:sukientotapp/core/utils/logger.dart';
 import 'package:sukientotapp/data/models/chat_invitation_model.dart';
 import 'package:sukientotapp/domain/api_url.dart';
-
-class ChatApiException implements Exception {
-  const ChatApiException({required this.message, this.statusCode});
-  final String message;
-  final int? statusCode;
-  @override
-  String toString() => message;
-}
+import 'package:sukientotapp/core/utils/chat_api_exception.dart';
+export 'package:sukientotapp/core/utils/chat_api_exception.dart';
 
 class MessageProvider {
   final ApiService _apiService;
 
   MessageProvider(this._apiService);
   CancelToken? _userSearchCancelToken;
+
+  Future<MessageModel> sendAttachment({
+    required String threadId,
+    required ChatAttachmentSelection attachment,
+    required String caption,
+    required String clientMessageId,
+    required int? currentUserId,
+    required void Function(int sent, int total) onProgress,
+    required CancelToken cancelToken,
+  }) async {
+    try {
+      // Rebuild the multipart and stream for every logical retry.
+      final FormData form = FormData.fromMap(<String, Object>{
+        'type': attachment.type.name,
+        attachment.type.name: await MultipartFile.fromFile(
+          attachment.path,
+          filename: attachment.name,
+        ),
+        'client_message_id': clientMessageId,
+        if (caption.isNotEmpty) 'body': caption,
+      });
+      final Options options = Options(
+        contentType: 'multipart/form-data',
+        sendTimeout: const Duration(minutes: 5),
+        receiveTimeout: const Duration(seconds: 60),
+      )..disableRetry = true;
+      final Response<Map<String, dynamic>> response = await _apiService.dio
+          .post<Map<String, dynamic>>(
+            AppUrl.chatMessages(threadId),
+            data: form,
+            options: options,
+            onSendProgress: onProgress,
+            cancelToken: cancelToken,
+          );
+      final Map<String, dynamic>? data = response.data;
+      if (data == null || data['success'] != true || data['message'] is! Map) {
+        throw const ChatApiException(message: 'chat_upload_failed');
+      }
+      final MessageModel message = MessageModel.fromApiJson(
+        data,
+        currentUserId: currentUserId,
+      );
+      if (message.id == null) {
+        throw const ChatApiException(message: 'chat_upload_failed');
+      }
+      return message;
+    } on DioException catch (error) {
+      if (CancelToken.isCancel(error)) rethrow;
+      if (error.response?.statusCode == 413) {
+        throw const ChatApiException(
+          message: 'chat_upload_too_large',
+          statusCode: 413,
+        );
+      }
+      if (error.response?.statusCode == 403) {
+        throw const ChatApiException(
+          message: 'chat_access_denied',
+          statusCode: 403,
+        );
+      }
+      throw _chatException(error, fallback: 'chat_upload_failed');
+    } on FileSystemException {
+      throw const ChatApiException(message: 'chat_attachment_unavailable');
+    }
+  }
 
   Future<List<ChatUserSearchResult>> searchUsersByPhone({
     required String phone,
@@ -90,7 +154,14 @@ class MessageProvider {
     if (data is Map) {
       final errors = data['errors'];
       if (errors is Map) {
-        for (final value in errors.values) {
+        final Iterable<Object?> values = <Object?>[
+          errors['file'],
+          errors['video'],
+          errors['body'],
+          errors['client_message_id'],
+          ...errors.values,
+        ];
+        for (final Object? value in values) {
           if (value is List && value.isNotEmpty) {
             validationMessage = value.first.toString();
             break;

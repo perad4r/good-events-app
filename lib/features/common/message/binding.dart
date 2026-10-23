@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'controller.dart';
+import 'package:sukientotapp/core/services/chat_media_service.dart';
 
 import 'package:sukientotapp/core/services/api_service.dart';
 import 'package:sukientotapp/data/providers/common/report_provider.dart';
@@ -19,7 +20,10 @@ class MessageBinding extends Bindings {
   void dependencies() {
     Get.lazyPut<ApiService>(() => ApiService(), fenix: true);
 
-    Get.lazyPut<MessageProvider>(() => MessageProvider(Get.find<ApiService>()), fenix: true);
+    Get.lazyPut<MessageProvider>(
+      () => MessageProvider(Get.find<ApiService>()),
+      fenix: true,
+    );
     if (!Get.isRegistered<CallCoordinator>()) {
       Get.lazyPut<CallProvider>(
         () => CallProvider(Get.find<ApiService>()),
@@ -53,6 +57,7 @@ class MessageBinding extends Bindings {
     );
 
     if (!Get.isRegistered<MessageController>()) {
+      Get.lazyPut<ChatMediaService>(() => ChatMediaService(), fenix: true);
       Get.put<MessageController>(
         MessageController(
           Get.find<MessageRepository>(),

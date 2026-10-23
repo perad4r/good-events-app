@@ -61,8 +61,7 @@
 		<key>NSMicrophoneUsageDescription</key>
 		<string>Ứng dụng cần quyền microphone để bạn có thể tham gia cuộc gọi âm thanh.</string>
 		<key>NSPhotoLibraryUsageDescription</key>
-		<string>Ứng dụng yêu cầu quyền truy cập vào thư viện ảnh để tải lên ảnh hoàn thành đơn hoặc
-			hồ sơ.</string>
+		<string>Ứng dụng cần truy cập thư viện để gửi ảnh và video trong trò chuyện, tải ảnh hoàn thành đơn hoặc hồ sơ.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
 		<string>Ứng dụng yêu cầu quyền truy cập vị trí để bạn có thể gửi vị trí hiện tại trong cuộc
 			trò chuyện.</string>

@@ -135,6 +135,10 @@ try {
 
 - **Mason Make**: `mason make feature --name <name> --role <role>`
 
+## 9. About flutter command
+
+- Skip it, some how it not work in your env
+
 ---
 
 _Reminder: Prioritize "Working Code" but strictly adhere to "Clean Architecture"._
