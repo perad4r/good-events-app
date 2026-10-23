@@ -1,7 +1,20 @@
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
+import 'package:sukientotapp/data/models/chat_upload_model.dart';
+import 'package:sukientotapp/data/models/message_model.dart';
 import 'package:sukientotapp/data/models/chat_invitation_model.dart';
 
 abstract class MessageRepository {
+  Future<MessageModel> sendAttachment({
+    required String threadId,
+    required ChatAttachmentSelection attachment,
+    required String caption,
+    required String clientMessageId,
+    required int? currentUserId,
+    required void Function(int sent, int total) onProgress,
+    required CancelToken cancelToken,
+  });
+
   Future<Map<String, dynamic>> getThreads({
     required int page,
     String? side,

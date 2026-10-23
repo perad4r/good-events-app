@@ -139,13 +139,17 @@ class MessageListModel {
             ? latestBody
             : latestType == 'image'
             ? '[Ảnh]'
-                : latestType == 'location'
-                    ? 'Vị trí hiện tại'
-                    : latestType == 'call'
-                        ? '[Cuộc gọi]'
-                        : latestType == 'price_increase_request'
-                            ? '[Yêu cầu tăng giá]'
-                    : null);
+            : latestType == 'file'
+            ? '[Tệp]'
+            : latestType == 'video'
+            ? '[Video]'
+            : latestType == 'location'
+            ? 'Vị trí hiện tại'
+            : latestType == 'call'
+            ? '[Cuộc gọi]'
+            : latestType == 'price_increase_request'
+            ? '[Yêu cầu tăng giá]'
+            : null);
 
     return MessageListModel(
       id: json['id'].toString(),

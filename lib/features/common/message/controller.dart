@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
+import 'package:dio/dio.dart' show CancelToken;
+import 'package:file_picker/file_picker.dart';
 
 import 'package:flutter/services.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,14 +10,18 @@ import 'package:image_picker/image_picker.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:sukientotapp/core/utils/import/global.dart';
 import 'package:sukientotapp/core/utils/phone_number_censor.dart';
+import 'package:sukientotapp/core/utils/chat_api_exception.dart';
 
 import 'package:sukientotapp/domain/repositories/partner/message_repository.dart';
 import 'package:sukientotapp/data/models/message_model.dart';
 import 'package:sukientotapp/data/models/message_list_model.dart';
 import 'package:sukientotapp/core/services/call_coordinator.dart';
 import 'package:sukientotapp/data/models/chat_invitation_model.dart';
+import 'package:sukientotapp/data/models/chat_upload_model.dart';
+import 'package:sukientotapp/core/services/chat_media_service.dart';
 
 import 'detail_screen.dart';
+import 'message_avatar_resolver.dart';
 import 'widget/invitation_accept_dialog.dart';
 
 class MessageController extends GetxController {
@@ -36,12 +42,15 @@ class MessageController extends GetxController {
   final Rx<MessageListModel?> selectedThread = Rx<MessageListModel?>(null);
   final RxBool isLoadingMessages = false.obs;
   final RxBool isLoadingOlderMessages = false.obs;
+  final Rx<DateTime> messageTimeNow = DateTime.now().obs;
+  Timer? _messageTimeTimer;
   int _messagesPage = 1;
   bool _messagesHasMore = true;
 
   String get selectedThreadId => selectedThread.value?.id ?? '';
   bool get isPartner =>
-      (StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'role') ?? '')
+      (StorageService.readMapData(key: LocalStorageKeys.user, mapKey: 'role') ??
+              '')
           .toString()
           .toLowerCase() ==
       'partner';
@@ -54,6 +63,7 @@ class MessageController extends GetxController {
     if (value is num) return value.toInt();
     return int.tryParse(value?.toString() ?? '');
   }
+
   final RxBool canRequestPriceIncrease = false.obs;
 
   String? _subscribedChannel;
@@ -68,6 +78,230 @@ class MessageController extends GetxController {
   final RxBool isSendingMessage = false.obs;
   final RxBool isResolvingLocation = false.obs;
   final ImagePicker _imagePicker = ImagePicker();
+  final Rx<ChatAttachmentSelection?> selectedAttachment =
+      Rx<ChatAttachmentSelection?>(null);
+  final RxList<ChatUploadTask> attachmentUploads = <ChatUploadTask>[].obs;
+  final Map<String, CancelToken> _uploadTokens = <String, CancelToken>{};
+  final Set<Future<void>> _uploadCompletions = <Future<void>>{};
+  final RxBool isPickingAttachment = false.obs;
+  late final ChatMediaService mediaService = Get.find<ChatMediaService>();
+  int _threadGeneration = 0;
+  int _messageLoadGeneration = 0;
+  bool _uploadsDisposed = false;
+  final Set<int> _seenUserMessageIds = <int>{};
+
+  List<ChatUploadTask> get visibleUploads => attachmentUploads
+      .where((ChatUploadTask task) => task.threadId == selectedThreadId)
+      .toList();
+
+  String? get currentUserAvatar => StorageService.readMapData(
+    key: LocalStorageKeys.user,
+    mapKey: 'avatar_url',
+  )?.toString();
+
+  String? resolveSenderAvatar(MessageModel message) =>
+      resolveMessageSenderAvatar(
+        message: message,
+        history: messagesDetail,
+        participants:
+            selectedThread.value?.participants ??
+            const <MessageThreadParticipant>[],
+        currentUserId: currentUserId,
+        currentUserAvatar: currentUserAvatar,
+        alternateCurrentUserAvatar: StorageService.readMapData(
+          key: LocalStorageKeys.user,
+          mapKey: 'avatar',
+        )?.toString(),
+      );
+
+  String? get uploadSenderAvatar => resolveSenderAvatar(
+    MessageModel(
+      userId: currentUserId,
+      text: '',
+      isSender: true,
+      sended: false,
+      time: '',
+      date: '',
+    ),
+  );
+
+  Future<void> clearSelectedAttachment() async {
+    final ChatAttachmentSelection? previous = selectedAttachment.value;
+    selectedAttachment.value = null;
+    if (previous != null) await mediaService.removeLocal(previous.path);
+  }
+
+  Future<void> pickAttachment(
+    ChatAttachmentType type, {
+    bool fromGallery = false,
+    bool allFiles = false,
+  }) async {
+    if (isPickingAttachment.value || isSendingMessage.value) return;
+    if (selectedImages.isNotEmpty || selectedAttachment.value != null) {
+      AppSnackbar.showInfo(message: 'chat_remove_attachment_first'.tr);
+      return;
+    }
+    final int generation = _threadGeneration;
+    if (selectedThreadId.isEmpty) return;
+    isPickingAttachment.value = true;
+    try {
+      XFile? file;
+      if (fromGallery) {
+        file = await _imagePicker.pickVideo(source: ImageSource.gallery);
+      } else {
+        final FilePickerResult? result = await FilePicker.pickFiles(
+          allowMultiple: false,
+          type: allFiles ? FileType.any : FileType.custom,
+          allowedExtensions: allFiles
+              ? null
+              : (type == ChatAttachmentType.file
+                    ? ChatAttachmentSelection.fileExtensions.toList()
+                    : ChatAttachmentSelection.videoExtensions.toList()),
+        );
+        if (result != null) file = result.xFiles.single;
+      }
+      if (file == null || isClosed || generation != _threadGeneration) return;
+      final ChatAttachmentSelection staged = await mediaService.stage(
+        file: file,
+        type: type,
+        id: _generateUuidV4(),
+      );
+      if (isClosed || generation != _threadGeneration) {
+        await mediaService.removeLocal(staged.path);
+        return;
+      }
+      selectedAttachment.value = staged;
+    } catch (error) {
+      if (!isClosed && generation == _threadGeneration) {
+        AppSnackbar.showError(
+          message: error is ChatMediaException
+              ? error.key.tr
+              : 'chat_pick_failed'.tr,
+        );
+      }
+    } finally {
+      if (!isClosed) isPickingAttachment.value = false;
+    }
+  }
+
+  Future<void> _sendSelectedAttachment() async {
+    final ChatAttachmentSelection? attachment = selectedAttachment.value;
+    if (attachment == null ||
+        selectedThreadId.isEmpty ||
+        isSendingMessage.value) {
+      return;
+    }
+    final String caption = PhoneNumberCensor.censor(
+      messageController.text.trim(),
+    );
+    final String? error = attachment.validate();
+    if (error != null || caption.length > 20000) {
+      AppSnackbar.showError(message: (error ?? 'chat_caption_too_long').tr);
+      return;
+    }
+    final ChatUploadTask task = ChatUploadTask(
+      clientMessageId: _generateUuidV4(),
+      threadId: selectedThreadId,
+      attachment: attachment,
+      caption: caption,
+    );
+    selectedAttachment.value = null;
+    messageController.clear();
+    attachmentUploads.insert(0, task);
+    scrollToBottom();
+    await retryAttachment(task);
+  }
+
+  Future<void> retryAttachment(ChatUploadTask task) async {
+    if (_uploadsDisposed ||
+        _uploadTokens.containsKey(task.clientMessageId) ||
+        !attachmentUploads.contains(task) ||
+        isSendingMessage.value) {
+      return;
+    }
+    final CancelToken token = CancelToken();
+    final Completer<void> completion = Completer<void>();
+    _uploadCompletions.add(completion.future);
+    _uploadTokens[task.clientMessageId] = token;
+    task.status = ChatUploadStatus.sending;
+    task.progress = 0;
+    task.error = null;
+    attachmentUploads.refresh();
+    isSendingMessage.value = true;
+    try {
+      final MessageModel message = await _repository.sendAttachment(
+        threadId: task.threadId,
+        attachment: task.attachment,
+        caption: task.caption,
+        clientMessageId: task.clientMessageId,
+        currentUserId: currentUserId,
+        cancelToken: token,
+        onProgress: (int sent, int total) {
+          if (_uploadsDisposed) return;
+          task.progress = total <= 0 ? 0 : (sent / total).clamp(0.0, 1.0);
+          attachmentUploads.refresh();
+        },
+      );
+      if (_uploadsDisposed) return;
+      if (selectedThreadId == task.threadId) {
+        messagesDetail.assignAll(
+          _uniqueMessages(<MessageModel>[message, ...messagesDetail]),
+        );
+      }
+      attachmentUploads.remove(task);
+      _updateThreadPreview(threadId: task.threadId, text: message.previewText);
+      await mediaService.removeLocal(task.attachment.path);
+    } catch (error) {
+      if (_uploadsDisposed) return;
+      task.status = ChatUploadStatus.failed;
+      task.error = error is ChatApiException
+          ? error.message.tr
+          : 'chat_upload_failed'.tr;
+      attachmentUploads.refresh();
+    } finally {
+      _uploadTokens.remove(task.clientMessageId);
+      if (!_uploadsDisposed) isSendingMessage.value = false;
+      completion.complete();
+      _uploadCompletions.remove(completion.future);
+    }
+  }
+
+  Future<void> discardAttachment(ChatUploadTask task) async {
+    if (task.status == ChatUploadStatus.sending) return;
+    attachmentUploads.remove(task);
+    await mediaService.removeLocal(task.attachment.path);
+  }
+
+  Future<void> disposeUploads() async {
+    if (_uploadsDisposed) return;
+    _messageTimeTimer?.cancel();
+    _messageTimeTimer = null;
+    _uploadsDisposed = true;
+    _threadGeneration++;
+    for (final CancelToken token in _uploadTokens.values) {
+      token.cancel('Session ended');
+    }
+    attachmentUploads.clear();
+    selectedAttachment.value = null;
+    await Future.wait(_uploadCompletions.toList());
+    await mediaService.dispose();
+  }
+
+  List<MessageModel> _uniqueMessages(Iterable<MessageModel> messages) {
+    final Set<int> ids = <int>{};
+    final List<MessageModel> unique = messages
+        .where(
+          (MessageModel message) => message.id == null || ids.add(message.id!),
+        )
+        .toList();
+    unique.sort((MessageModel a, MessageModel b) {
+      if (a.id == null && b.id == null) return 0;
+      if (a.id == null) return -1;
+      if (b.id == null) return 1;
+      return b.id!.compareTo(a.id!);
+    });
+    return unique;
+  }
 
   // ─── Member invitation state ───────────────────────────────────────────────
   final RxString memberPhoneQuery = ''.obs;
@@ -242,7 +476,7 @@ class MessageController extends GetxController {
     isLeavingThread.value = true;
     try {
       final message = await _repository.leaveThread(threadId);
-      await _unsubscribeThread();
+      closeThread();
       filteredMessages.removeWhere((thread) => thread.id == threadId);
       _invitedMembershipThreadIds.remove(threadId);
       _persistInvitedMemberships();
@@ -260,6 +494,8 @@ class MessageController extends GetxController {
 
   @override
   void onClose() {
+    _messageTimeTimer?.cancel();
+    unawaited(disposeUploads());
     _unsubscribeThread();
     messageController.dispose();
     messageFocusNode.dispose();
@@ -413,14 +649,21 @@ class MessageController extends GetxController {
 
       final threadId = incoming.threadId?.toString();
       if (threadId == null) return;
+      final bool activeThread = threadId == selectedThreadId;
+      if (activeThread) _onPusherMessage(event);
+      if (incoming.id != null && !_seenUserMessageIds.add(incoming.id!)) return;
+      if (_seenUserMessageIds.length > 500) {
+        _seenUserMessageIds.remove(_seenUserMessageIds.first);
+      }
       final idx = filteredMessages.indexWhere((t) => t.id == threadId);
       if (idx != -1) {
         final updated = filteredMessages[idx].copyWith(
           newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
+          newestMessageSenderAvatar: incoming.senderAvatar,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
-          isRead: incoming.isSender,
-          unreadMessages: incoming.isSender
+          isRead: incoming.isSender || activeThread,
+          unreadMessages: incoming.isSender || activeThread
               ? 0
               : filteredMessages[idx].unreadMessages + 1,
         );
@@ -440,9 +683,19 @@ class MessageController extends GetxController {
 
   /// Opens a thread and loads the first page of messages from the API.
   Future<void> openThread(MessageListModel thread) async {
+    final int generation = ++_threadGeneration;
+    messageController.clear();
+    selectedImages.clear();
+    unawaited(clearSelectedAttachment());
     await _unsubscribeThread();
+    if (isClosed || generation != _threadGeneration) return;
     pendingInvitationUserIds.clear();
     selectedThread.value = thread;
+    _messageTimeTimer?.cancel();
+    messageTimeNow.value = DateTime.now();
+    _messageTimeTimer = Timer.periodic(const Duration(seconds: 15), (_) {
+      messageTimeNow.value = DateTime.now();
+    });
     _updateCanRequestPriceIncrease();
     callCoordinator.setThreadContext(
       threadId: thread.id,
@@ -450,14 +703,28 @@ class MessageController extends GetxController {
     );
     _messagesPage = 1;
     _messagesHasMore = true;
+    isLoadingOlderMessages.value = false;
     messagesDetail.clear();
     await loadMessages();
+    if (isClosed || generation != _threadGeneration) return;
     await _subscribeToThread(thread.id);
+    if (isClosed || generation != _threadGeneration) return;
     await callCoordinator.reconcile(thread.id);
   }
 
   void closeThread() {
-    if (selectedThread.value == null || messagesDetail.isEmpty) return;
+    _messageTimeTimer?.cancel();
+    _messageTimeTimer = null;
+    _threadGeneration++;
+    messageController.clear();
+    selectedImages.clear();
+    unawaited(clearSelectedAttachment());
+    unawaited(_unsubscribeThread());
+    if (selectedThread.value == null || messagesDetail.isEmpty) {
+      selectedThread.value = null;
+      messagesDetail.clear();
+      return;
+    }
     final lastMessage = messagesDetail[0];
     final threadId = selectedThreadId;
     final idx = filteredMessages.indexWhere((t) => t.id == threadId);
@@ -471,7 +738,8 @@ class MessageController extends GetxController {
       );
     }
 
-    _unsubscribeThread();
+    selectedThread.value = null;
+    messagesDetail.clear();
 
     logger.i(
       '[MessageController] [closeThread] Updated preview for thread=$threadId',
@@ -530,6 +798,7 @@ class MessageController extends GetxController {
   }
 
   Future<void> _subscribeToThread(String threadId) async {
+    final int generation = _threadGeneration;
     final channelName = 'private-thread.$threadId';
     final subscribed = await PusherService.subscribe(
       channelName: channelName,
@@ -537,7 +806,7 @@ class MessageController extends GetxController {
       onEvent: _onPusherMessage,
     );
     if (!subscribed) return;
-    if (isClosed) {
+    if (isClosed || generation != _threadGeneration) {
       await PusherService.unsubscribe(channelName);
       return;
     }
@@ -569,14 +838,29 @@ class MessageController extends GetxController {
       // Regular outgoing messages already have an optimistic local item.
       // Call summaries are created only by the backend, so the initiator must
       // also accept the realtime event to see the card immediately.
-      if (incoming.isSender && incoming.type != 'call') return;
+      if (incoming.threadId?.toString() != selectedThreadId) return;
+      if (incoming.isSender && incoming.type != 'call') {
+        if (incoming.type != 'file' && incoming.type != 'video') return;
+        if (attachmentUploads.any(
+          (ChatUploadTask task) => task.threadId == selectedThreadId,
+        )) {
+          return;
+        }
+      }
       if (incoming.id != null &&
           messagesDetail.any((message) => message.id == incoming.id)) {
         return;
       }
 
       _supersedePendingPriceRequests(incoming.priceIncreaseRequest);
-      messagesDetail.insert(0, incoming);
+      messagesDetail.assignAll(
+        _uniqueMessages(<MessageModel>[incoming, ...messagesDetail]),
+      );
+      if ((incoming.type == 'file' || incoming.type == 'video') &&
+          resolveSenderAvatar(incoming) == null) {
+        // History enriches file/video realtime payloads whose avatar is null.
+        unawaited(loadMessages());
+      }
       scrollToBottom();
 
       // Update the thread's newestMessage preview in the list
@@ -623,18 +907,20 @@ class MessageController extends GetxController {
   }
 
   Future<void> _unsubscribeThread() async {
-    if (_subscribedChannel == null) return;
-    await PusherService.unsubscribe(_subscribedChannel!);
+    final String? channel = _subscribedChannel;
+    _subscribedChannel = null;
+    if (channel == null) return;
+    await PusherService.unsubscribe(channel);
     logger.i(
       '[MessageController] [Pusher] Unsubscribed from $_subscribedChannel',
     );
-    _subscribedChannel = null;
   }
 
   Future<void> loadMessages() async {
-    if (isLoadingMessages.value) return;
     final threadId = selectedThreadId;
     if (threadId.isEmpty) return;
+    final int generation = _threadGeneration;
+    final int requestGeneration = ++_messageLoadGeneration;
 
     isLoadingMessages.value = true;
     try {
@@ -643,9 +929,14 @@ class MessageController extends GetxController {
               as int?;
       final response = await _repository.getMessages(
         threadId: threadId,
-        page: _messagesPage,
+        page: 1,
       );
       final raw = response['messages'] as List<dynamic>? ?? [];
+      if (isClosed ||
+          generation != _threadGeneration ||
+          requestGeneration != _messageLoadGeneration) {
+        return;
+      }
       final messages = raw
           .map(
             (e) => MessageModel.fromApiJson(
@@ -656,25 +947,50 @@ class MessageController extends GetxController {
           .toList();
 
       _messagesHasMore = response['hasMore'] as bool? ?? false;
-      messagesDetail.assignAll(messages.reversed.toList());
+      final Set<int?> refreshedIds = messages
+          .map((MessageModel message) => message.id)
+          .toSet();
+      final List<MessageModel> merged = _uniqueMessages(<MessageModel>[
+        ...messages.reversed,
+        ...messagesDetail.where(
+          (MessageModel message) =>
+              message.id != null && !refreshedIds.contains(message.id),
+        ),
+      ]);
+      if (raw.isEmpty && !response.containsKey('thread')) merged.clear();
+      messagesDetail.assignAll(merged);
 
       logger.i(
         '[MessageController] [loadMessages] threadId=$threadId, count=${messages.length}, hasMore=$_messagesHasMore',
       );
     } catch (e) {
+      if (isClosed ||
+          generation != _threadGeneration ||
+          requestGeneration != _messageLoadGeneration) {
+        return;
+      }
       logger.e('[MessageController] [loadMessages] Error: $e');
       AppSnackbar.showError(
         message: e.toString().replaceFirst('Exception: ', ''),
       );
     } finally {
-      isLoadingMessages.value = false;
+      if (!isClosed &&
+          generation == _threadGeneration &&
+          requestGeneration == _messageLoadGeneration) {
+        isLoadingMessages.value = false;
+      }
     }
   }
 
   Future<void> loadOlderMessages() async {
-    if (!_messagesHasMore || isLoadingOlderMessages.value) return;
+    if (!_messagesHasMore ||
+        isLoadingOlderMessages.value ||
+        isLoadingMessages.value) {
+      return;
+    }
     final threadId = selectedThreadId;
     if (threadId.isEmpty) return;
+    final int generation = _threadGeneration;
 
     isLoadingOlderMessages.value = true;
     try {
@@ -687,6 +1003,7 @@ class MessageController extends GetxController {
         page: _messagesPage,
       );
       final raw = response['messages'] as List<dynamic>? ?? [];
+      if (isClosed || generation != _threadGeneration) return;
       final older = raw
           .map(
             (e) => MessageModel.fromApiJson(
@@ -697,19 +1014,24 @@ class MessageController extends GetxController {
           .toList();
 
       _messagesHasMore = response['hasMore'] as bool? ?? false;
-      messagesDetail.addAll(older.reversed.toList());
+      messagesDetail.assignAll(
+        _uniqueMessages(<MessageModel>[...messagesDetail, ...older.reversed]),
+      );
 
       logger.i(
         '[MessageController] [loadOlderMessages] page=$_messagesPage, count=${older.length}, hasMore=$_messagesHasMore',
       );
     } catch (e) {
+      if (isClosed || generation != _threadGeneration) return;
       logger.e('[MessageController] [loadOlderMessages] Error: $e');
       _messagesPage--; // revert on failure
       AppSnackbar.showError(
         message: e.toString().replaceFirst('Exception: ', ''),
       );
     } finally {
-      isLoadingOlderMessages.value = false;
+      if (!isClosed && generation == _threadGeneration) {
+        isLoadingOlderMessages.value = false;
+      }
     }
   }
 
@@ -735,6 +1057,12 @@ class MessageController extends GetxController {
   // ─── Send Message ─────────────────────────────────────────────────────────────
 
   Future<void> pickImagesForMessage() async {
+    if (isPickingAttachment.value || isSendingMessage.value) return;
+    if (selectedAttachment.value != null) {
+      AppSnackbar.showInfo(message: 'chat_remove_attachment_first'.tr);
+      return;
+    }
+    final int generation = _threadGeneration;
     if (selectedImages.length >= 20) {
       AppSnackbar.showError(message: 'Chỉ có thể chọn tối đa 20 ảnh.');
       return;
@@ -742,9 +1070,11 @@ class MessageController extends GetxController {
 
     final bool shouldRestoreFocus = messageFocusNode.hasFocus;
     messageFocusNode.unfocus();
+    isPickingAttachment.value = true;
 
     try {
       final picked = await _imagePicker.pickMultiImage(imageQuality: 85);
+      if (isClosed || generation != _threadGeneration) return;
       if (picked.isEmpty) return;
 
       final remainingSlots = 20 - selectedImages.length;
@@ -772,10 +1102,13 @@ class MessageController extends GetxController {
         validImages.add(image);
       }
 
-      if (validImages.isNotEmpty) {
+      if (validImages.isNotEmpty &&
+          !isClosed &&
+          generation == _threadGeneration) {
         selectedImages.addAll(validImages);
       }
     } finally {
+      if (!isClosed) isPickingAttachment.value = false;
       if (shouldRestoreFocus && !isClosed) {
         await WidgetsBinding.instance.endOfFrame;
         if (!isClosed) {
@@ -795,6 +1128,10 @@ class MessageController extends GetxController {
   }
 
   Future<void> sendMessage() async {
+    if (selectedAttachment.value != null) {
+      await _sendSelectedAttachment();
+      return;
+    }
     final text = messageController.text.trim();
     final String censoredText = PhoneNumberCensor.censor(text);
     final images = List<XFile>.from(selectedImages);
@@ -829,6 +1166,7 @@ class MessageController extends GetxController {
         : <MessageAttachmentModel>[];
 
     final optimistic = MessageModel(
+      createdAt: DateTime.now(),
       sender: currentUserName,
       senderAvatar: currentUserAvatar,
       text: isImageMessage ? censoredText : previewText,
@@ -860,8 +1198,10 @@ class MessageController extends GetxController {
     } catch (e) {
       logger.e('[MessageController] [sendMessage] Error: $e');
       messagesDetail.remove(optimistic);
-      messageController.text = text; // restore text on failure
-      selectedImages.assignAll(images);
+      if (!isClosed && selectedThreadId == threadId) {
+        messageController.text = text;
+        selectedImages.assignAll(images);
+      }
       AppSnackbar.showError(
         message: e.toString().replaceFirst('Exception: ', ''),
       );
@@ -922,10 +1262,7 @@ class MessageController extends GetxController {
         await loadMessages();
       }
 
-      _updateThreadPreview(
-        threadId: thread.id,
-        text: '[Yêu cầu tăng giá]',
-      );
+      _updateThreadPreview(threadId: thread.id, text: '[Yêu cầu tăng giá]');
       scrollToBottom();
       return true;
     } catch (error) {
@@ -990,8 +1327,7 @@ class MessageController extends GetxController {
     if (requestId != null && status.isNotEmpty) {
       for (int index = 0; index < messagesDetail.length; index++) {
         final MessageModel message = messagesDetail[index];
-        final PriceIncreaseRequestModel? request =
-            message.priceIncreaseRequest;
+        final PriceIncreaseRequestModel? request = message.priceIncreaseRequest;
         if (request?.id != requestId) continue;
         messagesDetail[index] = message.copyWith(
           priceIncreaseRequest: request!.copyWith(status: status),
@@ -1039,9 +1375,11 @@ class MessageController extends GetxController {
     if (raw is! List) return <PriceIncreaseRequestModel>[];
     return raw
         .whereType<Map>()
-        .map((item) => PriceIncreaseRequestModel.fromJson(
-              Map<String, dynamic>.from(item),
-            ))
+        .map(
+          (item) => PriceIncreaseRequestModel.fromJson(
+            Map<String, dynamic>.from(item),
+          ),
+        )
         .toList(growable: false);
   }
 
@@ -1091,6 +1429,7 @@ class MessageController extends GetxController {
       )?.toString();
       const previewText = '[Vị trí]';
       optimistic = MessageModel(
+        createdAt: DateTime.now(),
         sender: currentUserName,
         senderAvatar: currentUserAvatar,
         text: previewText,
@@ -1224,19 +1563,7 @@ class MessageController extends GetxController {
     final idx = messagesDetail.indexOf(optimistic);
     if (idx == -1) return;
 
-    messagesDetail[idx] = MessageModel(
-      sender: optimistic.sender,
-      senderAvatar: optimistic.senderAvatar,
-      text: optimistic.text,
-      type: optimistic.type,
-      previewText: optimistic.previewText,
-      attachments: optimistic.attachments,
-      location: optimistic.location,
-      isSender: optimistic.isSender,
-      sended: true,
-      time: optimistic.time,
-      date: optimistic.date,
-    );
+    messagesDetail[idx] = optimistic.copyWith(sended: true);
   }
 
   void _updateThreadPreview({required String threadId, required String text}) {

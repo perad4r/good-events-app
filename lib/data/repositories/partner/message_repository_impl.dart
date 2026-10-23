@@ -1,10 +1,32 @@
 import 'package:image_picker/image_picker.dart';
+import 'package:dio/dio.dart';
+import 'package:sukientotapp/data/models/chat_upload_model.dart';
+import 'package:sukientotapp/data/models/message_model.dart';
 import 'package:sukientotapp/data/models/chat_invitation_model.dart';
 import 'package:sukientotapp/data/providers/common/message_provider.dart';
 import 'package:sukientotapp/domain/api_url.dart';
 import 'package:sukientotapp/domain/repositories/partner/message_repository.dart';
 
 class MessageRepositoryImpl implements MessageRepository {
+  @override
+  Future<MessageModel> sendAttachment({
+    required String threadId,
+    required ChatAttachmentSelection attachment,
+    required String caption,
+    required String clientMessageId,
+    required int? currentUserId,
+    required void Function(int sent, int total) onProgress,
+    required CancelToken cancelToken,
+  }) => _provider.sendAttachment(
+    threadId: threadId,
+    attachment: attachment,
+    caption: caption,
+    clientMessageId: clientMessageId,
+    currentUserId: currentUserId,
+    onProgress: onProgress,
+    cancelToken: cancelToken,
+  );
+
   final MessageProvider _provider;
   final String _endpoint;
 

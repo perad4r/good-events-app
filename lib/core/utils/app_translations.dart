@@ -4,6 +4,38 @@ class AppTranslations extends Translations {
   @override
   Map<String, Map<String, String>> get keys => {
     'vi_VN': {
+      'chat_send_file': 'Gửi file',
+      'chat_send_video': 'Gửi video',
+      'chat_video_gallery': 'Chọn từ thư viện video',
+      'chat_choose_from_files': 'Chọn từ ứng dụng Tệp',
+      'chat_choose_all_files': 'Tất cả tệp (Adobe, định dạng khác)',
+      'chat_remove_attachment_first':
+          'Vui lòng bỏ tệp hoặc ảnh đang chọn trước.',
+      'chat_attachment_format_error': 'Định dạng tệp không được hỗ trợ.',
+      'chat_file_size_error': 'File không được vượt quá 20 MB.',
+      'chat_video_size_error': 'Video không được vượt quá 50 MB.',
+      'chat_attachment_empty': 'Tệp rỗng hoặc không thể đọc.',
+      'chat_caption_too_long': 'Chú thích không được vượt quá 20.000 ký tự.',
+      'chat_attachment_unavailable': 'Tệp không còn khả dụng.',
+      'chat_pick_failed': 'Không thể chọn tệp. Vui lòng thử lại.',
+      'chat_upload_failed': 'Không thể gửi tệp. Bạn có thể gửi lại.',
+      'chat_upload_too_large':
+          'Máy chủ từ chối dung lượng tải lên. Vui lòng thử tệp nhỏ hơn.',
+      'chat_access_denied': 'Bạn không còn quyền truy cập đoạn chat này.',
+      'chat_no_file_app': 'Thiết bị chưa có ứng dụng phù hợp để mở tệp này.',
+      'chat_open_failed': 'Không thể mở tệp này.',
+      'chat_download_failed': 'Không thể tải tệp. Vui lòng thử lại.',
+      'chat_downloading': 'Đang tải xuống…',
+      'chat_watch_video': 'Xem video',
+      'chat_open_file': 'Tải và mở file',
+      'chat_uploading': 'Đang gửi',
+      'chat_retry': 'Gửi lại',
+      'chat_discard': 'Bỏ tin',
+      'chat_video_playback_failed':
+          'Không thể phát video. Định dạng có thể không được hỗ trợ hoặc tệp không còn khả dụng.',
+      'chat_pause': 'Tạm dừng',
+      'chat_play': 'Phát',
+      'chat_open_external': 'Tải và mở bằng ứng dụng khác',
       'cancel_book_show_not_allowed':
           'Đơn này không còn ở trạng thái chờ, không thể hủy.',
       //choose your side screen
@@ -262,8 +294,7 @@ class AppTranslations extends Translations {
           'NỀN TẢNG KẾT NỐI NHÂN SỰ SỰ KIỆN',
       'booking_submit_notice_platform_content':
           'Sự Kiện Tốt là nền tảng công nghệ kết nối khách hàng với nhân sự sự kiện độc lập, không trực tiếp cung cấp dịch vụ.',
-      'booking_submit_notice_confirm_title':
-          'XÁC NHẬN NỘI DUNG & NHÂN SỰ',
+      'booking_submit_notice_confirm_title': 'XÁC NHẬN NỘI DUNG & NHÂN SỰ',
       'booking_submit_notice_confirm_content':
           'Để đảm bảo quyền lợi, vui lòng xác nhận kỹ nội dung công việc, giá dịch vụ, hình ảnh/video nhân sự, thời gian, địa điểm và các yêu cầu trước - sau khi thực hiện.',
       'booking_submit_notice_agreement_title':
@@ -1017,6 +1048,38 @@ class AppTranslations extends Translations {
       'open_settings': 'Mở Cài đặt',
     },
     'en_US': {
+      'chat_send_file': 'Send file',
+      'chat_send_video': 'Send video',
+      'chat_video_gallery': 'Choose from video library',
+      'chat_choose_from_files': 'Choose from Files',
+      'chat_choose_all_files': 'All files (Adobe and other formats)',
+      'chat_remove_attachment_first':
+          'Remove the selected attachment or images first.',
+      'chat_attachment_format_error': 'Unsupported file format.',
+      'chat_file_size_error': 'Files must not exceed 20 MB.',
+      'chat_video_size_error': 'Videos must not exceed 50 MB.',
+      'chat_attachment_empty': 'The file is empty or unreadable.',
+      'chat_caption_too_long': 'Captions must not exceed 20,000 characters.',
+      'chat_attachment_unavailable': 'This attachment is no longer available.',
+      'chat_pick_failed': 'Could not select the file. Please try again.',
+      'chat_upload_failed': 'Could not send the attachment. You can retry.',
+      'chat_upload_too_large':
+          'The server rejected the upload size. Please try a smaller file.',
+      'chat_access_denied': 'You no longer have access to this chat.',
+      'chat_no_file_app': 'No app is installed that can open this file.',
+      'chat_open_failed': 'Could not open this file.',
+      'chat_download_failed': 'Could not download the file. Please try again.',
+      'chat_downloading': 'Downloading…',
+      'chat_watch_video': 'Watch video',
+      'chat_open_file': 'Download and open file',
+      'chat_uploading': 'Sending',
+      'chat_retry': 'Retry',
+      'chat_discard': 'Discard',
+      'chat_video_playback_failed':
+          'Could not play this video. The format may be unsupported or the attachment unavailable.',
+      'chat_pause': 'Pause',
+      'chat_play': 'Play',
+      'chat_open_external': 'Download and open in another app',
       'cancel_book_show_not_allowed':
           'This booking is no longer pending and cannot be cancelled.',
       //choose your side screen
@@ -1268,8 +1331,7 @@ class AppTranslations extends Translations {
       'booking_submit': 'Find staff',
       'booking_submit_notice_title_prefix': 'INFORMATION ',
       'booking_submit_notice_title_primary': 'YOU SHOULD KNOW',
-      'booking_submit_notice_platform_title':
-          'EVENT STAFF CONNECTION PLATFORM',
+      'booking_submit_notice_platform_title': 'EVENT STAFF CONNECTION PLATFORM',
       'booking_submit_notice_platform_content':
           'Good Event is a technology platform connecting customers with independent event staff and does not directly provide services.',
       'booking_submit_notice_confirm_title': 'CONFIRM SERVICE & STAFF DETAILS',
