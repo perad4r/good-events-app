@@ -660,7 +660,6 @@ class MessageController extends GetxController {
         final updated = filteredMessages[idx].copyWith(
           newestMessage: incoming.previewText,
           newestMessageSender: incoming.sender,
-          newestMessageSenderAvatar: incoming.senderAvatar,
           time: MessageModel.diffForHumans(DateTime.now().toIso8601String()),
           isRead: incoming.isSender || activeThread,
           unreadMessages: incoming.isSender || activeThread

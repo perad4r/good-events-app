@@ -67,7 +67,7 @@ import CallKit
         case "endVoipCall":
           let callId = (call.arguments as? [String: Any])?["call_id"] as? String
           if let callId = callId {
-            self.endCall(callId: callId, reason: .remoteEnded)
+            self?.endCall(callId: callId, reason: .remoteEnded)
           }
           result(nil)
         default:
